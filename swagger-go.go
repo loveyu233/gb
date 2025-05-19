@@ -1,0 +1,747 @@
+package gb
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"reflect"
+	"regexp"
+	"strings"
+)
+
+// APIDoc 表示API文档根结构
+type APIDoc struct {
+	Swagger     string                `json:"swagger"`
+	Info        Info                  `json:"info"`
+	Host        string                `json:"host,omitempty"`
+	BasePath    string                `json:"basePath,omitempty"`
+	Schemes     []string              `json:"schemes,omitempty"`
+	Consumes    []string              `json:"consumes,omitempty"`
+	Produces    []string              `json:"produces,omitempty"`
+	Paths       map[string]PathItem   `json:"paths"`
+	Definitions map[string]Definition `json:"definitions"`
+}
+
+// Info 表示API文档信息
+type Info struct {
+	Title       string `json:"title"`
+	Description string `json:"description,omitempty"`
+	Version     string `json:"version"`
+}
+
+// PathItem 表示路径项
+type PathItem map[string]Operation
+
+// Operation 表示操作
+type Operation struct {
+	Summary     string          `json:"summary,omitempty"`
+	Description string          `json:"description,omitempty"`
+	OperationID string          `json:"operationId,omitempty"`
+	Parameters  []Parameter     `json:"parameters,omitempty"`
+	Responses   SwaggerResponse `json:"responses"`
+	Tags        []string        `json:"tags,omitempty"`
+}
+
+// Parameter 表示参数
+type Parameter struct {
+	Name        string     `json:"name"`
+	In          string     `json:"in"` // query, path, body, header, formData
+	Description string     `json:"description,omitempty"`
+	Required    bool       `json:"required"`
+	Type        string     `json:"type,omitempty"`
+	Schema      *SchemaRef `json:"schema,omitempty"`
+}
+
+// SwaggerResponse 表示响应
+type SwaggerResponse map[string]ResponseObject
+
+// ResponseObject 表示响应对象
+type ResponseObject struct {
+	Description string     `json:"description"`
+	Schema      *SchemaRef `json:"schema,omitempty"`
+}
+
+// SchemaRef 表示Schema引用
+type SchemaRef struct {
+	Ref string `json:"$ref,omitempty"`
+}
+
+// Definition 表示模型定义
+type Definition struct {
+	Type       string              `json:"type,omitempty"`
+	Properties map[string]Property `json:"properties,omitempty"`
+	Required   []string            `json:"required,omitempty"`
+}
+
+// Property 表示属性
+type Property struct {
+	Type        string   `json:"type,omitempty"`
+	Description string   `json:"description,omitempty"`
+	Format      string   `json:"format,omitempty"`
+	Items       *Items   `json:"items,omitempty"`
+	Enum        []string `json:"enum,omitempty"`
+}
+
+// Items 表示数组项
+type Items struct {
+	Type string `json:"type,omitempty"`
+	Ref  string `json:"$ref,omitempty"`
+}
+
+// Config 表示工具配置
+type Config struct {
+	Title       string
+	Description string
+	Version     string
+	Host        string
+	BasePath    string
+	Schemes     []string
+	OutputPath  string
+}
+
+var (
+	ParamTypeString  = "string"
+	ParamTypeInteger = "integer"
+	ParamTypeNumber  = "number"
+	ParamTypeBoolean = "boolean"
+)
+
+// ParamDescription 表示参数描述
+type ParamDescription struct {
+	Name        string // 参数名称
+	Description string // 参数描述
+	Type        string // 参数类型，默认为string
+}
+
+// Generator 表示Swagger生成器
+type Generator struct {
+	Doc    APIDoc
+	Config Config
+}
+
+// NewGenerator 创建一个新的Swagger生成器
+func NewGenerator(config Config) *Generator {
+	if config.Schemes == nil {
+		config.Schemes = []string{"http", "https"}
+	}
+
+	return &Generator{
+		Config: config,
+		Doc: APIDoc{
+			Swagger: "2.0",
+			Info: Info{
+				Title:       config.Title,
+				Description: config.Description,
+				Version:     config.Version,
+			},
+			Host:        config.Host,
+			BasePath:    config.BasePath,
+			Schemes:     config.Schemes,
+			Consumes:    []string{"application/json"},
+			Produces:    []string{"application/json"},
+			Paths:       make(map[string]PathItem),
+			Definitions: make(map[string]Definition),
+		},
+	}
+}
+
+// APIInfo 表示API信息
+type APIInfo struct {
+	Path           string
+	Method         string
+	Summary        string
+	Description    string
+	Tags           []string
+	Request        interface{}
+	Response       interface{}
+	PathParams     []ParamDescription // 新增：路径参数描述
+	QueryParams    []ParamDescription // 新增：查询参数描述
+	HeaderParams   []ParamDescription // 新增：头部参数描述
+	ResponseStatus map[string]string  // 新增：状态码描述，如 {"200": "成功", "404": "未找到"}
+}
+
+// AddAPI 添加API - 增强版
+func (g *Generator) AddAPI(info APIInfo) {
+	method := strings.ToLower(info.Method)
+
+	pathItem, exists := g.Doc.Paths[info.Path]
+	if !exists {
+		pathItem = make(PathItem)
+		g.Doc.Paths[info.Path] = pathItem
+	}
+
+	operation := Operation{
+		Summary:     info.Summary,
+		Description: info.Description,
+		Tags:        info.Tags,
+		OperationID: generateOperationID(info.Method, info.Path),
+		Parameters:  []Parameter{},
+		Responses:   make(SwaggerResponse),
+	}
+
+	// 1. 处理路径参数
+	// 如果没有提供路径参数描述，则自动提取路径中的参数
+	if len(info.PathParams) == 0 {
+		pathParams := extractPathParams(info.Path)
+		for _, paramName := range pathParams {
+			operation.Parameters = append(operation.Parameters, Parameter{
+				Name:        paramName,
+				In:          "path",
+				Description: "", // 无描述
+				Required:    true,
+				Type:        "string",
+			})
+		}
+	} else {
+		// 使用提供的路径参数描述
+		for _, param := range info.PathParams {
+			paramType := param.Type
+			if paramType == "" {
+				paramType = "string"
+			}
+
+			operation.Parameters = append(operation.Parameters, Parameter{
+				Name:        param.Name,
+				In:          "path",
+				Description: param.Description,
+				Required:    true, // 路径参数总是必需的
+				Type:        paramType,
+			})
+		}
+	}
+
+	// 2. 处理查询参数
+	for _, param := range info.QueryParams {
+		paramType := param.Type
+		if paramType == "" {
+			paramType = "string"
+		}
+
+		operation.Parameters = append(operation.Parameters, Parameter{
+			Name:        param.Name,
+			In:          "query",
+			Description: param.Description,
+			Required:    false, // 查询参数通常是可选的
+			Type:        paramType,
+		})
+	}
+
+	// 3. 处理头部参数
+	for _, param := range info.HeaderParams {
+		paramType := param.Type
+		if paramType == "" {
+			paramType = "string"
+		}
+
+		operation.Parameters = append(operation.Parameters, Parameter{
+			Name:        param.Name,
+			In:          "header",
+			Description: param.Description,
+			Required:    false, // 头部参数通常是可选的
+			Type:        paramType,
+		})
+	}
+
+	// 4. 处理请求参数
+	if info.Request != nil {
+		g.processRequestParams(info.Request, &operation)
+	}
+
+	// 5. 处理响应参数
+	if info.Response != nil {
+		g.processResponseParams(info.Response, &operation)
+	}
+
+	// 6. 处理响应状态码
+	if len(info.ResponseStatus) > 0 {
+		for code, desc := range info.ResponseStatus {
+			operation.Responses[code] = ResponseObject{
+				Description: desc,
+			}
+		}
+	} else if len(operation.Responses) == 0 {
+		// 默认响应
+		operation.Responses["200"] = ResponseObject{
+			Description: "成功",
+		}
+	}
+
+	pathItem[method] = operation
+}
+
+// 提取路径中的参数名
+func extractPathParams(path string) []string {
+	var params []string
+	re := regexp.MustCompile(`{([^}]+)}`)
+	matches := re.FindAllStringSubmatch(path, -1)
+
+	for _, match := range matches {
+		if len(match) > 1 {
+			params = append(params, match[1])
+		}
+	}
+
+	return params
+}
+
+// processRequestParams 处理请求参数
+func (g *Generator) processRequestParams(req interface{}, operation *Operation) {
+	reqType := reflect.TypeOf(req)
+	if reqType.Kind() == reflect.Ptr {
+		reqType = reqType.Elem()
+	}
+
+	// 为请求定义添加模型
+	modelName := reqType.Name()
+	g.addModelDefinition(modelName, req)
+
+	// 添加body参数
+	operation.Parameters = append(operation.Parameters, Parameter{
+		Name:        "body",
+		In:          "body",
+		Description: "请求参数",
+		Required:    true,
+		Schema: &SchemaRef{
+			Ref: "#/definitions/" + modelName,
+		},
+	})
+}
+
+// processResponseParams 处理响应参数
+func (g *Generator) processResponseParams(resp interface{}, operation *Operation) {
+	respType := reflect.TypeOf(resp)
+	if respType.Kind() == reflect.Ptr {
+		respType = respType.Elem()
+	}
+
+	// 为响应定义添加模型
+	modelName := respType.Name()
+	g.addModelDefinition(modelName, resp)
+
+	// 添加成功响应
+	operation.Responses["200"] = ResponseObject{
+		Description: "成功",
+		Schema: &SchemaRef{
+			Ref: "#/definitions/" + modelName,
+		},
+	}
+}
+
+// addModelDefinition 添加模型定义
+func (g *Generator) addModelDefinition(name string, model interface{}) {
+	if _, exists := g.Doc.Definitions[name]; exists {
+		return
+	}
+
+	modelType := reflect.TypeOf(model)
+	if modelType.Kind() == reflect.Ptr {
+		modelType = modelType.Elem()
+	}
+
+	definition := Definition{
+		Type:       "object",
+		Properties: make(map[string]Property),
+		Required:   []string{},
+	}
+
+	if modelType.Kind() != reflect.Struct {
+		return
+	}
+
+	for i := 0; i < modelType.NumField(); i++ {
+		field := modelType.Field(i)
+
+		// 忽略非导出字段
+		if field.PkgPath != "" {
+			continue
+		}
+
+		jsonTag := field.Tag.Get("json")
+		if jsonTag == "-" {
+			continue
+		}
+
+		jsonName := jsonTag
+		if jsonName == "" {
+			jsonName = field.Name
+		} else {
+			jsonName = strings.Split(jsonName, ",")[0]
+		}
+
+		// 处理required标签
+		required := field.Tag.Get("binding") == "required" || strings.Contains(field.Tag.Get("binding"), "required")
+		if required {
+			definition.Required = append(definition.Required, jsonName)
+		}
+
+		// 获取字段描述
+		description := field.Tag.Get("desc")
+
+		// 添加属性
+		property := Property{
+			Description: description,
+		}
+
+		g.setPropertyType(&property, field.Type)
+		definition.Properties[jsonName] = property
+
+		// 如果是嵌套结构体，递归添加
+		fieldType := field.Type
+		if fieldType.Kind() == reflect.Ptr {
+			fieldType = fieldType.Elem()
+		}
+
+		if fieldType.Kind() == reflect.Struct && fieldType.Name() != "Time" {
+			// 创建结构体实例
+			structValue := reflect.New(fieldType).Interface()
+			g.addModelDefinition(fieldType.Name(), structValue)
+		}
+	}
+
+	g.Doc.Definitions[name] = definition
+}
+
+// setPropertyType 设置属性类型
+func (g *Generator) setPropertyType(property *Property, t reflect.Type) {
+	kind := t.Kind()
+
+	if kind == reflect.Ptr {
+		g.setPropertyType(property, t.Elem())
+		return
+	}
+
+	switch kind {
+	case reflect.Bool:
+		property.Type = "boolean"
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
+		property.Type = "integer"
+		property.Format = "int32"
+	case reflect.Int64, reflect.Uint64:
+		property.Type = "integer"
+		property.Format = "int64"
+	case reflect.Float32:
+		property.Type = "number"
+		property.Format = "float"
+	case reflect.Float64:
+		property.Type = "number"
+		property.Format = "double"
+	case reflect.String:
+		property.Type = "string"
+	case reflect.Struct:
+		if t.Name() == "Time" {
+			property.Type = "string"
+			property.Format = "date-time"
+		} else {
+			// 创建嵌套对象的引用
+			property.Type = "object"
+			// 由于Property结构中没有直接的Ref字段，我们应该使用Items来引用其他定义
+			if property.Items == nil {
+				property.Items = &Items{
+					Ref: "#/definitions/" + t.Name(),
+				}
+			} else {
+				property.Items.Ref = "#/definitions/" + t.Name()
+			}
+		}
+	case reflect.Slice, reflect.Array:
+		property.Type = "array"
+		property.Items = &Items{}
+		elemType := t.Elem()
+
+		if elemType.Kind() == reflect.Struct && elemType.Name() != "Time" {
+			property.Items.Ref = "#/definitions/" + elemType.Name()
+
+			// 创建元素类型的实例并添加定义
+			structValue := reflect.New(elemType).Interface()
+			g.addModelDefinition(elemType.Name(), structValue)
+		} else {
+			switch elemType.Kind() {
+			case reflect.Bool:
+				property.Items.Type = "boolean"
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
+				property.Items.Type = "integer"
+			case reflect.Int64, reflect.Uint64:
+				property.Items.Type = "integer"
+			case reflect.Float32, reflect.Float64:
+				property.Items.Type = "number"
+			case reflect.String:
+				property.Items.Type = "string"
+			}
+		}
+	case reflect.Map:
+		property.Type = "object"
+		// 注意：Swagger 2.0 不完全支持Map的详细定义
+	}
+}
+
+// Generate 生成Swagger文档
+func (g *Generator) Generate() error {
+	// 创建输出目录（如果不存在）
+	dir := filepath.Dir(g.Config.OutputPath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("创建输出目录失败: %v", err)
+	}
+
+	// 将API文档转换为JSON
+	data, err := json.MarshalIndent(g.Doc, "", "  ")
+	if err != nil {
+		return fmt.Errorf("序列化文档失败: %v", err)
+	}
+
+	// 写入文件
+	if err := os.WriteFile(g.Config.OutputPath, data, 0644); err != nil {
+		return fmt.Errorf("写入文件失败: %v", err)
+	}
+
+	return nil
+}
+
+// 生成操作ID
+func generateOperationID(method, path string) string {
+	// 去除路径中的参数部分
+	pathParts := strings.Split(path, "/")
+	for i, part := range pathParts {
+		if strings.HasPrefix(part, "{") && strings.HasSuffix(part, "}") {
+			pathParts[i] = "by" + strings.Title(part[1:len(part)-1])
+		}
+	}
+
+	// 构建操作ID
+	cleanPath := strings.Join(pathParts, "_")
+	cleanPath = strings.Trim(cleanPath, "_")
+	cleanPath = strings.ReplaceAll(cleanPath, "-", "_")
+
+	return strings.ToLower(method) + "_" + cleanPath
+}
+
+// 添加单个API路径的快捷方法
+func (g *Generator) AddPath(path, method, summary, description string, tags []string) *Operation {
+	method = strings.ToLower(method)
+
+	pathItem, exists := g.Doc.Paths[path]
+	if !exists {
+		pathItem = make(PathItem)
+		g.Doc.Paths[path] = pathItem
+	}
+
+	operation := Operation{
+		Summary:     summary,
+		Description: description,
+		Tags:        tags,
+		OperationID: generateOperationID(method, path),
+		Parameters:  []Parameter{},
+		Responses:   make(SwaggerResponse),
+	}
+
+	// 处理路径参数
+	pathParams := extractPathParams(path)
+	for _, paramName := range pathParams {
+		operation.Parameters = append(operation.Parameters, Parameter{
+			Name:     paramName,
+			In:       "path",
+			Required: true,
+			Type:     "string",
+		})
+	}
+
+	// 添加默认响应
+	operation.Responses["200"] = ResponseObject{
+		Description: "成功",
+	}
+
+	pathItem[method] = operation
+	return &operation
+}
+
+// 为已有操作添加路径参数描述
+func (g *Generator) AddPathParamDesc(path, method, paramName, description string, paramType string) error {
+	method = strings.ToLower(method)
+
+	pathItem, exists := g.Doc.Paths[path]
+	if !exists {
+		return fmt.Errorf("路径 %s 不存在", path)
+	}
+
+	operation, exists := pathItem[method]
+	if !exists {
+		return fmt.Errorf("路径 %s 的方法 %s 不存在", path, method)
+	}
+
+	// 查找并更新参数描述
+	paramFound := false
+	for i, param := range operation.Parameters {
+		if param.In == "path" && param.Name == paramName {
+			operation.Parameters[i].Description = description
+			if paramType != "" {
+				operation.Parameters[i].Type = paramType
+			}
+			paramFound = true
+			break
+		}
+	}
+
+	// 如果未找到参数，添加一个新参数
+	if !paramFound {
+		if paramType == "" {
+			paramType = "string"
+		}
+
+		operation.Parameters = append(operation.Parameters, Parameter{
+			Name:        paramName,
+			In:          "path",
+			Description: description,
+			Required:    true,
+			Type:        paramType,
+		})
+	}
+
+	// 更新操作
+	pathItem[method] = operation
+	g.Doc.Paths[path] = pathItem
+
+	return nil
+}
+
+// 简化API创建的方法
+func (g *Generator) SimpleAPI(path, method, summary string, pathParamDescs map[string]string) {
+	apiInfo := APIInfo{
+		Path:       path,
+		Method:     method,
+		Summary:    summary,
+		PathParams: []ParamDescription{},
+		ResponseStatus: map[string]string{
+			"200": "成功",
+		},
+	}
+
+	// 添加路径参数描述
+	for name, desc := range pathParamDescs {
+		apiInfo.PathParams = append(apiInfo.PathParams, ParamDescription{
+			Name:        name,
+			Description: desc,
+		})
+	}
+
+	g.AddAPI(apiInfo)
+}
+
+// 添加各种类型的API
+func (g *Generator) WithOperation(path, method string) *OperationBuilder {
+	return &OperationBuilder{
+		generator: g,
+		path:      path,
+		method:    method,
+		operation: Operation{
+			Parameters:  []Parameter{},
+			Responses:   make(SwaggerResponse),
+			OperationID: generateOperationID(method, path),
+		},
+	}
+}
+
+// OperationBuilder 是一个用于构建操作的流式接口
+type OperationBuilder struct {
+	generator *Generator
+	path      string
+	method    string
+	operation Operation
+}
+
+// Summary 设置摘要
+func (b *OperationBuilder) Summary(summary string) *OperationBuilder {
+	b.operation.Summary = summary
+	return b
+}
+
+// Description 设置描述
+func (b *OperationBuilder) Description(description string) *OperationBuilder {
+	b.operation.Description = description
+	return b
+}
+
+// Tags 设置标签
+func (b *OperationBuilder) Tags(tags []string) *OperationBuilder {
+	b.operation.Tags = tags
+	return b
+}
+
+// PathParam 添加路径参数
+func (b *OperationBuilder) PathParam(name, description string) *OperationBuilder {
+	b.operation.Parameters = append(b.operation.Parameters, Parameter{
+		Name:        name,
+		In:          "path",
+		Description: description,
+		Required:    true,
+		Type:        "string",
+	})
+	return b
+}
+
+// QueryParam 添加查询参数
+func (b *OperationBuilder) QueryParam(name, description string, required bool) *OperationBuilder {
+	b.operation.Parameters = append(b.operation.Parameters, Parameter{
+		Name:        name,
+		In:          "query",
+		Description: description,
+		Required:    required,
+		Type:        "string",
+	})
+	return b
+}
+
+// HeaderParam 添加头部参数
+func (b *OperationBuilder) HeaderParam(name, description string, required bool) *OperationBuilder {
+	b.operation.Parameters = append(b.operation.Parameters, Parameter{
+		Name:        name,
+		In:          "header",
+		Description: description,
+		Required:    required,
+		Type:        "string",
+	})
+	return b
+}
+
+// RequestBody 设置请求体
+func (b *OperationBuilder) RequestBody(req interface{}) *OperationBuilder {
+	b.generator.processRequestParams(req, &b.operation)
+	return b
+}
+
+// SwaggerResponse 添加响应
+func (b *OperationBuilder) Response(statusCode string, description string, resp interface{}) *OperationBuilder {
+	if resp != nil {
+		respType := reflect.TypeOf(resp)
+		if respType.Kind() == reflect.Ptr {
+			respType = respType.Elem()
+		}
+
+		modelName := respType.Name()
+		b.generator.addModelDefinition(modelName, resp)
+
+		b.operation.Responses[statusCode] = ResponseObject{
+			Description: description,
+			Schema: &SchemaRef{
+				Ref: "#/definitions/" + modelName,
+			},
+		}
+	} else {
+		b.operation.Responses[statusCode] = ResponseObject{
+			Description: description,
+		}
+	}
+	return b
+}
+
+// Build 完成构建并添加到文档
+func (b *OperationBuilder) Build() {
+	method := strings.ToLower(b.method)
+
+	pathItem, exists := b.generator.Doc.Paths[b.path]
+	if !exists {
+		pathItem = make(PathItem)
+		b.generator.Doc.Paths[b.path] = pathItem
+	}
+
+	pathItem[method] = b.operation
+}

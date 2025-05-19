@@ -1,6 +1,7 @@
 package gb
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"testing"
 	"time"
@@ -25,7 +26,12 @@ func registerDemo1PublicRoutes(r *gin.RouterGroup) {
 	test2Routes := r.Group("/test2", SetModuleName("这是测试2模块"))
 	{
 		test2Routes.GET("/hello", SetOptionName("hello"), func(c *gin.Context) {
-			ResponseSuccess(c, "hello")
+			page, size, err := ParsePaginationParams(c, map[string]int{"page": 0, "size": 20})
+			if err != nil {
+				ResponseError(c, err)
+				return
+			}
+			ResponseSuccess(c, fmt.Sprintf("hello %d %d", page, size))
 		})
 	}
 }
