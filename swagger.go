@@ -97,7 +97,7 @@ type SwaggerGlobalConfig struct {
 	Host        string
 	BasePath    string
 	Schemes     []string
-	OutputPath  string
+	OutputPath  string // 不设置默认 swagger/swagger.json
 }
 
 var (
@@ -124,6 +124,9 @@ type Generator struct {
 func NewSwaggerGenerator(config SwaggerGlobalConfig) *Generator {
 	if config.Schemes == nil {
 		config.Schemes = []string{"http", "https"}
+	}
+	if config.OutputPath == "" {
+		config.OutputPath = "swagger/swagger.json"
 	}
 
 	return &Generator{
