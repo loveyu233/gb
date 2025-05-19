@@ -73,6 +73,9 @@ generator.AddAPI(gb.SwaggerAPIInfo{
 	Description: "用户登录接口",
 	Tags:        []string{"认证"},
 })
+
+// 在指定位置[OutputPath]生成swagger.json文件
+generator.Generate()
 ```
 
 ### 路由管理
