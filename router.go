@@ -30,8 +30,8 @@ func newGinRouter(mode string, globalMiddlewares ...gin.HandlerFunc) *gin.Engine
 	return engine
 }
 
-func registerRoutes(r *gin.Engine, prefix string, authMiddlewares ...gin.HandlerFunc) {
-	baseRouter := r.Group(prefix)
+func registerRoutes(r *gin.Engine, baseRouterPrefix string, authMiddlewares ...gin.HandlerFunc) {
+	baseRouter := r.Group(baseRouterPrefix)
 
 	// 注册公开路由
 	for _, route := range PublicRoutes {
@@ -39,7 +39,7 @@ func registerRoutes(r *gin.Engine, prefix string, authMiddlewares ...gin.Handler
 	}
 
 	// 注册私有路由
-	priRoute := baseRouter.Group("/auth", authMiddlewares...)
+	priRoute := baseRouter.Group("", authMiddlewares...)
 	for _, route := range PrivateRoutes {
 		route(priRoute)
 	}
