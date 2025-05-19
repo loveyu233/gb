@@ -89,8 +89,8 @@ type Items struct {
 	Ref  string `json:"$ref,omitempty"`
 }
 
-// Config 表示工具配置
-type Config struct {
+// SwaggerGlobalConfig 表示工具配置
+type SwaggerGlobalConfig struct {
 	Title       string
 	Description string
 	Version     string
@@ -107,8 +107,8 @@ var (
 	ParamTypeBoolean = "boolean"
 )
 
-// ParamDescription 表示参数描述
-type ParamDescription struct {
+// SwaggerParamDescription 表示参数描述
+type SwaggerParamDescription struct {
 	Name        string // 参数名称
 	Description string // 参数描述
 	Type        string // 参数类型，默认为string
@@ -117,11 +117,11 @@ type ParamDescription struct {
 // Generator 表示Swagger生成器
 type Generator struct {
 	Doc    APIDoc
-	Config Config
+	Config SwaggerGlobalConfig
 }
 
-// NewGenerator 创建一个新的Swagger生成器
-func NewGenerator(config Config) *Generator {
+// NewSwaggerGenerator 创建一个新的Swagger生成器
+func NewSwaggerGenerator(config SwaggerGlobalConfig) *Generator {
 	if config.Schemes == nil {
 		config.Schemes = []string{"http", "https"}
 	}
@@ -146,8 +146,8 @@ func NewGenerator(config Config) *Generator {
 	}
 }
 
-// APIInfo 表示API信息
-type APIInfo struct {
+// SwaggerAPIInfo 表示API信息
+type SwaggerAPIInfo struct {
 	Path           string
 	Method         string
 	Summary        string
@@ -155,14 +155,14 @@ type APIInfo struct {
 	Tags           []string
 	Request        interface{}
 	Response       interface{}
-	PathParams     []ParamDescription // 新增：路径参数描述
-	QueryParams    []ParamDescription // 新增：查询参数描述
-	HeaderParams   []ParamDescription // 新增：头部参数描述
-	ResponseStatus map[string]string  // 新增：状态码描述，如 {"200": "成功", "404": "未找到"}
+	PathParams     []SwaggerParamDescription // 新增：路径参数描述
+	QueryParams    []SwaggerParamDescription // 新增：查询参数描述
+	HeaderParams   []SwaggerParamDescription // 新增：头部参数描述
+	ResponseStatus map[string]string         // 新增：状态码描述，如 {"200": "成功", "404": "未找到"}
 }
 
 // AddAPI 添加API - 增强版
-func (g *Generator) AddAPI(info APIInfo) {
+func (g *Generator) AddAPI(info SwaggerAPIInfo) {
 	method := strings.ToLower(info.Method)
 
 	pathItem, exists := g.Doc.Paths[info.Path]
@@ -605,11 +605,11 @@ func (g *Generator) AddPathParamDesc(path, method, paramName, description string
 
 // 简化API创建的方法
 func (g *Generator) SimpleAPI(path, method, summary string, pathParamDescs map[string]string) {
-	apiInfo := APIInfo{
+	apiInfo := SwaggerAPIInfo{
 		Path:       path,
 		Method:     method,
 		Summary:    summary,
-		PathParams: []ParamDescription{},
+		PathParams: []SwaggerParamDescription{},
 		ResponseStatus: map[string]string{
 			"200": "成功",
 		},
@@ -617,7 +617,7 @@ func (g *Generator) SimpleAPI(path, method, summary string, pathParamDescs map[s
 
 	// 添加路径参数描述
 	for name, desc := range pathParamDescs {
-		apiInfo.PathParams = append(apiInfo.PathParams, ParamDescription{
+		apiInfo.PathParams = append(apiInfo.PathParams, SwaggerParamDescription{
 			Name:        name,
 			Description: desc,
 		})
