@@ -32,7 +32,7 @@ func ParseStringFromQueryString(c *gin.Context, fieldName string) string {
 }
 
 // ParsePaginationParams 从请求中解析分页参数
-func ParsePaginationParams(c *gin.Context, defaultPagination ...map[string]int) (page, size int, err error) {
+func ParsePaginationParams(c *gin.Context, defaultPagination ...map[string]int) (page, size int) {
 	defaultPage := 1
 	defaultSize := 10
 
@@ -41,7 +41,7 @@ func ParsePaginationParams(c *gin.Context, defaultPagination ...map[string]int) 
 		defaultSize = defaultPagination[0]["size"]
 	}
 
-	page, err = ParseIntFromQueryString(c, "page")
+	page, err := ParseIntFromQueryString(c, "page")
 	if err != nil || page <= 0 {
 		page = defaultPage
 	}
@@ -51,5 +51,5 @@ func ParsePaginationParams(c *gin.Context, defaultPagination ...map[string]int) 
 		size = defaultSize
 	}
 
-	return page, size, nil
+	return page, size
 }

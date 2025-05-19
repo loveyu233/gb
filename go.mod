@@ -14,9 +14,9 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/redis/go-redis/v9 v9.8.0
 	github.com/shopspring/decimal v1.4.0
-	github.com/spf13/cast v1.8.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.26.1
+	gorm.io/plugin/soft_delete v1.2.1
 )
 
 require (
@@ -29,6 +29,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
