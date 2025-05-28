@@ -35,8 +35,8 @@ func (m *BaseDeleteAt) AfterFind(tx *gorm.DB) error {
 	return nil
 }
 
-// BaseDeleteAtContainsIndex 包含复合索引deleted_at_unique_index
+// BaseDeleteAtContainsIndex 包含复合索引deleted_unique_index
 type BaseDeleteAtContainsIndex struct {
 	BaseDeleteAt
-	DeletedAtFlag soft_delete.DeletedAt `gorm:"softDelete:flag;default:0" json:"-"`
+	DeletedAtFlag soft_delete.DeletedAt `gorm:"softDelete:flag;default:0;uniqueIndex:deleted_unique_index" json:"-"`
 }
