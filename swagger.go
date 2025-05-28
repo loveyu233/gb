@@ -3,6 +3,8 @@ package gb
 import (
 	"encoding/json"
 	"fmt"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -737,7 +739,7 @@ func generateOperationID(method, path string) string {
 	pathParts := strings.Split(path, "/")
 	for i, part := range pathParts {
 		if strings.HasPrefix(part, "{") && strings.HasSuffix(part, "}") {
-			pathParts[i] = "by" + strings.Title(part[1:len(part)-1])
+			pathParts[i] = "by" + cases.Title(language.English).String(part[1:len(part)-1])
 		}
 	}
 
