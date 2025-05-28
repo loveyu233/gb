@@ -215,8 +215,8 @@ type GinAuthConfig struct {
 
 var defaultTokenSecret = "abcdef123456..."
 
-// 默认配置
-var defaultGinConfig = &GinAuthConfig{
+// DefaultGinConfig 默认配置
+var DefaultGinConfig = &GinAuthConfig{
 	TokenService: NewJWTTokenService(defaultTokenSecret),
 	GetTokenStrFunc: func(c *gin.Context) string {
 		auth := c.GetHeader("Authorization")
@@ -238,7 +238,7 @@ var defaultGinConfig = &GinAuthConfig{
 	},
 }
 
-// GinAuth 创建一个Gin认证中间件
+// GinAuth 创建一个Gin认证中间件,config为空则使用默认
 func GinAuth(userPtr interface{}, config *GinAuthConfig) gin.HandlerFunc {
 	// 合并默认配置
 	if config == nil {
@@ -246,11 +246,11 @@ func GinAuth(userPtr interface{}, config *GinAuthConfig) gin.HandlerFunc {
 	}
 
 	if config.GetTokenStrFunc == nil {
-		config.GetTokenStrFunc = defaultGinConfig.GetTokenStrFunc
+		config.GetTokenStrFunc = DefaultGinConfig.GetTokenStrFunc
 	}
 
 	if config.HandleError == nil {
-		config.HandleError = defaultGinConfig.HandleError
+		config.HandleError = DefaultGinConfig.HandleError
 	}
 
 	if config.TokenService == nil {
