@@ -1,6 +1,7 @@
 package gb
 
 import (
+	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -9,7 +10,26 @@ import (
 	"time"
 )
 
-func InitGormDB(dsn string, gormLogger logger.Interface, opt ...func(db *gorm.DB) error) (*gorm.DB, error) {
+type GormConnConfig struct {
+	Username string
+	Password string
+	Host     string
+	Port     int64
+	Database string
+	Params   map[string]interface{}
+}
+
+func InitGormDB(gcc GormConnConfig, gormLogger logger.Interface, opt ...func(db *gorm.DB) error) (*gorm.DB, error) {
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?", gcc.Username, gcc.Password, gcc.Host, gcc.Port, gcc.Database)
+	if gcc.Params["charset"] == nil {
+		dsn = fmt.Sprintf("%scharset=utf8", dsn)
+	}
+	if gcc.Params["parseTime"] == nil {
+		dsn = fmt.Sprintf("%s&parseTime=true", dsn)
+	}
+	for k, v := range gcc.Params {
+		dsn = fmt.Sprintf("%s&%s=%v", dsn, k, v)
+	}
 	db, err := gorm.Open(
 		mysql.Open(dsn),
 		&gorm.Config{

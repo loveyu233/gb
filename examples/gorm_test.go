@@ -3,8 +3,6 @@ package examples
 import (
 	"fmt"
 	"github.com/loveyu233/gb"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"testing"
 )
 
@@ -15,16 +13,18 @@ type DemoTest struct {
 }
 
 func TestCreate(t *testing.T) {
-	var err error
-	DB, err := gorm.Open(
-		mysql.Open("username:password@tcp(host:3306)/dbname"),
-		&gorm.Config{
-			Logger:         nil,
-			TranslateError: true,
-		})
+	db, err := gb.InitGormDB(gb.GormConnConfig{
+		Username: "Username",
+		Password: "Password",
+		Host:     "Host",
+		Port:     3306,
+		Database: "Database",
+		Params:   nil,
+	}, gb.GormDefaultLogger())
 	if err != nil {
-		panic(fmt.Errorf("链接数据库失败: %w", err))
+		fmt.Println(err)
+		return
 	}
 	//DB.AutoMigrate(new(DemoTest))
-	DB.Create(&DemoTest{Username: "a"})
+	db.Create(&DemoTest{Username: "b"})
 }
