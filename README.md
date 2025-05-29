@@ -7,6 +7,7 @@ GB 是一个基于 Gin 框架的 Go 语言后端开发框架，提供了丰富�
 - 🚀 基于 Gin 框架的 HTTP 服务器
 - 🔐 JWT 认证支持（支持 Redis 黑名单和 Token 校验）
 - 📝 自动生成 Swagger API 文档
+- 💰 支付微信支付,微信小程序登录,微信公众号快捷操作
 - 🎯 优雅的路由管理（支持公共路由和私有路由）
 - ⏱️ 请求追踪和日志记录
 - 🔄 优雅关闭支持
@@ -26,31 +27,6 @@ go get github.com/loveyu233/gb
 ```
 
 # examples目录下有示例
-
-
-## 中间件
-- `AddTraceID`: 请求追踪
-- `AddRequestTime`: 请求时间记录
-- `ResponseLogger`: 响应日志记录
-- `GinRecovery`: 错误恢复
-- `GinAuth`: 认证中间件
-
-## 工具函数
-
-- 参数验证和转换
-- 时间处理（支持中国时区）
-- 错误处理
-- Decimal 处理
-- Redis 操作
-- 数据库操作
-
-## 依赖
-
-- Gin v1.10.0
-- GORM v1.26.1
-- Redis v9.8.0
-- JWT v5.2.2
-- 其他依赖见 go.mod
 
 ## 贡献
 

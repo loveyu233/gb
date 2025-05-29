@@ -1,0 +1,96 @@
+package gb
+
+import (
+	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel"
+	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel/response"
+	"github.com/ArtisanCloud/PowerWeChat/v3/src/payment"
+	"github.com/gin-gonic/gin"
+)
+
+type WXPay struct {
+	PaymentApp    *payment.Payment
+	paySuccess    func(orderId string, attach string) error
+	refundSuccess func(orderId string) error
+}
+
+type Payment struct {
+	AppID              string                `json:"appID,omitempty"`              // 小程序、公众号或者企业微信的appid
+	MchID              string                `json:"mchID,omitempty"`              // 商户号 appID
+	MchApiV3Key        string                `json:"mchApiV3Key,omitempty"`        // 微信V3接口调用必填
+	Key                string                `json:"key,omitempty"`                // 微信V2接口调用必填
+	CertPath           string                `json:"certPath,omitempty"`           // 商户后台支付的Cert证书路径
+	KeyPath            string                `json:"keyPath,omitempty"`            // 商户后台支付的Key证书路径
+	SerialNo           string                `json:"serialNo,omitempty"`           // 商户支付证书序列号
+	WechatPaySerial    string                `json:"wechatPaySerial,omitempty"`    // 微信支付平台证书序列号[选填]
+	CertificateKeyPath string                `json:"certificateKeyPath,omitempty"` // 微信支付平台证书路径，[选填]
+	RSAPublicKeyPath   string                `json:"RSAPublicKeyPath,omitempty"`   // 微信支付平台证书的Key证书路径[选填]
+	SubMchID           string                `json:"subMchID,omitempty"`           // 服务商平台下的子商户号Id，[选填]
+	SubAppID           string                `json:"subAppID,omitempty"`           // 服务商平台下的子AppId，[选填]
+	NotifyURL          string                `json:"notifyURL,omitempty"`          // 微信支付完成后的通知回调地址
+	HttpDebug          bool                  `json:"httpDebug,omitempty"`          // 是否开启打印 SDK 调用微信 API 接口时候的日志
+	Log                payment.Log           `json:"log"`                          // 可以重定向到你的目录下，如果设置File和Error，默认会在当前目录下的wechat文件夹下生成日志
+	Http               payment.Http          `json:"http"`                         // 设置微信支付地址，比如想要设置成沙盒地址，把里面的值改成https://api.mch.weixin.qq.com/sandboxnew
+	Cache              kernel.CacheInterface `json:"cache,omitempty"`              // 可选，不传默认走程序内存
+}
+
+func WXNewWXPaymentApp(paymentConfig Payment,
+	PaySuccess func(orderId string, attach string) error,
+	RefundSuccess func(orderId string) error) (*payment.Payment, error) {
+	paymentApp, err := payment.NewPayment(&payment.UserConfig{
+		AppID:              paymentConfig.AppID,
+		MchID:              paymentConfig.MchID,
+		MchApiV3Key:        paymentConfig.MchApiV3Key,
+		Key:                paymentConfig.Key,
+		CertPath:           paymentConfig.CertPath,
+		KeyPath:            paymentConfig.KeyPath,
+		SerialNo:           paymentConfig.SerialNo,
+		CertificateKeyPath: paymentConfig.CertificateKeyPath,
+		WechatPaySerial:    paymentConfig.WechatPaySerial,
+		RSAPublicKeyPath:   paymentConfig.RSAPublicKeyPath,
+		SubAppID:           paymentConfig.SubAppID,
+		SubMchID:           paymentConfig.SubMchID,
+		Http:               paymentConfig.Http,
+		ResponseType:       response.TYPE_MAP,
+		Log:                paymentConfig.Log,
+		Cache:              paymentConfig.Cache,
+		HttpDebug:          paymentConfig.HttpDebug,
+		NotifyURL:          paymentConfig.NotifyURL,
+	})
+	WX.WXPay.PaymentApp = paymentApp
+	WX.WXPay.paySuccess = PaySuccess
+	WX.WXPay.refundSuccess = RefundSuccess
+	return WX.WXPay.PaymentApp, err
+}
+
+func (wx *WXPay) WXPayHttpGroup(r *gin.RouterGroup) {
+	r.POST("/notify/payment", wx.wxPayCallback)
+	r.POST("/notify/refund", wx.wxRefundCallback)
+}
+
+func (wx *WXPay) wxPayCallback(c *gin.Context) {
+	res, err := wx.payNotify(c.Request, wx.paySuccess)
+	if err != nil {
+		c.XML(500, err.Error())
+		return
+	}
+
+	err = res.Write(c.Writer)
+	if err != nil {
+		c.XML(500, err.Error())
+		return
+	}
+}
+
+func (wx *WXPay) wxRefundCallback(c *gin.Context) {
+	res, err := wx.refundNotify(c.Request, wx.refundSuccess)
+	if err != nil {
+		c.XML(500, err.Error())
+		return
+	}
+
+	err = res.Write(c.Writer)
+	if err != nil {
+		c.XML(500, err.Error())
+		return
+	}
+}
