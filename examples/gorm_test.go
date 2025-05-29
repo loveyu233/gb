@@ -6,14 +6,18 @@ import (
 	"testing"
 )
 
-type DemoTest struct {
+type Door struct {
 	gb.BaseModel
-	gb.BaseDeleteAtContainsIndex
-	Username string `gorm:"index:idx_username;uniqueIndex:deleted_unique_index"`
+	ID    int64  `gorm:"column:id"`
+	Group string `gorm:"column:group"`
+}
+
+func (d Door) TableName() string {
+	return "door"
 }
 
 func TestCreate(t *testing.T) {
-	db, err := gb.InitGormDB(gb.GormConnConfig{
+	_, err := gb.InitGormDB(gb.GormConnConfig{
 		Username: "Username",
 		Password: "Password",
 		Host:     "Host",
@@ -25,6 +29,14 @@ func TestCreate(t *testing.T) {
 		fmt.Println(err)
 		return
 	}
-	//DB.AutoMigrate(new(DemoTest))
-	db.Create(&DemoTest{Username: "b"})
+	var door []Door
+	gb.DB.Scopes(gb.DB.ScopeToday()).Find(&door)
+	gb.DB.Scopes(gb.DB.ScopeYesterday()).Find(&door)
+	gb.DB.Scopes(gb.DB.ScopeCurrentMonth()).Find(&door)
+	gb.DB.Scopes(gb.DB.ScopeLastMonth()).Find(&door)
+	gb.DB.Scopes(gb.DB.ScopeNextMonth()).Find(&door)
+	gb.DB.Scopes(gb.DB.ScopeCurrentYears()).Find(&door)
+	gb.DB.Scopes(gb.DB.ScopeLastYears()).Find(&door)
+	gb.DB.Scopes(gb.DB.ScopeNextYears()).Find(&door)
+
 }

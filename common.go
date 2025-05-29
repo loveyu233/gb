@@ -1,14 +1,54 @@
 package gb
 
 import (
+	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"gorm.io/gorm/schema"
+	"reflect"
 	"time"
 )
 
+// ScopeOrderDesc 倒序
+func (db *GormClient) ScopeOrderDesc(columnName ...string) func(db *gorm.DB) *gorm.DB {
+	var order string
+	if len(columnName) > 0 {
+		order = fmt.Sprintf("%s desc", columnName[0])
+	} else {
+		order = db.defaultOrderByColumnName
+	}
+	return func(db *gorm.DB) *gorm.DB {
+		db.Order(order)
+		return db
+	}
+}
+
+// SelectByID 查询指定id数据,obj必须为指针
+func (db *GormClient) SelectByID(obj schema.Tabler, id any) error {
+	// 检查obj是否为指针
+	objValue := reflect.ValueOf(obj)
+	if objValue.Kind() != reflect.Ptr {
+		return errors.New("obj必须是指针类型")
+	}
+
+	// 检查指针是否为nil
+	if objValue.IsNil() {
+		return errors.New("obj不能为nil指针")
+	}
+
+	// 使用GORM根据ID查询数据
+	result := db.DB.First(obj, id)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
 // ScopePaginationFromGin 从gin的上下文中解析出分页参数并返回分页的scope
-func ScopePaginationFromGin(c *gin.Context) func(db *gorm.DB) *gorm.DB {
+func (db *GormClient) ScopePaginationFromGin(c *gin.Context) func(db *gorm.DB) *gorm.DB {
 	page, size := ParsePaginationParams(c)
 
 	return func(db *gorm.DB) *gorm.DB {
@@ -20,8 +60,8 @@ func ScopePaginationFromGin(c *gin.Context) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-// ScopePagination 分页
-func ScopePagination(page, size int) func(db *gorm.DB) *gorm.DB {
+// ScopePagination 分页,默认从1开始
+func (db *GormClient) ScopePagination(page, size int) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if size == -1 {
 			return db
@@ -32,21 +72,21 @@ func ScopePagination(page, size int) func(db *gorm.DB) *gorm.DB {
 }
 
 // ScopeFilterID 根据ID过滤
-func ScopeFilterID(id int64) func(db *gorm.DB) *gorm.DB {
+func (db *GormClient) ScopeFilterID(id int64) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("id = ?", id)
 	}
 }
 
 // ScopeFilterStatus 根据状态过滤
-func ScopeFilterStatus(status any) func(db *gorm.DB) *gorm.DB {
+func (db *GormClient) ScopeFilterStatus(status any) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("status = ?", status)
 	}
 }
 
 // ScopeDateRange 根据时间范围过滤
-func ScopeDateRange(start, end *time.Time, field string) func(db *gorm.DB) *gorm.DB {
+func (db *GormClient) ScopeDateRange(field string, start, end *time.Time) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if start == nil && end == nil {
 			return db
@@ -65,7 +105,7 @@ func ScopeDateRange(start, end *time.Time, field string) func(db *gorm.DB) *gorm
 }
 
 // ScopeFilterKeyword 根据关键字过滤
-func ScopeFilterKeyword(keyword string, columns ...string) func(db *gorm.DB) *gorm.DB {
+func (db *GormClient) ScopeFilterKeyword(keyword string, columns ...string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if keyword == "" || len(columns) == 0 {
 			return db
@@ -89,6 +129,75 @@ func ScopeFilterKeyword(keyword string, columns ...string) func(db *gorm.DB) *go
 }
 
 // SelectForUpdateTx 获取事务并加锁
-func SelectForUpdateTx(tx *gorm.DB) *gorm.DB {
-	return tx.Clauses(clause.Locking{Strength: "UPDATE"})
+func (db *GormClient) SelectForUpdateTx() *gorm.DB {
+	return db.DB.Clauses(clause.Locking{Strength: "UPDATE"})
+}
+
+// ScopeTime 查询时间范围, start <= column < end
+func (db *GormClient) ScopeTime(start, end string, columns ...string) func(db *gorm.DB) *gorm.DB {
+	var column string
+	if len(columns) > 0 {
+		column = columns[0]
+	} else {
+		column = db.defaultScopeTimeColumnName
+	}
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Where(fmt.Sprintf("%s >= '%s' and %s < '%s'", column, start, column, end))
+	}
+}
+
+// ScopeToday 今天
+func (db *GormClient) ScopeToday(columns ...string) func(db *gorm.DB) *gorm.DB {
+	start := fmt.Sprintf("%s 00:00:00", GetCurrentDate())
+	end := fmt.Sprintf("%s 00:00:00", GetCurrentTime().AddDate(0, 0, 1).Format("2006-01-02"))
+	return db.ScopeTime(start, end, columns...)
+}
+
+// ScopeYesterday 昨天
+func (db *GormClient) ScopeYesterday(columns ...string) func(db *gorm.DB) *gorm.DB {
+	start := fmt.Sprintf("%s 00:00:00", GetCurrentTime().AddDate(0, 0, -1).Format("2006-01-02"))
+	end := fmt.Sprintf("%s 00:00:00", GetCurrentDate())
+	return db.ScopeTime(start, end, columns...)
+}
+
+// ScopeLastMonth 上个月
+func (db *GormClient) ScopeLastMonth(columns ...string) func(db *gorm.DB) *gorm.DB {
+	start := fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, -1, 0).Format("2006-01"))
+	end := fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 0, 0).Format("2006-01"))
+	return db.ScopeTime(start, end, columns...)
+}
+
+// ScopeCurrentMonth 本月
+func (db *GormClient) ScopeCurrentMonth(columns ...string) func(db *gorm.DB) *gorm.DB {
+	start := fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 0, 0).Format("2006-01"))
+	end := fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 1, 0).Format("2006-01"))
+	return db.ScopeTime(start, end, columns...)
+}
+
+// ScopeNextMonth 下个月
+func (db *GormClient) ScopeNextMonth(columns ...string) func(db *gorm.DB) *gorm.DB {
+	start := fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 1, 0).Format("2006-01"))
+	end := fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 2, 0).Format("2006-01"))
+	return db.ScopeTime(start, end, columns...)
+}
+
+// ScopeLastYears 去年
+func (db *GormClient) ScopeLastYears(columns ...string) func(db *gorm.DB) *gorm.DB {
+	start := fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(-1, 0, 0).Format("2006"))
+	end := fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(0, 0, 0).Format("2006"))
+	return db.ScopeTime(start, end, columns...)
+}
+
+// ScopeCurrentYears 今年
+func (db *GormClient) ScopeCurrentYears(columns ...string) func(db *gorm.DB) *gorm.DB {
+	start := fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(0, 0, 0).Format("2006"))
+	end := fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(1, 0, 0).Format("2006"))
+	return db.ScopeTime(start, end, columns...)
+}
+
+// ScopeNextYears 明年
+func (db *GormClient) ScopeNextYears(columns ...string) func(db *gorm.DB) *gorm.DB {
+	start := fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(1, 0, 0).Format("2006"))
+	end := fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(2, 0, 0).Format("2006"))
+	return db.ScopeTime(start, end, columns...)
 }

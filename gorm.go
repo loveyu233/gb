@@ -10,13 +10,25 @@ import (
 	"time"
 )
 
+var (
+	DB = new(GormClient)
+)
+
+type GormClient struct {
+	*gorm.DB
+	defaultOrderByColumnName   string
+	defaultScopeTimeColumnName string
+}
+
 type GormConnConfig struct {
-	Username string
-	Password string
-	Host     string
-	Port     int64
-	Database string
-	Params   map[string]interface{}
+	Username            string
+	Password            string
+	Host                string
+	Port                int64
+	Database            string
+	OrderByColumnName   string // ScopeOrderDesc的默认值
+	ScopeTimeColumnName string // ScopeTime的默认值
+	Params              map[string]interface{}
 }
 
 func InitGormDB(gcc GormConnConfig, gormLogger logger.Interface, opt ...func(db *gorm.DB) error) (*gorm.DB, error) {
@@ -47,6 +59,19 @@ func InitGormDB(gcc GormConnConfig, gormLogger logger.Interface, opt ...func(db 
 		if err := fn(db); err != nil {
 			return nil, err
 		}
+	}
+
+	DB.DB = db
+	if gcc.OrderByColumnName != "" {
+		DB.defaultOrderByColumnName = fmt.Sprintf("%s desc", gcc.OrderByColumnName)
+	} else {
+		DB.defaultOrderByColumnName = "created_at desc"
+	}
+
+	if gcc.ScopeTimeColumnName != "" {
+		DB.defaultScopeTimeColumnName = gcc.ScopeTimeColumnName
+	} else {
+		DB.defaultScopeTimeColumnName = "created_at"
 	}
 
 	return db, nil
