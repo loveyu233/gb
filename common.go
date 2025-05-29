@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
-	"reflect"
 	"time"
 )
 
@@ -27,15 +26,8 @@ func (db *GormClient) ScopeOrderDesc(columnName ...string) func(db *gorm.DB) *go
 
 // SelectByID 查询指定id数据,obj必须为指针
 func (db *GormClient) SelectByID(obj schema.Tabler, id any) error {
-	// 检查obj是否为指针
-	objValue := reflect.ValueOf(obj)
-	if objValue.Kind() != reflect.Ptr {
+	if !IsPtr(obj) {
 		return errors.New("obj必须是指针类型")
-	}
-
-	// 检查指针是否为nil
-	if objValue.IsNil() {
-		return errors.New("obj不能为nil指针")
 	}
 
 	// 使用GORM根据ID查询数据

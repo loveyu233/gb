@@ -1,6 +1,9 @@
 package gb
 
-import "github.com/jinzhu/copier"
+import (
+	"errors"
+	"github.com/jinzhu/copier"
+)
 
 /*
 结构体标签:
@@ -14,12 +17,18 @@ import "github.com/jinzhu/copier"
 	to结构体的方法如何和form中的结构体字段名称一样会被调用
 */
 
-// Copy 把from的值赋值到to中
+// Copy 把from的值赋值到to中,如果还需要进行字段的处理github.com/samber/lo中的Map方法更灵活
 func Copy(from, to any) error {
+	if !IsPtr(to) {
+		return errors.New("to必须是指针类型")
+	}
 	return copier.Copy(to, from)
 }
 
-// DeepCopy 嵌套型结构复制
+// DeepCopy 嵌套型结构复制,如果还需要进行字段的处理github.com/samber/lo中的Map方法更灵活
 func DeepCopy(from, to any) error {
+	if !IsPtr(to) {
+		return errors.New("to必须是指针类型")
+	}
 	return copier.CopyWithOption(to, from, copier.Option{DeepCopy: true, IgnoreEmpty: true})
 }

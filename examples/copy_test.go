@@ -25,8 +25,8 @@ func TestCopy(t *testing.T) {
 		CreatedAt:  &now,
 		UsernameGG: "aaa",
 	}
-	to := &ToS{}
-	t.Log(gb.DeepCopy(f, to))
+	to := ToS{}
+	t.Log(gb.DeepCopy(f, &to))
 	fmt.Printf("%+v\n", to)
 	fmt.Printf("%#v\n", to)
 }
