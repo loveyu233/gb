@@ -233,7 +233,7 @@ var DefaultGinConfig = &GinAuthConfig{
 		return strings.TrimSpace(strings.TrimPrefix(auth, "Bearer"))
 	},
 	HandleError: func(c *gin.Context, err error) {
-		c.JSON(401, gin.H{"code": 401, "message": err.Error()})
+		ResponseError(c, ErrTokenInvalid)
 		c.Abort()
 	},
 }
