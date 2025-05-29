@@ -109,7 +109,7 @@ func DatetimePtrToDateString(t *time.Time) string {
 	return t.In(cst).Format(CSTLayoutDate)
 }
 
-// 将 string转为datetimePtr
+// StringToDateTimePtr 将 string转为datetimePtr
 func StringToDateTimePtr(dateTime string) *time.Time {
 	if dateTime == "" {
 		return nil
@@ -157,17 +157,17 @@ func GetCurrentTimeUnix() int {
 	return TimeToUnix(time.Now())
 }
 
-// 根据当前时间生成诸如2024/01/01的目录名
+// MakeDirNameByCurrentTime 根据当前时间生成诸如2024/01/01的目录名
 func MakeDirNameByCurrentTime() string {
 	return time.Now().Format(DateDirLayout)
 }
 
-// 获取当前时间加某分钟后的时间
+// GetCurrentTimeAddMinutes 获取当前时间加某分钟后的时间
 func GetCurrentTimeAddMinutes(minutes int) time.Time {
 	return time.Now().Add(time.Duration(minutes) * time.Minute)
 }
 
-// 获取当前时间减某分钟后的时间
+// GetCurrentTimeSubMinutes 获取当前时间减某分钟后的时间
 func GetCurrentTimeSubMinutes(minutes int) time.Time {
 	return time.Now().Add(-time.Duration(minutes) * time.Minute)
 }
@@ -180,4 +180,35 @@ func AfterMinutes(t time.Time, minutes int) bool {
 // GetCurrentTimeSubHours 获取当前时间减去指定小时数后的时间
 func GetCurrentTimeSubHours(hours int) time.Time {
 	return time.Now().Add(-time.Duration(hours) * time.Hour)
+}
+
+// FormatRelativeDate 根据输入时间返回相对日期描述,otherTimeStr空则返回2006-01-02格式时间
+func FormatRelativeDate(inputTime time.Time, otherTimeStr ...string) string {
+	now := GetCurrentTime()
+
+	// 获取今天零点时间
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+
+	// 获取昨天零点时间
+	yesterday := today.AddDate(0, 0, -1)
+
+	// 获取明天零点时间
+	tomorrow := today.AddDate(0, 0, 1)
+
+	// 获取输入时间的日期部分（零点时间）
+	inputDate := time.Date(inputTime.Year(), inputTime.Month(), inputTime.Day(), 0, 0, 0, 0, inputTime.Location())
+
+	// 判断是今天、昨天还是其他
+	if inputDate.Equal(today) {
+		return "今天"
+	} else if inputDate.Equal(yesterday) {
+		return "昨天"
+	} else if inputDate.Equal(tomorrow) {
+		return "明天"
+	} else {
+		if len(otherTimeStr) > 0 {
+			return otherTimeStr[0]
+		}
+		return inputTime.Format("2006-01-02")
+	}
 }
