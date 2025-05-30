@@ -15,9 +15,58 @@ var (
 	PrivateRoutes = make([]func(*gin.RouterGroup), 0) // 存储需要认证的私有路由处理函数
 )
 
-func InitRouter(ginMode, prefix string, authMiddlewares []gin.HandlerFunc, globalMiddlewares ...gin.HandlerFunc) {
-	Engine = newGinRouter(ginMode, globalMiddlewares...)
-	registerRoutes(Engine, prefix, authMiddlewares...)
+type RouterConfig struct {
+	model            string            // gin启动模式
+	prefix           string            // api前缀
+	authMiddleware   []gin.HandlerFunc // 认证api的中间件
+	globalMiddleware []gin.HandlerFunc // 全局中间件
+}
+
+type RouterConfigOption func(*RouterConfig)
+
+func WithModel(model string) RouterConfigOption {
+	return func(config *RouterConfig) {
+		config.model = model
+	}
+}
+
+func WithPrefix(prefix string) RouterConfigOption {
+	return func(config *RouterConfig) {
+		config.prefix = prefix
+	}
+}
+
+func WithAuthHandler(handlers ...gin.HandlerFunc) RouterConfigOption {
+	return func(config *RouterConfig) {
+		config.authMiddleware = handlers
+	}
+}
+func WithGlobalMiddleware(handlers ...gin.HandlerFunc) RouterConfigOption {
+	return func(config *RouterConfig) {
+		config.globalMiddleware = handlers
+	}
+}
+
+// InitRouter model默认为debug,prefix默认为/api,authMiddleware,globalMiddleware默认添加AddTraceID,AddRequestTime,ResponseLogger,GinRecovery
+func InitRouter(opts ...RouterConfigOption) {
+	var config RouterConfig
+	for _, opt := range opts {
+		opt(&config)
+	}
+	if config.model == "" {
+		config.model = "debug"
+	}
+	if config.prefix == "" {
+		config.prefix = "/api"
+	}
+	if len(config.authMiddleware) == 0 {
+		config.authMiddleware = []gin.HandlerFunc{GinAuth(map[string]any{}, DefaultGinConfig)}
+	}
+	if len(config.globalMiddleware) == 0 {
+		config.globalMiddleware = []gin.HandlerFunc{AddTraceID(), AddRequestTime(), ResponseLogger(), GinRecovery(true)}
+	}
+	Engine = newGinRouter(config.model, config.globalMiddleware...)
+	registerRoutes(Engine, config.prefix, config.authMiddleware...)
 }
 
 func newGinRouter(mode string, globalMiddlewares ...gin.HandlerFunc) *gin.Engine {
@@ -64,9 +113,9 @@ func SetupGracefulShutdown(server *http.Server) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 		if err := server.Shutdown(ctx); err != nil {
-			log.Printf("graceful shutdown err: %s\n", err)
+			log.Printf("正常关机err: %s\n", err)
 		} else {
-			log.Printf("graceful shutdown success\n")
+			log.Printf("优雅关机成功\n")
 		}
 	})
 }

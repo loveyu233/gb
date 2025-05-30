@@ -12,7 +12,10 @@ type WXPay struct {
 	paySuccess    func(orderId string, attach string) error
 	refundSuccess func(orderId string) error
 }
-
+type WXPayImp interface {
+	PaySuccess(orderId string, attach string) error
+	RefundSuccess(orderId string) error
+}
 type Payment struct {
 	AppID              string                `json:"appID,omitempty"`              // 小程序、公众号或者企业微信的appid
 	MchID              string                `json:"mchID,omitempty"`              // 商户号 appID
@@ -33,32 +36,35 @@ type Payment struct {
 	Cache              kernel.CacheInterface `json:"cache,omitempty"`              // 可选，不传默认走程序内存
 }
 
-func WXNewWXPaymentApp(paymentConfig Payment,
-	PaySuccess func(orderId string, attach string) error,
-	RefundSuccess func(orderId string) error) (*payment.Payment, error) {
+type WXPaymentAppConfig struct {
+	Payment  Payment
+	WXPayImp WXPayImp
+}
+
+func WXNewWXPaymentApp(paymentConfig WXPaymentAppConfig) (*payment.Payment, error) {
 	paymentApp, err := payment.NewPayment(&payment.UserConfig{
-		AppID:              paymentConfig.AppID,
-		MchID:              paymentConfig.MchID,
-		MchApiV3Key:        paymentConfig.MchApiV3Key,
-		Key:                paymentConfig.Key,
-		CertPath:           paymentConfig.CertPath,
-		KeyPath:            paymentConfig.KeyPath,
-		SerialNo:           paymentConfig.SerialNo,
-		CertificateKeyPath: paymentConfig.CertificateKeyPath,
-		WechatPaySerial:    paymentConfig.WechatPaySerial,
-		RSAPublicKeyPath:   paymentConfig.RSAPublicKeyPath,
-		SubAppID:           paymentConfig.SubAppID,
-		SubMchID:           paymentConfig.SubMchID,
-		Http:               paymentConfig.Http,
+		AppID:              paymentConfig.Payment.AppID,
+		MchID:              paymentConfig.Payment.MchID,
+		MchApiV3Key:        paymentConfig.Payment.MchApiV3Key,
+		Key:                paymentConfig.Payment.Key,
+		CertPath:           paymentConfig.Payment.CertPath,
+		KeyPath:            paymentConfig.Payment.KeyPath,
+		SerialNo:           paymentConfig.Payment.SerialNo,
+		CertificateKeyPath: paymentConfig.Payment.CertificateKeyPath,
+		WechatPaySerial:    paymentConfig.Payment.WechatPaySerial,
+		RSAPublicKeyPath:   paymentConfig.Payment.RSAPublicKeyPath,
+		SubAppID:           paymentConfig.Payment.SubAppID,
+		SubMchID:           paymentConfig.Payment.SubMchID,
+		Http:               paymentConfig.Payment.Http,
 		ResponseType:       response.TYPE_MAP,
-		Log:                paymentConfig.Log,
-		Cache:              paymentConfig.Cache,
-		HttpDebug:          paymentConfig.HttpDebug,
-		NotifyURL:          paymentConfig.NotifyURL,
+		Log:                paymentConfig.Payment.Log,
+		Cache:              paymentConfig.Payment.Cache,
+		HttpDebug:          paymentConfig.Payment.HttpDebug,
+		NotifyURL:          paymentConfig.Payment.NotifyURL,
 	})
 	WX.WXPay.PaymentApp = paymentApp
-	WX.WXPay.paySuccess = PaySuccess
-	WX.WXPay.refundSuccess = RefundSuccess
+	WX.WXPay.paySuccess = paymentConfig.WXPayImp.PaySuccess
+	WX.WXPay.refundSuccess = paymentConfig.WXPayImp.RefundSuccess
 	return WX.WXPay.PaymentApp, err
 }
 

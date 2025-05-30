@@ -102,15 +102,9 @@ func getAreaCodeByIp(ip string) (adCode string) {
 	return code.AdCode
 }
 
-type MiniQRCode struct {
-	Ctx      context.Context
-	PagePath string // 扫码进入的小程序页面路径，最大长度 1024 个字符，不能为空
-	Width    int64
-}
-
 // APIWXACodeCreateQRCode 获取小程序二维码，适用于需要的码数量较少的业务场景,pagePath:可携带query参数
-func (w *WXMini) APIWXACodeCreateQRCode(qrcode MiniQRCode) (*http.Response, error) {
-	rs, err := w.MiniProgramApp.WXACode.CreateQRCode(qrcode.Ctx, qrcode.PagePath, qrcode.Width)
+func (w *WXMini) APIWXACodeCreateQRCode(ctx context.Context, pagePath string, width int64) (*http.Response, error) {
+	rs, err := w.MiniProgramApp.WXACode.CreateQRCode(ctx, pagePath, width)
 
 	if err != nil {
 		return nil, err
@@ -120,29 +114,61 @@ func (w *WXMini) APIWXACodeCreateQRCode(qrcode MiniQRCode) (*http.Response, erro
 }
 
 type MiniCode struct {
-	Ctx        context.Context
-	PagePath   string // 扫码进入的小程序页面路径，最大长度 1024 个字符，不能为空
-	Width      int64
-	R, G, B    int64
-	EnvVersion string // 要打开的小程序版本。正式版为 "release"，体验版为 "trial"，开发版为 "develop"。默认是正式版。
-	AutoColor  bool
-	IsHyaline  bool
+	ctx        context.Context
+	pagePath   string // 扫码进入的小程序页面路径，最大长度 1024 个字符，不能为空
+	width      int64
+	r, g, b    int64
+	envVersion string // 要打开的小程序版本。正式版为 "release"，体验版为 "trial"，开发版为 "develop"。默认是正式版。
+	autoColor  bool
+	isHyaline  bool
+}
+
+func NewMiniCode(ctx context.Context) *MiniCode {
+	return &MiniCode{
+		ctx: ctx,
+	}
+}
+
+func (m *MiniCode) SetPagePath(pagePath string) *MiniCode {
+	m.pagePath = pagePath
+	return m
+}
+
+func (m *MiniCode) SetWidth(w int64) *MiniCode {
+	m.width = w
+	return m
+}
+func (m *MiniCode) SetRGB(r, g, b int64) *MiniCode {
+	m.r, m.g, m.b = r, g, b
+	return m
+}
+func (m *MiniCode) SetEnvVersion(version string) *MiniCode {
+	m.envVersion = version
+	return m
+}
+func (m *MiniCode) SetAutoColor(autoColor bool) *MiniCode {
+	m.autoColor = autoColor
+	return m
+}
+func (m *MiniCode) SetIsHyaline(isHyaline bool) *MiniCode {
+	m.isHyaline = isHyaline
+	return m
 }
 
 // APIWXACodeGet 获取小程序码，适用于需要的码数量较少的业务场景,pagePath:可携带query参数
 func (w *WXMini) APIWXACodeGet(code MiniCode) (*http.Response, error) {
 	rs, err := w.MiniProgramApp.WXACode.Get(
-		code.Ctx,
-		code.PagePath,
-		code.Width,
-		code.AutoColor,
+		code.ctx,
+		code.pagePath,
+		code.width,
+		code.autoColor,
 		&power.HashMap{
-			"r": code.R,
-			"g": code.G,
-			"b": code.B,
+			"r": code.r,
+			"g": code.g,
+			"b": code.b,
 		},
-		code.IsHyaline,
-		code.EnvVersion,
+		code.isHyaline,
+		code.envVersion,
 	)
 
 	if err != nil {
@@ -152,34 +178,73 @@ func (w *WXMini) APIWXACodeGet(code MiniCode) (*http.Response, error) {
 	return rs, nil
 }
 
-type MiniUnlimitedCode struct {
-	Ctx        context.Context
-	PagePath   string
-	Scene      string
-	Width      int64
-	R, G, B    int64
-	EnvVersion string // 要打开的小程序版本。正式版为 "release"，体验版为 "trial"，开发版为 "develop"。默认是正式版。
-	AutoColor  bool
-	IsHyaline  bool
-	CheckPage  bool
+type MiniCodeMiniUnlimitedCode struct {
+	ctx        context.Context
+	pagePath   string
+	scene      string
+	width      int64
+	r, g, b    int64
+	envVersion string // 要打开的小程序版本。正式版为 "release"，体验版为 "trial"，开发版为 "develop"。默认是正式版。
+	autoColor  bool
+	isHyaline  bool
+	checkPage  bool
+}
+
+func NewMiniUnlimitedCode(ctx context.Context) *MiniCodeMiniUnlimitedCode {
+	return &MiniCodeMiniUnlimitedCode{
+		ctx: ctx,
+	}
+}
+
+func (m *MiniCodeMiniUnlimitedCode) SetPagePath(pagePath string) *MiniCodeMiniUnlimitedCode {
+	m.pagePath = pagePath
+	return m
+}
+func (m *MiniCodeMiniUnlimitedCode) SetScene(scene string) *MiniCodeMiniUnlimitedCode {
+	m.scene = scene
+	return m
+}
+func (m *MiniCodeMiniUnlimitedCode) SetWidth(w int64) *MiniCodeMiniUnlimitedCode {
+	m.width = w
+	return m
+}
+func (m *MiniCodeMiniUnlimitedCode) SetRGB(r, g, b int64) *MiniCodeMiniUnlimitedCode {
+	m.r, m.g, m.b = r, g, b
+	return m
+}
+func (m *MiniCodeMiniUnlimitedCode) SetEnvVersion(version string) *MiniCodeMiniUnlimitedCode {
+	m.envVersion = version
+	return m
+}
+func (m *MiniCodeMiniUnlimitedCode) SetAutoColor(autoColor bool) *MiniCodeMiniUnlimitedCode {
+	m.autoColor = autoColor
+	return m
+}
+func (m *MiniCodeMiniUnlimitedCode) SetIsHyaline(isHyaline bool) *MiniCodeMiniUnlimitedCode {
+	m.isHyaline = isHyaline
+	return m
+}
+func (m *MiniCodeMiniUnlimitedCode) SetCheckPage(checkPage bool) *MiniCodeMiniUnlimitedCode {
+	m.checkPage = checkPage
+	return m
 }
 
 // APIWXACodeGetUnlimited 获取小程序码，适用于需要的码数量极多的业务场景,scene:携带的参数
-func (w *WXMini) APIWXACodeGetUnlimited(code MiniUnlimitedCode) (*http.Response, error) {
+func (w *WXMini) APIWXACodeGetUnlimited(code *MiniCodeMiniUnlimitedCode) (*http.Response, error) {
 	rs, err := w.MiniProgramApp.WXACode.GetUnlimited(
-		code.Ctx,
-		code.Scene,
-		code.PagePath,
-		code.CheckPage,
-		code.EnvVersion,
-		code.Width,
-		code.AutoColor,
+		code.ctx,
+		code.scene,
+		code.pagePath,
+		code.checkPage,
+		code.envVersion,
+		code.width,
+		code.autoColor,
 		&power.HashMap{
-			"r": code.R,
-			"g": code.G,
-			"b": code.B,
+			"r": code.r,
+			"g": code.g,
+			"b": code.b,
 		},
-		code.IsHyaline,
+		code.isHyaline,
 	)
 
 	if err != nil {
