@@ -11,7 +11,6 @@ import (
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/payment/order/response"
 	rRequest "github.com/ArtisanCloud/PowerWeChat/v3/src/payment/refund/request"
 	rResponse "github.com/ArtisanCloud/PowerWeChat/v3/src/payment/refund/response"
-	"github.com/loveyu233/gb/snowflake"
 	"log"
 	"net/http"
 	"time"
@@ -24,6 +23,7 @@ type PayRequest struct {
 	Openid      string `json:"openid"`
 	Attach      string `json:"attach"`
 	NotifyUrl   string `json:"notify_url"`
+	OutTradeNo  string `json:"out_trade_no"` // 可以使用自带的snowflake.GetId()
 }
 
 type PayAttach struct {
@@ -43,7 +43,6 @@ type WxPayResp struct {
 
 // Pay 支付
 func (wx *WXPay) Pay(req *PayRequest) (*WxPayResp, error) {
-	outTradeNo := fmt.Sprintf("pay%d", snowflake.GetId())
 	options := &request.RequestJSAPIPrepay{
 		Amount: &request.JSAPIAmount{
 			Total:    int(req.Price),
@@ -51,7 +50,7 @@ func (wx *WXPay) Pay(req *PayRequest) (*WxPayResp, error) {
 		},
 		Attach:      req.Attach,
 		Description: req.Description,
-		OutTradeNo:  outTradeNo,
+		OutTradeNo:  req.OutTradeNo,
 		Payer: &request.JSAPIPayer{
 			OpenID: req.Openid,
 		},
@@ -79,7 +78,7 @@ func (wx *WXPay) Pay(req *PayRequest) (*WxPayResp, error) {
 	if err != nil {
 		return nil, err
 	}
-	data.OutTradeNo = outTradeNo
+	data.OutTradeNo = req.OutTradeNo
 	return &data, nil
 }
 
