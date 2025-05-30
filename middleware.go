@@ -98,8 +98,14 @@ func (w ResponseWriter) WriteString(s string) (int, error) {
 	return w.ResponseWriter.WriteString(s)
 }
 
+type MiddlewareLogConfig struct {
+	HeaderKeys []string
+	SaveLog    func(ReqLog)
+	IsSaveLog  bool
+}
+
 // ResponseLogger 中间件用于记录响应数据
-func ResponseLogger(saveLog ...func(ReqLog)) gin.HandlerFunc {
+func ResponseLogger(config MiddlewareLogConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 开始时间
 		startTime := time.Now()
@@ -129,20 +135,74 @@ func ResponseLogger(saveLog ...func(ReqLog)) gin.HandlerFunc {
 			params[param.Key] = param.Value
 		}
 
-		// 获取请求体
-		var requestBody []byte
-		if c.Request.Body != nil && c.Request.Body != http.NoBody {
-			requestBody, _ = io.ReadAll(c.Request.Body)
-			// 重新设置请求体以便后续处理
-			c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
+		// 获取请求体和处理不同类型的参数
+		contentType := c.ContentType()
 
-			// 尝试解析 JSON 请求体
-			if c.ContentType() == "application/json" && len(requestBody) > 0 {
-				bodyParams := make(map[string]interface{})
-				if err := json.Unmarshal(requestBody, &bodyParams); err == nil {
-					for k, v := range bodyParams {
-						params[k] = v
+		if strings.Contains(contentType, "multipart/form-data") {
+			// 处理 multipart/form-data（包含文件上传）
+			err := c.Request.ParseMultipartForm(32 << 20) // 32MB 最大内存
+			if err == nil && c.Request.MultipartForm != nil {
+				// 处理普通表单字段
+				for key, values := range c.Request.MultipartForm.Value {
+					if len(values) == 1 {
+						params[key] = values[0]
+					} else {
+						params[key] = values
 					}
+				}
+
+				// 处理文件字段
+				for key, files := range c.Request.MultipartForm.File {
+					if len(files) == 1 {
+						params[key] = fmt.Sprintf("[文件: %s]", files[0].Filename)
+					} else {
+						fileNames := make([]string, len(files))
+						for i, file := range files {
+							fileNames[i] = fmt.Sprintf("[文件: %s]", file.Filename)
+						}
+						params[key] = fileNames
+					}
+				}
+			}
+		} else if strings.Contains(contentType, "application/x-www-form-urlencoded") {
+			// 处理表单编码数据
+			err := c.Request.ParseForm()
+			if err == nil {
+				for key, values := range c.Request.PostForm {
+					if len(values) == 1 {
+						params[key] = values[0]
+					} else {
+						params[key] = values
+					}
+				}
+			}
+		} else if strings.Contains(contentType, "application/json") {
+			// 处理 JSON 数据
+			var requestBody []byte
+			if c.Request.Body != nil && c.Request.Body != http.NoBody {
+				requestBody, _ = io.ReadAll(c.Request.Body)
+				// 重新设置请求体以便后续处理
+				c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
+
+				if len(requestBody) > 0 {
+					bodyParams := make(map[string]interface{})
+					if err := json.Unmarshal(requestBody, &bodyParams); err == nil {
+						for k, v := range bodyParams {
+							params[k] = v
+						}
+					}
+				}
+			}
+		} else {
+			// 其他类型，尝试读取原始请求体
+			var requestBody []byte
+			if c.Request.Body != nil && c.Request.Body != http.NoBody {
+				requestBody, _ = io.ReadAll(c.Request.Body)
+				// 重新设置请求体以便后续处理
+				c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
+
+				if len(requestBody) > 0 {
+					params["raw_body"] = string(requestBody)
 				}
 			}
 		}
@@ -165,8 +225,11 @@ func ResponseLogger(saveLog ...func(ReqLog)) gin.HandlerFunc {
 		// 获取客户端 IP
 		clientIP := c.ClientIP()
 
-		// 获取 Authorization 头
-		authorization := c.GetHeader("YXB-TOKEN")
+		headerMap := make(map[string]string)
+		for _, item := range config.HeaderKeys {
+			headerMap[item] = c.GetHeader(item)
+		}
+		headerBytes, _ := json.Marshal(headerMap)
 
 		// 获取响应数据
 		responseBody := bodyBuffer.String()
@@ -181,15 +244,15 @@ func ResponseLogger(saveLog ...func(ReqLog)) gin.HandlerFunc {
 		fmt.Printf("方法: %s\n", method)
 		fmt.Printf("URL: %s\n", fullURL)
 		fmt.Printf("IP: %s\n", clientIP)
-		fmt.Printf("Authorization: %s\n", authorization)
+		fmt.Printf("请求头: %s\n", string(headerBytes))
 		fmt.Printf("参数: %v\n", params)
 		fmt.Printf("状态码: %d\n", c.Writer.Status())
 		fmt.Printf("耗时: %v\n", latency)
 		fmt.Printf("响应数据: %s\n", responseBody)
 		fmt.Printf("========================\n")
 
-		if c.GetBool("record") && len(saveLog) > 0 {
-			saveLog[0](ReqLog{
+		if c.GetBool("record") && config.IsSaveLog {
+			config.SaveLog(ReqLog{
 				ReqTime: startTime,
 				User:    value,
 				Module:  c.GetString("module"),
@@ -197,7 +260,7 @@ func ResponseLogger(saveLog ...func(ReqLog)) gin.HandlerFunc {
 				Method:  method,
 				URL:     fullURL,
 				IP:      clientIP,
-				Token:   authorization,
+				Headers: string(headerBytes),
 				Params:  params,
 				Status:  c.Writer.Status(),
 				Latency: latency,
@@ -215,7 +278,7 @@ type ReqLog struct {
 	Method  string
 	URL     string
 	IP      string
-	Token   string
+	Headers string
 	Params  map[string]any
 	Status  int
 	Latency time.Duration
