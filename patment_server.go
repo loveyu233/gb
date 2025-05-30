@@ -26,10 +26,6 @@ type PayRequest struct {
 	OutTradeNo  string `json:"out_trade_no"` // 可以使用自带的snowflake.GetId()
 }
 
-type PayAttach struct {
-	Discount int64 `json:"discount"`
-}
-
 type WxPayResp struct {
 	AppId      string `json:"appId"`
 	NonceStr   string `json:"nonceStr"`

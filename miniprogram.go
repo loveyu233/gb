@@ -65,7 +65,7 @@ type MiniProgramServiceConfig struct {
 	WXMiniImp   WXMiniImp
 }
 
-func NewMiniProgramService(config MiniProgramServiceConfig) (*miniProgram.MiniProgram, error) {
+func WXNewMiniProgramService(config MiniProgramServiceConfig) (*miniProgram.MiniProgram, error) {
 	app, err := miniProgram.NewMiniProgram(&miniProgram.UserConfig{
 		AppID:        config.MiniProgram.AppID,
 		Secret:       config.MiniProgram.Secret,
