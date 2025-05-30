@@ -17,15 +17,6 @@ import (
 	"time"
 )
 
-type Transaction interface {
-	Pay(req *PayRequest) (*WxPayResp, error)
-	Refund(req *RefundRequest) (*RefundResp, error)
-	PayNotify(r *http.Request, f func(orderId string) error) (*http.Response, error)
-	RefundNotify(c *http.Request, f func(orderId string) error) (*http.Response, error)
-	QueryOrder(orderId string) (*response.ResponseOrder, error)
-	QueryRefundOrder(orderId string) (*rResponse.ResponseRefund, error)
-}
-
 type PayRequest struct {
 	Price       int64  `json:"price"`
 	Description string `json:"description"`
@@ -50,6 +41,7 @@ type WxPayResp struct {
 	BizOrder   string `json:"bizOrder"`
 }
 
+// Pay 支付
 func (wx *WXPay) Pay(req *PayRequest) (*WxPayResp, error) {
 	outTradeNo := fmt.Sprintf("pay%d", snowflake.GetId())
 	options := &request.RequestJSAPIPrepay{
@@ -105,6 +97,7 @@ type RefundResp struct {
 	Msg         string `json:"msg"`
 }
 
+// Refund 退款
 func (wx *WXPay) Refund(req *RefundRequest) (*RefundResp, error) {
 	outRefundNo := fmt.Sprintf("%s@%d", req.OrderId, time.Now().Unix())
 	options := &rRequest.RequestRefund{
