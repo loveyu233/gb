@@ -120,6 +120,14 @@ func ResponseError(c *gin.Context, err error) {
 	})
 }
 
+func ResponseParamError(c *gin.Context, err error) {
+	c.JSON(http.StatusOK, &Response{
+		Code:    ErrInvalidParam.Code,
+		Message: TranslateError(err).Error(),
+		TraceID: c.GetString("trace_id"),
+	})
+}
+
 func ResponseSuccess(c *gin.Context, data interface{}) {
 	c.JSON(http.StatusOK, &Response{
 		Code:    0,

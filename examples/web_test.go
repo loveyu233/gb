@@ -46,3 +46,17 @@ func TestHttp(t *testing.T) {
 	go gb.StartHTTPServer(server)
 	gb.SetupGracefulShutdown(server)
 }
+
+func TestParam(t *testing.T) {
+	engine := gin.Default()
+	engine.GET("/", func(c *gin.Context) {
+		type Req struct {
+			Username string `json:"username" binding:"required"`
+		}
+		var req Req
+		if err := c.ShouldBindQuery(&req); err != nil {
+			gb.ResponseParamError(c, err)
+		}
+	})
+	engine.Run("127.0.0.1:8080")
+}
