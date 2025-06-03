@@ -63,7 +63,11 @@ func InitRouter(opts ...RouterConfigOption) {
 		config.authMiddleware = []gin.HandlerFunc{GinAuth(map[string]any{}, DefaultGinConfig)}
 	}
 	if len(config.globalMiddleware) == 0 {
-		config.globalMiddleware = []gin.HandlerFunc{AddTraceID(), AddRequestTime(), ResponseLogger(), GinRecovery(true)}
+		config.globalMiddleware = []gin.HandlerFunc{AddTraceID(), AddRequestTime(), ResponseLogger(MiddlewareLogConfig{
+			HeaderKeys: []string{"Token", "Authorization"},
+			SaveLog:    nil,
+			IsSaveLog:  false,
+		}), GinRecovery(true)}
 	}
 	Engine = newGinRouter(config.model, config.globalMiddleware...)
 	registerRoutes(Engine, config.prefix, config.authMiddleware...)
@@ -80,6 +84,10 @@ func newGinRouter(mode string, globalMiddlewares ...gin.HandlerFunc) *gin.Engine
 }
 
 func registerRoutes(r *gin.Engine, baseRouterPrefix string, authMiddlewares ...gin.HandlerFunc) {
+	r.Any("/healthz", func(c *gin.Context) {
+		c.Status(200)
+	})
+
 	baseRouter := r.Group(baseRouterPrefix)
 
 	// 注册公开路由
