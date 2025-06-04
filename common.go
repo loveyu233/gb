@@ -140,56 +140,48 @@ func (db *GormClient) ScopeTime(start, end string, columns ...string) func(db *g
 
 // ScopeToday 今天
 func (db *GormClient) ScopeToday(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start := fmt.Sprintf("%s 00:00:00", GetCurrentDate())
-	end := fmt.Sprintf("%s 00:00:00", GetCurrentTime().AddDate(0, 0, 1).Format("2006-01-02"))
+	start, end := GetTodayInterval()
 	return db.ScopeTime(start, end, columns...)
 }
 
 // ScopeYesterday 昨天
 func (db *GormClient) ScopeYesterday(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start := fmt.Sprintf("%s 00:00:00", GetCurrentTime().AddDate(0, 0, -1).Format("2006-01-02"))
-	end := fmt.Sprintf("%s 00:00:00", GetCurrentDate())
+	start, end := GetYesterdayInterval()
 	return db.ScopeTime(start, end, columns...)
 }
 
 // ScopeLastMonth 上个月
 func (db *GormClient) ScopeLastMonth(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start := fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, -1, 0).Format("2006-01"))
-	end := fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 0, 0).Format("2006-01"))
+	start, end := GetLastMonthInterval()
 	return db.ScopeTime(start, end, columns...)
 }
 
 // ScopeCurrentMonth 本月
 func (db *GormClient) ScopeCurrentMonth(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start := fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 0, 0).Format("2006-01"))
-	end := fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 1, 0).Format("2006-01"))
+	start, end := GetCurrentMonthInterval()
 	return db.ScopeTime(start, end, columns...)
 }
 
 // ScopeNextMonth 下个月
 func (db *GormClient) ScopeNextMonth(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start := fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 1, 0).Format("2006-01"))
-	end := fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 2, 0).Format("2006-01"))
+	start, end := GetNextMonthInterval()
 	return db.ScopeTime(start, end, columns...)
 }
 
 // ScopeLastYears 去年
 func (db *GormClient) ScopeLastYears(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start := fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(-1, 0, 0).Format("2006"))
-	end := fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(0, 0, 0).Format("2006"))
+	start, end := GetLastYearsInterval()
 	return db.ScopeTime(start, end, columns...)
 }
 
 // ScopeCurrentYears 今年
 func (db *GormClient) ScopeCurrentYears(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start := fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(0, 0, 0).Format("2006"))
-	end := fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(1, 0, 0).Format("2006"))
+	start, end := GetCurrentYearsInterval()
 	return db.ScopeTime(start, end, columns...)
 }
 
 // ScopeNextYears 明年
 func (db *GormClient) ScopeNextYears(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start := fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(1, 0, 0).Format("2006"))
-	end := fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(2, 0, 0).Format("2006"))
+	start, end := GetNextYearsInterval()
 	return db.ScopeTime(start, end, columns...)
 }

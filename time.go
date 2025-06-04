@@ -212,3 +212,59 @@ func FormatRelativeDate(inputTime time.Time, otherTimeStr ...string) string {
 		return inputTime.Format("2006-01-02")
 	}
 }
+
+// GetTodayInterval 获取今天从开始到结束的时间区间
+func GetTodayInterval() (start string, end string) {
+	start = fmt.Sprintf("%s 00:00:00", GetCurrentDate())
+	end = fmt.Sprintf("%s 00:00:00", GetCurrentTime().AddDate(0, 0, 1).Format("2006-01-02"))
+	return
+}
+
+// GetYesterdayInterval 获取昨天从开始到结束的时间区间
+func GetYesterdayInterval() (start string, end string) {
+	start = fmt.Sprintf("%s 00:00:00", GetCurrentTime().AddDate(0, 0, -1).Format("2006-01-02"))
+	end = fmt.Sprintf("%s 00:00:00", GetCurrentDate())
+	return
+}
+
+// GetLastMonthInterval 获取上个月从开始到结束的时间区间
+func GetLastMonthInterval() (start string, end string) {
+	start = fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, -1, 0).Format("2006-01"))
+	end = fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 0, 0).Format("2006-01"))
+	return
+}
+
+// GetCurrentMonthInterval 获取当前月从开始到结束的时间区间
+func GetCurrentMonthInterval() (start string, end string) {
+	start = fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 0, 0).Format("2006-01"))
+	end = fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 1, 0).Format("2006-01"))
+	return
+}
+
+// GetNextMonthInterval 获取下个月从开始到结束的时间区间
+func GetNextMonthInterval() (start string, end string) {
+	start = fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 1, 0).Format("2006-01"))
+	end = fmt.Sprintf("%s-01 00:00:00", GetCurrentTime().AddDate(0, 2, 0).Format("2006-01"))
+	return
+}
+
+// GetLastYearsInterval 获取去年从开始到结束的时间区间
+func GetLastYearsInterval() (start string, end string) {
+	start = fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(-1, 0, 0).Format("2006"))
+	end = fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(0, 0, 0).Format("2006"))
+	return
+}
+
+// GetCurrentYearsInterval 获取今年从开始到结束的时间区间
+func GetCurrentYearsInterval() (start string, end string) {
+	start = fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(0, 0, 0).Format("2006"))
+	end = fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(1, 0, 0).Format("2006"))
+	return
+}
+
+// GetNextYearsInterval 获取明年从开始到结束的时间区间
+func GetNextYearsInterval() (start string, end string) {
+	start = fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(1, 0, 0).Format("2006"))
+	end = fmt.Sprintf("%s-01-01 00:00:00", GetCurrentTime().AddDate(2, 0, 0).Format("2006"))
+	return
+}
