@@ -1,6 +1,7 @@
 package examples
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/loveyu233/gb"
@@ -59,4 +60,9 @@ func TestParam(t *testing.T) {
 		}
 	})
 	engine.Run("127.0.0.1:8080")
+}
+
+func TestErr(t *testing.T) {
+	appError := gb.ConvertToAppError(errors.New("test error"))
+	fmt.Println(appError)
 }

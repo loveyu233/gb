@@ -76,7 +76,8 @@ func ConvertToAppError(err error) *AppError {
 		return ErrServerBusy.WithMessage("未知错误")
 	}
 
-	if appErr, ok := err.(*AppError); ok {
+	var appErr *AppError
+	if errors.As(err, &appErr) {
 		if appErr.Code == ErrInvalidParam.Code {
 			appErr.Message = TranslateError(err).Error()
 			return appErr
@@ -97,11 +98,12 @@ func ConvertToAppError(err error) *AppError {
 	}
 
 	// 处理mysql特定错误
-	if mysqlErr, ok := err.(*mysql.MySQLError); ok {
+	var mysqlErr *mysql.MySQLError
+	if errors.As(err, &mysqlErr) {
 		return ErrDatabase.WithMessage(mysqlErr.Message)
 	}
 
-	return ErrInvalidParam.WithMessage(err.Error())
+	return ErrServerBusy.WithMessage(err.Error())
 }
 
 type Response struct {
@@ -130,7 +132,7 @@ func ResponseParamError(c *gin.Context, err error) {
 
 func ResponseSuccess(c *gin.Context, data interface{}) {
 	c.JSON(http.StatusOK, &Response{
-		Code:    0,
+		Code:    200,
 		Message: "请求成功",
 		Data:    data,
 		TraceID: c.GetString("trace_id"),
