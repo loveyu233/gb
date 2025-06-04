@@ -19,6 +19,7 @@ require (
 	github.com/jinzhu/copier v0.4.0
 	github.com/redis/go-redis/v9 v9.8.0
 	github.com/shopspring/decimal v1.4.0
+	github.com/tidwall/gjson v1.18.0
 	golang.org/x/text v0.25.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.26.1
@@ -55,6 +56,8 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	go.opentelemetry.io/otel v1.4.0 // indirect
