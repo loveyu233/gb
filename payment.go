@@ -4,7 +4,6 @@ import (
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel"
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel/response"
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/payment"
-	"github.com/gin-gonic/gin"
 )
 
 type WXPay struct {
@@ -66,37 +65,4 @@ func WXNewWXPaymentApp(paymentConfig WXPaymentAppConfig) (*payment.Payment, erro
 	WX.WXPay.paySuccess = paymentConfig.WXPayImp.PaySuccess
 	WX.WXPay.refundSuccess = paymentConfig.WXPayImp.RefundSuccess
 	return WX.WXPay.PaymentApp, err
-}
-
-func (wx *WXPay) RegisterHandlers(r *gin.RouterGroup) {
-	r.POST("/notify/payment", wx.wxPayCallback)
-	r.POST("/notify/refund", wx.wxRefundCallback)
-}
-
-func (wx *WXPay) wxPayCallback(c *gin.Context) {
-	res, err := wx.payNotify(c.Request, wx.paySuccess)
-	if err != nil {
-		c.XML(500, err.Error())
-		return
-	}
-
-	err = res.Write(c.Writer)
-	if err != nil {
-		c.XML(500, err.Error())
-		return
-	}
-}
-
-func (wx *WXPay) wxRefundCallback(c *gin.Context) {
-	res, err := wx.refundNotify(c.Request, wx.refundSuccess)
-	if err != nil {
-		c.XML(500, err.Error())
-		return
-	}
-
-	err = res.Write(c.Writer)
-	if err != nil {
-		c.XML(500, err.Error())
-		return
-	}
 }

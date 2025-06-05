@@ -11,10 +11,44 @@ import (
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/payment/order/response"
 	rRequest "github.com/ArtisanCloud/PowerWeChat/v3/src/payment/refund/request"
 	rResponse "github.com/ArtisanCloud/PowerWeChat/v3/src/payment/refund/response"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"time"
 )
+
+func (wx *WXPay) RegisterHandlers(r *gin.RouterGroup) {
+	r.POST("/notify/payment", wx.wxPayCallback)
+	r.POST("/notify/refund", wx.wxRefundCallback)
+}
+
+func (wx *WXPay) wxPayCallback(c *gin.Context) {
+	res, err := wx.payNotify(c.Request, wx.paySuccess)
+	if err != nil {
+		c.XML(500, err.Error())
+		return
+	}
+
+	err = res.Write(c.Writer)
+	if err != nil {
+		c.XML(500, err.Error())
+		return
+	}
+}
+
+func (wx *WXPay) wxRefundCallback(c *gin.Context) {
+	res, err := wx.refundNotify(c.Request, wx.refundSuccess)
+	if err != nil {
+		c.XML(500, err.Error())
+		return
+	}
+
+	err = res.Write(c.Writer)
+	if err != nil {
+		c.XML(500, err.Error())
+		return
+	}
+}
 
 type PayRequest struct {
 	Price       int64  `json:"price"`
