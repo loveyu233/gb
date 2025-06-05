@@ -1,6 +1,8 @@
 package examples
 
 import (
+	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel/contract"
+	"github.com/ArtisanCloud/PowerWeChat/v3/src/officialAccount/user/response"
 	"github.com/gin-gonic/gin"
 	"github.com/loveyu233/gb"
 	"testing"
@@ -90,12 +92,12 @@ func TestWXMini(t *testing.T) {
 type WXOfficialImp struct {
 }
 
-func (W WXOfficialImp) Subscribe(unionID, openID string) error {
+func (W WXOfficialImp) Subscribe(rs *response.ResponseGetUserInfo, event contract.EventInterface) error {
 	//TODO 订阅后回调
 	panic("implement me")
 }
 
-func (W WXOfficialImp) UnSubscribe(unionID, openID string) error {
+func (W WXOfficialImp) UnSubscribe(rs *response.ResponseGetUserInfo, event contract.EventInterface) error {
 	//TODO 取消订阅回调
 	panic("implement me")
 }

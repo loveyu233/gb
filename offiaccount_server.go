@@ -52,12 +52,12 @@ func (wx *WXOfficial) oACallback(c *gin.Context) {
 			switch event.GetEvent() {
 			case "subscribe": // 关注
 				if rs.OpenID != "" {
-					wx.subscribe(rs.UnionID, rs.OpenID)
+					wx.subscribe(rs, event)
 				}
 				// 这里回复success告诉微信我收到,后续需要回复用户信息可以主动调发消息接口
 				return messages.NewText("感谢您的关注！")
 			case "unsubscribe": // 取消关注
-				wx.unSubscribe(rs.UnionID, rs.OpenID)
+				wx.unSubscribe(rs, event)
 			}
 		}
 		return ""

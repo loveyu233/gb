@@ -2,20 +2,22 @@ package gb
 
 import (
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel"
+	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel/contract"
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/officialAccount"
+	"github.com/ArtisanCloud/PowerWeChat/v3/src/officialAccount/user/response"
 	"github.com/gin-gonic/gin"
 )
 
 type WXOfficial struct {
 	OfficialAccountApp *officialAccount.OfficialAccount
-	subscribe          func(unionID, openID string) error
-	unSubscribe        func(unionID, openID string) error
+	subscribe          func(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
+	unSubscribe        func(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
 	pushHandler        func(c *gin.Context)
 }
 
 type WXOfficialImp interface {
-	Subscribe(unionID, openID string) error
-	UnSubscribe(unionID, openID string) error
+	Subscribe(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
+	UnSubscribe(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
 	PushHandler(c *gin.Context)
 }
 
