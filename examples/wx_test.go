@@ -102,7 +102,7 @@ func (W WXOfficialImp) UnSubscribe(rs *response.ResponseGetUserInfo, event contr
 	panic("implement me")
 }
 
-func (W WXOfficialImp) PushHandler(c *gin.Context) {
+func (W WXOfficialImp) PushHandler(c *gin.Context) (toUsers []string, message string) {
 	//TODO 发送消息
 	panic("implement me")
 }

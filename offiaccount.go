@@ -12,13 +12,13 @@ type WXOfficial struct {
 	OfficialAccountApp *officialAccount.OfficialAccount
 	subscribe          func(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
 	unSubscribe        func(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
-	pushHandler        func(c *gin.Context)
+	pushHandler        func(c *gin.Context) (toUsers []string, message string)
 }
 
 type WXOfficialImp interface {
 	Subscribe(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
 	UnSubscribe(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
-	PushHandler(c *gin.Context)
+	PushHandler(c *gin.Context) (toUsers []string, message string)
 }
 
 type OfficialAccount struct {

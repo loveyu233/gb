@@ -73,7 +73,13 @@ func (wx *WXOfficial) oACallback(c *gin.Context) {
 }
 
 func (wx *WXOfficial) pushHand(c *gin.Context) {
-	wx.pushHandler(c)
+	users, message := wx.pushHandler(c)
+	_, err := wx.push(users, message)
+	if err != nil {
+		ResponseError(c, ErrRequestWechat.WithMessage("推送消息失败:%s", err.Error()))
+		return
+	}
+	ResponseSuccess(c, nil)
 }
 
 func (wx *WXOfficial) push(toUser []string, message string) (interface{}, error) {
