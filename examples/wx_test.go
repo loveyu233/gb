@@ -56,7 +56,7 @@ func TestWXPay(t *testing.T) {
 	engine := gin.Default()
 	group := engine.Group("/wx")
 	// 注册微信支付和微信退款回调api
-	gb.WX.WXPay.WXPayHttpGroup(group)
+	gb.WX.WXPay.RegisterHandlers(group)
 }
 
 type WXMiniImp struct {
@@ -86,7 +86,7 @@ func TestWXMini(t *testing.T) {
 	engine := gin.Default()
 	group := engine.Group("/wx")
 	// 注册微信小程序登录回调api
-	gb.WX.WXMini.WXMiniHttpGroup(group)
+	gb.WX.WXMini.RegisterHandlers(group)
 }
 
 type WXOfficialImp struct {

@@ -68,7 +68,7 @@ func WXNewWXPaymentApp(paymentConfig WXPaymentAppConfig) (*payment.Payment, erro
 	return WX.WXPay.PaymentApp, err
 }
 
-func (wx *WXPay) WXPayHttpGroup(r *gin.RouterGroup) {
+func (wx *WXPay) RegisterHandlers(r *gin.RouterGroup) {
 	r.POST("/notify/payment", wx.wxPayCallback)
 	r.POST("/notify/refund", wx.wxRefundCallback)
 }

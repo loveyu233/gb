@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func (w *WXMini) WXMiniHttpGroup(r *gin.RouterGroup) {
+func (w *WXMini) RegisterHandlers(r *gin.RouterGroup) {
 	r.POST("/login", w.login)
 }
 
