@@ -16,28 +16,28 @@ var (
 
 type GormClient struct {
 	*gorm.DB
-	defaultOrderByColumnName   string
-	defaultScopeTimeColumnName string
 }
 
 type GormConnConfig struct {
-	Username            string
-	Password            string
-	Host                string
-	Port                int64
-	Database            string
-	OrderByColumnName   string // ScopeOrderDesc的默认值
-	ScopeTimeColumnName string // ScopeTime的默认值
-	Params              map[string]interface{}
+	Username string
+	Password string
+	Host     string
+	Port     int
+	Database string
+	Params   map[string]interface{} // 连接参数,默认添加charset=utf8和parseTime=true以及loc=Asia%2FShanghai
 }
 
-func InitGormDB(gcc GormConnConfig, gormLogger logger.Interface, opt ...func(db *gorm.DB) error) (*gorm.DB, error) {
+// NewGormDB gormLogger可以使用默认的GormDefaultLogger
+func NewGormDB(gcc GormConnConfig, gormLogger logger.Interface, opt ...func(db *gorm.DB) error) error {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?", gcc.Username, gcc.Password, gcc.Host, gcc.Port, gcc.Database)
 	if gcc.Params["charset"] == nil {
 		dsn = fmt.Sprintf("%scharset=utf8", dsn)
 	}
 	if gcc.Params["parseTime"] == nil {
 		dsn = fmt.Sprintf("%s&parseTime=true", dsn)
+	}
+	if gcc.Params["loc"] == nil {
+		dsn = fmt.Sprintf("%s&loc=Asia%%2FShanghai", dsn)
 	}
 	for k, v := range gcc.Params {
 		dsn = fmt.Sprintf("%s&%s=%v", dsn, k, v)
@@ -52,29 +52,18 @@ func InitGormDB(gcc GormConnConfig, gormLogger logger.Interface, opt ...func(db 
 		},
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for _, fn := range opt {
 		if err := fn(db); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
 	DB.DB = db
-	if gcc.OrderByColumnName != "" {
-		DB.defaultOrderByColumnName = fmt.Sprintf("%s desc", gcc.OrderByColumnName)
-	} else {
-		DB.defaultOrderByColumnName = "created_at desc"
-	}
 
-	if gcc.ScopeTimeColumnName != "" {
-		DB.defaultScopeTimeColumnName = gcc.ScopeTimeColumnName
-	} else {
-		DB.defaultScopeTimeColumnName = "created_at"
-	}
-
-	return db, nil
+	return nil
 }
 
 func GormDefaultLogger(logLevel ...int) logger.Interface {

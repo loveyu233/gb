@@ -47,7 +47,7 @@ func WithWriteTimeout(timeout time.Duration) OptionsFunc {
 	}
 }
 
-func NewRedisClient(addr string, opts ...OptionsFunc) (*Client, error) {
+func NewRedisClient(addr string, opts ...OptionsFunc) error {
 	client := &Client{
 		Ctx: context.Background(),
 	}
@@ -67,7 +67,13 @@ func NewRedisClient(addr string, opts ...OptionsFunc) (*Client, error) {
 		registerOptFunc(uo)
 	}
 	client.Cli = r.NewUniversalClient(uo)
-	return client, nil
+	R = client
+
+	if err := R.Cli.Ping(client.Ctx).Err(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type Client struct {

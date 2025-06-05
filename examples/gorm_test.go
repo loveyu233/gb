@@ -17,26 +17,16 @@ func (d Door) TableName() string {
 }
 
 func TestCreate(t *testing.T) {
-	_, err := gb.InitGormDB(gb.GormConnConfig{
-		Username: "Username",
-		Password: "Password",
-		Host:     "Host",
+	err := gb.NewGormDB(gb.GormConnConfig{
+		Username: "root",
+		Password: "",
+		Host:     "127.0.0.1",
 		Port:     3306,
-		Database: "Database",
-		Params:   nil,
+		Database: "demo",
 	}, gb.GormDefaultLogger())
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	var door []Door
-	gb.DB.Scopes(gb.DB.ScopeToday()).Find(&door)
-	gb.DB.Scopes(gb.DB.ScopeYesterday()).Find(&door)
-	gb.DB.Scopes(gb.DB.ScopeCurrentMonth()).Find(&door)
-	gb.DB.Scopes(gb.DB.ScopeLastMonth()).Find(&door)
-	gb.DB.Scopes(gb.DB.ScopeNextMonth()).Find(&door)
-	gb.DB.Scopes(gb.DB.ScopeCurrentYears()).Find(&door)
-	gb.DB.Scopes(gb.DB.ScopeLastYears()).Find(&door)
-	gb.DB.Scopes(gb.DB.ScopeNextYears()).Find(&door)
 
 }

@@ -16,7 +16,7 @@ func (db *GormClient) ScopeOrderDesc(columnName ...string) func(db *gorm.DB) *go
 	if len(columnName) > 0 {
 		order = fmt.Sprintf("%s desc", columnName[0])
 	} else {
-		order = db.defaultOrderByColumnName
+		order = fmt.Sprintf("created_at desc")
 	}
 	return func(db *gorm.DB) *gorm.DB {
 		db.Order(order)
@@ -131,7 +131,7 @@ func (db *GormClient) ScopeTime(start, end string, columns ...string) func(db *g
 	if len(columns) > 0 {
 		column = columns[0]
 	} else {
-		column = db.defaultScopeTimeColumnName
+		column = "created_at"
 	}
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where(fmt.Sprintf("%s >= '%s' and %s < '%s'", column, start, column, end))
