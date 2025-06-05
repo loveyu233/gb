@@ -10,7 +10,7 @@ type WXMini struct {
 	MiniProgramApp *miniProgram.MiniProgram
 	isExistsUser   func(UnionID string) (user any, exists bool, err error)                                 // user:返回用户信息和token,exists:是否存在该用户,err错误
 	createUser     func(phoneNumber, unionID, openID, areaCodeByIP, clientIP string) (user any, err error) // 返回创建的用户信息
-	generateToken  func(user any) (data any, err error)
+	generateToken  func(user any, sessionKey string) (data any, err error)
 }
 
 type MiniProgram struct {
@@ -35,7 +35,7 @@ type WXMiniImp interface {
 	CreateUser(phoneNumber, unionID, openID, areaCodeByIP, clientIP string) (user any, err error)
 
 	// GenerateToken 生成用户token
-	GenerateToken(user any) (data any, err error)
+	GenerateToken(user any, sessionKey string) (data any, err error)
 }
 
 // MiniProgramConfig 小程序配置结构体

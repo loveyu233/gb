@@ -70,7 +70,7 @@ func (W WXMiniImp) CreateUser(phoneNumber, unionID, openID, areaCodeByIP, client
 	panic("implement me")
 }
 
-func (W WXMiniImp) GenerateToken(user any) (data any, err error) {
+func (W WXMiniImp) GenerateToken(user any, sessionKey string) (data any, err error) {
 	//TODO 根据用户信息生成token返回信息
 	panic("implement me")
 }

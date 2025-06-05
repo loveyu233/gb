@@ -73,7 +73,7 @@ func (w *WXMini) login(c *gin.Context) {
 		}
 	}
 
-	data, err := w.generateToken(user)
+	data, err := w.generateToken(user, session.SessionKey)
 	if err != nil {
 		ResponseError(c, ErrServerBusy.WithMessage("token生成失败:%s", err.Error()))
 		return
