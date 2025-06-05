@@ -18,7 +18,9 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/redis/go-redis/v9 v9.9.0
+	github.com/rs/xid v1.6.0
 	github.com/shopspring/decimal v1.4.0
+	github.com/spf13/cast v1.9.2
 	github.com/tidwall/gjson v1.18.0
 	golang.org/x/text v0.25.0
 	gorm.io/driver/mysql v1.6.0
