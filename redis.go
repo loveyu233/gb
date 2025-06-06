@@ -9,45 +9,45 @@ import (
 	"time"
 )
 
-type OptionsFunc func(*r.UniversalOptions)
+type RedisClientOptionFunc func(*r.UniversalOptions)
 
-func WithDB(db int) OptionsFunc {
+func WithRedisClientDB(db int) RedisClientOptionFunc {
 	return func(o *r.UniversalOptions) {
 		o.DB = db
 	}
 }
 
-func WithUsername(username string) OptionsFunc {
+func WithRedisClientUsername(username string) RedisClientOptionFunc {
 	return func(o *r.UniversalOptions) {
 		o.Username = username
 	}
 }
 
-func WithPassword(password string) OptionsFunc {
+func WithRedisClientPassword(password string) RedisClientOptionFunc {
 	return func(o *r.UniversalOptions) {
 		o.Password = password
 	}
 }
 
-func WithDialTimeout(timeout time.Duration) OptionsFunc {
+func WithRedisClientDialTimeout(timeout time.Duration) RedisClientOptionFunc {
 	return func(o *r.UniversalOptions) {
 		o.DialTimeout = timeout
 	}
 }
 
-func WithReadTimeout(timeout time.Duration) OptionsFunc {
+func WithRedisClientReadTimeout(timeout time.Duration) RedisClientOptionFunc {
 	return func(o *r.UniversalOptions) {
 		o.ReadTimeout = timeout
 	}
 }
 
-func WithWriteTimeout(timeout time.Duration) OptionsFunc {
+func WithRedisClientWriteTimeout(timeout time.Duration) RedisClientOptionFunc {
 	return func(o *r.UniversalOptions) {
 		o.WriteTimeout = timeout
 	}
 }
 
-func NewRedisClient(addr string, opts ...OptionsFunc) error {
+func NewRedisClient(addr string, opts ...RedisClientOptionFunc) error {
 	client := &Client{
 		Ctx: context.Background(),
 	}
@@ -67,9 +67,9 @@ func NewRedisClient(addr string, opts ...OptionsFunc) error {
 		registerOptFunc(uo)
 	}
 	client.Cli = r.NewUniversalClient(uo)
-	R = client
+	Redis = client
 
-	if err := R.Cli.Ping(client.Ctx).Err(); err != nil {
+	if err := Redis.Cli.Ping(client.Ctx).Err(); err != nil {
 		return err
 	}
 
@@ -83,7 +83,8 @@ type Client struct {
 }
 
 var (
-	R *Client
+	// Redis redis连接客户端
+	Redis *Client
 )
 
 func (rc *Client) Get(key string) string {

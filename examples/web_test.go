@@ -42,7 +42,6 @@ type User struct {
 func TestHttp(t *testing.T) {
 	u := &User{ID: 1, Name: "test"}
 	t.Log(gb.NewJWTTokenService("").Generate(u, 1000*time.Second))
-	gb.InitRouter()
 	server := gb.CreateHTTPServer("127.0.0.1:8080")
 	go gb.StartHTTPServer(server)
 	gb.SetupGracefulShutdown(server)

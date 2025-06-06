@@ -20,45 +20,45 @@ type Corn struct {
 	Scheduler             gocron.Scheduler
 }
 
-type CornOption func(*Corn)
+type CornOptionFunc func(*Corn)
 
-func WithLocation(loc *time.Location) CornOption {
+func WithLocation(loc *time.Location) CornOptionFunc {
 	return func(c *Corn) {
 		c.location = loc
 	}
 }
 
-func WithBeforeJobRuns(beforeJobRuns func(jobID uuid.UUID, jobName string)) CornOption {
+func WithBeforeJobRuns(beforeJobRuns func(jobID uuid.UUID, jobName string)) CornOptionFunc {
 	return func(c *Corn) {
 		c.beforeJobRuns = beforeJobRuns
 	}
 }
 
-func WithAfterJobRuns(afterJobRuns func(jobID uuid.UUID, jobName string)) CornOption {
+func WithAfterJobRuns(afterJobRuns func(jobID uuid.UUID, jobName string)) CornOptionFunc {
 	return func(c *Corn) {
 		c.afterJobRuns = afterJobRuns
 	}
 }
 
-func WithAfterJobRunsWithError(afterJobRunsWithError func(jobID uuid.UUID, jobName string, err error)) CornOption {
+func WithAfterJobRunsWithError(afterJobRunsWithError func(jobID uuid.UUID, jobName string, err error)) CornOptionFunc {
 	return func(c *Corn) {
 		c.afterJobRunsWithError = afterJobRunsWithError
 	}
 }
 
-func WithCornJobs(options ...gocron.SchedulerOption) CornOption {
+func WithCornJobs(options ...gocron.SchedulerOption) CornOptionFunc {
 	return func(c *Corn) {
 		c.options = append(c.options, options...)
 	}
 }
 
-func WithCornRedisClient(client *redis.Client) CornOption {
+func WithCornRedisClient(client *redis.Client) CornOptionFunc {
 	return func(c *Corn) {
 		c.redisClient = client
 	}
 }
 
-func NewCornJob(options ...CornOption) error {
+func NewCornJob(options ...CornOptionFunc) error {
 	var corn = &Corn{
 		options: make([]gocron.SchedulerOption, 0),
 	}

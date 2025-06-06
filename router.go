@@ -1,19 +1,22 @@
 package gb
 
 import (
-	"context"
-	"errors"
 	"github.com/gin-gonic/gin"
-	"log"
-	"net/http"
-	"time"
 )
 
 var (
-	Engine        *gin.Engine
+	engine        *gin.Engine
 	PublicRoutes  = make([]func(*gin.RouterGroup), 0) // 存储无需认证的公开路由处理函数
 	PrivateRoutes = make([]func(*gin.RouterGroup), 0) // 存储需要认证的私有路由处理函数
 )
+
+func init() {
+	PublicRoutes = append(PublicRoutes, func(group *gin.RouterGroup) {
+		group.Any("/healthz", func(c *gin.Context) {
+			c.Status(200)
+		})
+	})
+}
 
 type RouterConfig struct {
 	model            string            // gin启动模式
@@ -22,33 +25,38 @@ type RouterConfig struct {
 	globalMiddleware []gin.HandlerFunc // 全局中间件
 }
 
-type RouterConfigOption func(*RouterConfig)
+type GinRouterConfigOptionFunc func(*RouterConfig)
 
-func WithModel(model string) RouterConfigOption {
+// WithGinRouterModel 设置gin的工作模式,不设置默认为debug
+func WithGinRouterModel(model string) GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.model = model
 	}
 }
 
-func WithPrefix(prefix string) RouterConfigOption {
+// WithGinRouterPrefix 添加前缀不设置默认添加/api
+func WithGinRouterPrefix(prefix string) GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.prefix = prefix
 	}
 }
 
-func WithAuthHandler(handlers ...gin.HandlerFunc) RouterConfigOption {
+// WithGinRouterAuthHandler 用于对私有路由(PrivateRoutes)内的请求做校验
+func WithGinRouterAuthHandler(handlers ...gin.HandlerFunc) GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.authMiddleware = handlers
 	}
 }
-func WithGlobalMiddleware(handlers ...gin.HandlerFunc) RouterConfigOption {
+
+// WithGinRouterGlobalMiddleware 用于对全局请求做校验
+func WithGinRouterGlobalMiddleware(handlers ...gin.HandlerFunc) GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.globalMiddleware = handlers
 	}
 }
 
-// InitRouter model默认为debug,prefix默认为/api,authMiddleware,globalMiddleware默认添加AddTraceID,AddRequestTime,ResponseLogger,GinRecovery
-func InitRouter(opts ...RouterConfigOption) {
+// initRouter model默认为debug,prefix默认为/api,authMiddleware,globalMiddleware默认添加AddTraceID,AddRequestTime,ResponseLogger,GinRecovery
+func initRouter(opts ...GinRouterConfigOptionFunc) {
 	var config RouterConfig
 	for _, opt := range opts {
 		opt(&config)
@@ -69,8 +77,8 @@ func InitRouter(opts ...RouterConfigOption) {
 			IsSaveLog:  false,
 		}), GinRecovery(true)}
 	}
-	Engine = newGinRouter(config.model, config.globalMiddleware...)
-	registerRoutes(Engine, config.prefix, config.authMiddleware...)
+	engine = newGinRouter(config.model, config.globalMiddleware...)
+	registerRoutes(engine, config.prefix, config.authMiddleware...)
 }
 
 func newGinRouter(mode string, globalMiddlewares ...gin.HandlerFunc) *gin.Engine {
@@ -84,10 +92,6 @@ func newGinRouter(mode string, globalMiddlewares ...gin.HandlerFunc) *gin.Engine
 }
 
 func registerRoutes(r *gin.Engine, baseRouterPrefix string, authMiddlewares ...gin.HandlerFunc) {
-	r.Any("/healthz", func(c *gin.Context) {
-		c.Status(200)
-	})
-
 	baseRouter := r.Group(baseRouterPrefix)
 
 	// 注册公开路由
@@ -101,29 +105,4 @@ func registerRoutes(r *gin.Engine, baseRouterPrefix string, authMiddlewares ...g
 		route(priRoute)
 	}
 
-}
-
-func CreateHTTPServer(listenAddr string) *http.Server {
-	return &http.Server{
-		Addr:    listenAddr,
-		Handler: Engine,
-	}
-}
-
-func StartHTTPServer(server *http.Server) {
-	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Printf("listen: %s\n", err)
-	}
-}
-
-func SetupGracefulShutdown(server *http.Server) {
-	NewHook().Close(func() {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-		defer cancel()
-		if err := server.Shutdown(ctx); err != nil {
-			log.Printf("正常关机err: %s\n", err)
-		} else {
-			log.Printf("优雅关机成功\n")
-		}
-	})
 }

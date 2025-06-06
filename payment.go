@@ -40,7 +40,7 @@ type WXPaymentAppConfig struct {
 	WXPayImp WXPayImp
 }
 
-func WXNewWXPaymentApp(paymentConfig WXPaymentAppConfig) (*payment.Payment, error) {
+func WXNewWXPaymentApp(paymentConfig WXPaymentAppConfig) error {
 	paymentApp, err := payment.NewPayment(&payment.UserConfig{
 		AppID:              paymentConfig.Payment.AppID,
 		MchID:              paymentConfig.Payment.MchID,
@@ -61,8 +61,11 @@ func WXNewWXPaymentApp(paymentConfig WXPaymentAppConfig) (*payment.Payment, erro
 		HttpDebug:          paymentConfig.Payment.HttpDebug,
 		NotifyURL:          paymentConfig.Payment.NotifyURL,
 	})
+	if err != nil {
+		return err
+	}
 	WX.WXPay.PaymentApp = paymentApp
 	WX.WXPay.paySuccess = paymentConfig.WXPayImp.PaySuccess
 	WX.WXPay.refundSuccess = paymentConfig.WXPayImp.RefundSuccess
-	return WX.WXPay.PaymentApp, err
+	return nil
 }

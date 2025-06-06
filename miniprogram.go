@@ -65,7 +65,7 @@ type MiniProgramServiceConfig struct {
 	WXMiniImp   WXMiniImp
 }
 
-func WXNewMiniProgramService(config MiniProgramServiceConfig) (*miniProgram.MiniProgram, error) {
+func WXNewMiniProgramService(config MiniProgramServiceConfig) error {
 	app, err := miniProgram.NewMiniProgram(&miniProgram.UserConfig{
 		AppID:        config.MiniProgram.AppID,
 		Secret:       config.MiniProgram.Secret,
@@ -81,7 +81,7 @@ func WXNewMiniProgramService(config MiniProgramServiceConfig) (*miniProgram.Mini
 	})
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	WX.WXMini.MiniProgramApp = app
@@ -89,5 +89,5 @@ func WXNewMiniProgramService(config MiniProgramServiceConfig) (*miniProgram.Mini
 	WX.WXMini.createUser = config.WXMiniImp.CreateUser
 	WX.WXMini.generateToken = config.WXMiniImp.GenerateToken
 
-	return WX.WXMini.MiniProgramApp, nil
+	return nil
 }
