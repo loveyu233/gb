@@ -55,7 +55,7 @@ func WithGinRouterGlobalMiddleware(handlers ...gin.HandlerFunc) GinRouterConfigO
 	}
 }
 
-// initRouter model默认为debug,prefix默认为/api,authMiddleware,globalMiddleware默认添加AddTraceID,AddRequestTime,ResponseLogger,GinRecovery
+// initRouter model默认为debug,prefix默认为/api,authMiddleware,globalMiddleware默认添加AddTraceID,MiddlewareRequestTime,ResponseLogger,MiddlewareRecovery
 func initRouter(opts ...GinRouterConfigOptionFunc) {
 	var config RouterConfig
 	for _, opt := range opts {
@@ -71,11 +71,10 @@ func initRouter(opts ...GinRouterConfigOptionFunc) {
 		config.authMiddleware = []gin.HandlerFunc{GinAuth(map[string]any{}, DefaultGinConfig)}
 	}
 	if len(config.globalMiddleware) == 0 {
-		config.globalMiddleware = []gin.HandlerFunc{AddTraceID(), AddRequestTime(), ResponseLogger(MiddlewareLogConfig{
+		config.globalMiddleware = []gin.HandlerFunc{MiddlewareTraceID(), MiddlewareRequestTime(), MiddlewareLogger(MiddlewareLogConfig{
 			HeaderKeys: []string{"Token", "Authorization"},
 			SaveLog:    nil,
-			IsSaveLog:  false,
-		}), GinRecovery(true)}
+		}), MiddlewareRecovery(true)}
 	}
 	engine = newGinRouter(config.model, config.globalMiddleware...)
 	registerRoutes(engine, config.prefix, config.authMiddleware...)

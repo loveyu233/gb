@@ -65,3 +65,18 @@ func TestErr(t *testing.T) {
 	appError := gb.ConvertToAppError(errors.New("test error"))
 	fmt.Println(appError)
 }
+
+func TestLog(t *testing.T) {
+	engine := gin.Default()
+	engine.Use(gb.MiddlewareLogger(gb.MiddlewareLogConfig{HeaderKeys: []string{"token"}}))
+
+	engine.GET("/a", func(c *gin.Context) {
+		logger := gb.GetContextLogger(c)
+		logger.Info().Str("adadadasdasdas", "adasdasdasdasdasdas").Msg("adasdasdasdasdasdas")
+		gb.ResponseSuccess(c, map[string]any{
+			"test": "test",
+		})
+	})
+
+	engine.Run("127.0.0.1:8080")
+}
