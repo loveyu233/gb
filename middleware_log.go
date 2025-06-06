@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"
+	"net/textproto"
 	"os"
 	"strings"
 	"sync"
@@ -20,7 +21,7 @@ import (
 type LogEntry struct {
 	Level   zerolog.Level
 	Message string
-	Fields  map[string]interface{}
+	Fields  map[string]any
 	Time    time.Time
 }
 
@@ -42,14 +43,14 @@ func NewRequestLogger(ctx context.Context, logger zerolog.Logger) *RequestLogger
 }
 
 // AddEntry 添加日志条目到请求链路
-func (rl *RequestLogger) AddEntry(level zerolog.Level, message string, fields map[string]interface{}) {
+func (rl *RequestLogger) AddEntry(level zerolog.Level, message string, fields map[string]any) {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
 
 	entry := LogEntry{
 		Level:   level,
 		Message: message,
-		Fields:  make(map[string]interface{}),
+		Fields:  make(map[string]any),
 		Time:    time.Now(),
 	}
 
@@ -74,9 +75,9 @@ func (rl *RequestLogger) Flush() {
 	event := rl.logger.Info()
 
 	// 添加所有收集的日志条目
-	logEntries := make([]map[string]interface{}, 0, len(rl.entries))
+	logEntries := make([]map[string]any, 0, len(rl.entries))
 	for _, entry := range rl.entries {
-		logEntry := map[string]interface{}{
+		logEntry := map[string]any{
 			"level":     entry.Level.String(),
 			"message":   entry.Message,
 			"timestamp": entry.Time.Format(time.RFC3339Nano),
@@ -106,7 +107,7 @@ func (cl *ContextLogger) Info() *ContextLogEvent {
 	return &ContextLogEvent{
 		level:         zerolog.InfoLevel,
 		requestLogger: cl.requestLogger,
-		fields:        make(map[string]interface{}),
+		fields:        make(map[string]any),
 	}
 }
 
@@ -115,7 +116,7 @@ func (cl *ContextLogger) Error() *ContextLogEvent {
 	return &ContextLogEvent{
 		level:         zerolog.ErrorLevel,
 		requestLogger: cl.requestLogger,
-		fields:        make(map[string]interface{}),
+		fields:        make(map[string]any),
 	}
 }
 
@@ -124,7 +125,7 @@ func (cl *ContextLogger) Warn() *ContextLogEvent {
 	return &ContextLogEvent{
 		level:         zerolog.WarnLevel,
 		requestLogger: cl.requestLogger,
-		fields:        make(map[string]interface{}),
+		fields:        make(map[string]any),
 	}
 }
 
@@ -133,7 +134,7 @@ func (cl *ContextLogger) Debug() *ContextLogEvent {
 	return &ContextLogEvent{
 		level:         zerolog.DebugLevel,
 		requestLogger: cl.requestLogger,
-		fields:        make(map[string]interface{}),
+		fields:        make(map[string]any),
 	}
 }
 
@@ -141,7 +142,7 @@ func (cl *ContextLogger) Debug() *ContextLogEvent {
 type ContextLogEvent struct {
 	level         zerolog.Level
 	requestLogger *RequestLogger
-	fields        map[string]interface{}
+	fields        map[string]any
 }
 
 // Str 添加字符串字段
@@ -177,7 +178,7 @@ func (e *ContextLogEvent) Err(err error) *ContextLogEvent {
 }
 
 // Interface 添加任意类型字段
-func (e *ContextLogEvent) Interface(key string, val interface{}) *ContextLogEvent {
+func (e *ContextLogEvent) Interface(key string, val any) *ContextLogEvent {
 	e.fields[key] = val
 	return e
 }
@@ -194,7 +195,7 @@ func (e *ContextLogEvent) Msg(msg string) {
 }
 
 // Msgf 完成格式化日志记录
-func (e *ContextLogEvent) Msgf(format string, v ...interface{}) {
+func (e *ContextLogEvent) Msgf(format string, v ...any) {
 	e.requestLogger.AddEntry(e.level, fmt.Sprintf(format, v...), e.fields)
 }
 
@@ -256,6 +257,12 @@ type MiddlewareLogConfig struct {
 	SaveLog    func(ReqLog)
 }
 
+type FileInfo struct {
+	Filename string               `json:"filename"`
+	Size     int64                `json:"size"`
+	Header   textproto.MIMEHeader `json:"header"`
+}
+
 // MiddlewareLogger 创建 Gin 中间件,在handler里面使用zlog := gb.GetContextLogger(c),使用zlog进行日志记录
 func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 	return gin.HandlerFunc(func(c *gin.Context) {
@@ -274,10 +281,10 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		c.Writer = responseWriter
 
 		// 获取请求参数，分类存储
-		params := make(map[string]interface{})
+		params := make(map[string]any)
 
 		// 1. 处理URL查询参数 (query parameters)
-		queryParams := make(map[string]interface{})
+		queryParams := make(map[string]any)
 		for k, v := range c.Request.URL.Query() {
 			if len(v) == 1 {
 				queryParams[k] = v[0]
@@ -290,7 +297,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		}
 
 		// 2. 处理路径参数 (path parameters)
-		pathParams := make(map[string]interface{})
+		pathParams := make(map[string]any)
 		for _, param := range c.Params {
 			pathParams[param.Key] = param.Value
 		}
@@ -306,7 +313,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 			err := c.Request.ParseMultipartForm(32 << 20) // 32MB 最大内存
 			if err == nil && c.Request.MultipartForm != nil {
 				// 处理普通表单字段
-				formData := make(map[string]interface{})
+				formData := make(map[string]any)
 				for key, values := range c.Request.MultipartForm.Value {
 					if len(values) == 1 {
 						formData[key] = values[0]
@@ -319,25 +326,19 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 				}
 
 				// 处理文件字段
-				fileParams := make(map[string]interface{})
+				fileParams := make(map[string][]map[string]FileInfo)
 				for key, files := range c.Request.MultipartForm.File {
-					if len(files) == 1 {
-						fileParams[key] = map[string]interface{}{
-							"filename": files[0].Filename,
-							"size":     files[0].Size,
-							"header":   files[0].Header,
+					fileInfos := make([]map[string]FileInfo, len(files))
+					for i, file := range files {
+						fileInfos[i] = map[string]FileInfo{
+							key: {
+								Filename: file.Filename,
+								Size:     file.Size,
+								Header:   file.Header,
+							},
 						}
-					} else {
-						fileInfos := make([]map[string]interface{}, len(files))
-						for i, file := range files {
-							fileInfos[i] = map[string]interface{}{
-								"filename": file.Filename,
-								"size":     file.Size,
-								"header":   file.Header,
-							}
-						}
-						fileParams[key] = fileInfos
 					}
+					fileParams[key] = fileInfos
 				}
 				if len(fileParams) > 0 {
 					params["files"] = fileParams
@@ -347,7 +348,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 			// 处理表单编码数据
 			err := c.Request.ParseForm()
 			if err == nil {
-				formData := make(map[string]interface{})
+				formData := make(map[string]any)
 				for key, values := range c.Request.PostForm {
 					if len(values) == 1 {
 						formData[key] = values[0]
@@ -368,7 +369,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 				c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
 
 				if len(requestBody) > 0 {
-					var bodyParams interface{}
+					var bodyParams any
 					if err := json.Unmarshal(requestBody, &bodyParams); err == nil {
 						params["json"] = bodyParams
 					} else {
@@ -398,7 +399,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 				c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
 
 				if len(requestBody) > 0 {
-					params["raw"] = map[string]interface{}{
+					params["raw"] = map[string]any{
 						"content_type": contentType,
 						"body":         string(requestBody),
 						"size":         len(requestBody),
@@ -419,7 +420,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		fullURL := scheme + "://" + c.Request.Host + c.Request.RequestURI
 
 		// 记录请求开始信息
-		requestLogger.AddEntry(zerolog.InfoLevel, "request", map[string]interface{}{
+		requestLogger.AddEntry(zerolog.InfoLevel, "request", map[string]any{
 			"req_time":   startTime.Format(CSTLayout),
 			"method":     c.Request.Method,
 			"path":       c.Request.URL.Path,
@@ -436,7 +437,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		bodyMap := make(map[string]any)
 		readAll, _ := io.ReadAll(io.NopCloser(bodyBuffer))
 		json.Unmarshal(readAll, &bodyMap)
-		requestLogger.AddEntry(zerolog.InfoLevel, "response", map[string]interface{}{
+		requestLogger.AddEntry(zerolog.InfoLevel, "response", map[string]any{
 			"status_code": c.Writer.Status(),
 			"duration":    duration.String(),
 			"resp_body":   bodyMap,
