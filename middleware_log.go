@@ -459,7 +459,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		// 输出所有收集的日志
 		requestLogger.Flush()
 
-		if mc.SaveLog != nil {
+		if mc.SaveLog != nil && !c.GetBool("no_record") {
 			mc.SaveLog(ReqLog{
 				ReqTime: startTime,
 				Module:  c.GetString("module"),
