@@ -421,6 +421,20 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		}
 		fullURL := scheme + "://" + c.Request.Host + c.Request.RequestURI
 
+		// 记录请求开始信息
+		requestLogger.AddEntry(zerolog.InfoLevel, "request", map[string]any{
+			"req_time":   startTime.Format(CSTLayout),
+			"method":     c.Request.Method,
+			"path":       c.Request.URL.Path,
+			"full_url":   fullURL,
+			"req_body":   params,
+			"user_agent": c.Request.UserAgent(),
+			"client_ip":  c.ClientIP(),
+			"header":     headerMap,
+		})
+
+		c.Next()
+
 		var contentKV = make(map[string]any)
 		for _, key := range mc.ContentKeys {
 			value, exists := c.Get(key)
@@ -429,26 +443,12 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 			}
 		}
 
-		// 记录请求开始信息
-		requestLogger.AddEntry(zerolog.InfoLevel, "request", map[string]any{
-			"req_time":   startTime.Format(CSTLayout),
-			"method":     c.Request.Method,
-			"path":       c.Request.URL.Path,
-			"full_url":   fullURL,
-			"req_body":   params,
-			"content_kv": contentKV,
-			"user_agent": c.Request.UserAgent(),
-			"client_ip":  c.ClientIP(),
-			"header":     headerMap,
-		})
-
-		c.Next()
-
 		duration := time.Since(startTime)
 		bodyMap := make(map[string]any)
 		readAll, _ := io.ReadAll(io.NopCloser(bodyBuffer))
 		json.Unmarshal(readAll, &bodyMap)
 		requestLogger.AddEntry(zerolog.InfoLevel, "response", map[string]any{
+			"content_kv":  contentKV,
 			"status_code": c.Writer.Status(),
 			"duration":    duration.String(),
 			"resp_body":   bodyMap,
