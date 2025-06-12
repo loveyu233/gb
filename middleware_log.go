@@ -245,6 +245,7 @@ type ReqLog struct {
 	Path    string            `json:"path,omitempty"`
 	URL     string            `json:"url,omitempty"`
 	IP      string            `json:"ip,omitempty"`
+	Content map[string]any    `json:"content,omitempty"`
 	Headers map[string]string `json:"headers,omitempty"`
 	Params  map[string]any    `json:"params,omitempty"`
 	Status  int               `json:"status,omitempty"`
@@ -253,8 +254,9 @@ type ReqLog struct {
 }
 
 type MiddlewareLogConfig struct {
-	HeaderKeys []string
-	SaveLog    func(ReqLog)
+	HeaderKeys  []string
+	ContentKeys []string
+	SaveLog     func(ReqLog)
 }
 
 type FileInfo struct {
@@ -419,6 +421,14 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		}
 		fullURL := scheme + "://" + c.Request.Host + c.Request.RequestURI
 
+		var contentKV = make(map[string]any)
+		for _, key := range mc.ContentKeys {
+			value, exists := c.Get(key)
+			if exists {
+				contentKV[key] = value
+			}
+		}
+
 		// 记录请求开始信息
 		requestLogger.AddEntry(zerolog.InfoLevel, "request", map[string]any{
 			"req_time":   startTime.Format(CSTLayout),
@@ -426,6 +436,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 			"path":       c.Request.URL.Path,
 			"full_url":   fullURL,
 			"req_body":   params,
+			"content_kv": contentKV,
 			"user_agent": c.Request.UserAgent(),
 			"client_ip":  c.ClientIP(),
 			"header":     headerMap,
@@ -457,6 +468,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 				Path:    c.Request.URL.Path,
 				URL:     fullURL,
 				IP:      c.ClientIP(),
+				Content: contentKV,
 				Headers: headerMap,
 				Params:  params,
 				Status:  c.Writer.Status(),
