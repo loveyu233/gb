@@ -6,7 +6,7 @@ import (
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/payment"
 )
 
-type WXPay struct {
+type wxPay struct {
 	PaymentApp    *payment.Payment
 	paySuccess    func(orderId string, attach string) error
 	refundSuccess func(orderId string) error
@@ -40,7 +40,7 @@ type WXPaymentAppConfig struct {
 	WXPayImp WXPayImp
 }
 
-func WXNewWXPaymentApp(paymentConfig WXPaymentAppConfig) error {
+func InitWXWXPaymentApp(paymentConfig WXPaymentAppConfig) error {
 	paymentApp, err := payment.NewPayment(&payment.UserConfig{
 		AppID:              paymentConfig.Payment.AppID,
 		MchID:              paymentConfig.Payment.MchID,

@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func (w *WXMini) RegisterHandlers(r *gin.RouterGroup) {
+func (w *wxMini) RegisterHandlers(r *gin.RouterGroup) {
 	r.POST("/login", w.login)
 }
 
@@ -18,7 +18,7 @@ type Phone struct {
 	PhoneNumber string `json:"phoneNumber"`
 }
 
-func (w *WXMini) login(c *gin.Context) {
+func (w *wxMini) login(c *gin.Context) {
 	var params struct {
 		Code          string `binding:"required" json:"code"`
 		EncryptedData string `json:"encrypted_data"`
@@ -103,7 +103,7 @@ func getAreaCodeByIp(ip string) (adCode string) {
 }
 
 // APIWXACodeCreateQRCode 获取小程序二维码，适用于需要的码数量较少的业务场景,pagePath:可携带query参数
-func (w *WXMini) APIWXACodeCreateQRCode(ctx context.Context, pagePath string, width int64) (*http.Response, error) {
+func (w *wxMini) APIWXACodeCreateQRCode(ctx context.Context, pagePath string, width int64) (*http.Response, error) {
 	rs, err := w.MiniProgramApp.WXACode.CreateQRCode(ctx, pagePath, width)
 
 	if err != nil {
@@ -156,7 +156,7 @@ func (m *MiniCode) SetIsHyaline(isHyaline bool) *MiniCode {
 }
 
 // APIWXACodeGet 获取小程序码，适用于需要的码数量较少的业务场景,pagePath:可携带query参数
-func (w *WXMini) APIWXACodeGet(code MiniCode) (*http.Response, error) {
+func (w *wxMini) APIWXACodeGet(code MiniCode) (*http.Response, error) {
 	rs, err := w.MiniProgramApp.WXACode.Get(
 		code.ctx,
 		code.pagePath,
@@ -230,7 +230,7 @@ func (m *MiniCodeMiniUnlimitedCode) SetCheckPage(checkPage bool) *MiniCodeMiniUn
 }
 
 // APIWXACodeGetUnlimited 获取小程序码，适用于需要的码数量极多的业务场景,scene:携带的参数
-func (w *WXMini) APIWXACodeGetUnlimited(code *MiniCodeMiniUnlimitedCode) (*http.Response, error) {
+func (w *wxMini) APIWXACodeGetUnlimited(code *MiniCodeMiniUnlimitedCode) (*http.Response, error) {
 	rs, err := w.MiniProgramApp.WXACode.GetUnlimited(
 		code.ctx,
 		code.scene,

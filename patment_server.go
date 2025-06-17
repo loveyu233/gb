@@ -17,12 +17,12 @@ import (
 	"time"
 )
 
-func (wx *WXPay) RegisterHandlers(r *gin.RouterGroup) {
+func (wx *wxPay) RegisterHandlers(r *gin.RouterGroup) {
 	r.POST("/notify/payment", wx.wxPayCallback)
 	r.POST("/notify/refund", wx.wxRefundCallback)
 }
 
-func (wx *WXPay) wxPayCallback(c *gin.Context) {
+func (wx *wxPay) wxPayCallback(c *gin.Context) {
 	res, err := wx.payNotify(c.Request, wx.paySuccess)
 	if err != nil {
 		c.XML(500, err.Error())
@@ -36,7 +36,7 @@ func (wx *WXPay) wxPayCallback(c *gin.Context) {
 	}
 }
 
-func (wx *WXPay) wxRefundCallback(c *gin.Context) {
+func (wx *wxPay) wxRefundCallback(c *gin.Context) {
 	res, err := wx.refundNotify(c.Request, wx.refundSuccess)
 	if err != nil {
 		c.XML(500, err.Error())
@@ -72,7 +72,7 @@ type WxPayResp struct {
 }
 
 // Pay 支付
-func (wx *WXPay) Pay(req *PayRequest) (*WxPayResp, error) {
+func (wx *wxPay) Pay(req *PayRequest) (*WxPayResp, error) {
 	options := &request.RequestJSAPIPrepay{
 		Amount: &request.JSAPIAmount{
 			Total:    int(req.Price),
@@ -127,7 +127,7 @@ type RefundResp struct {
 }
 
 // Refund 退款
-func (wx *WXPay) Refund(req *RefundRequest) (*RefundResp, error) {
+func (wx *wxPay) Refund(req *RefundRequest) (*RefundResp, error) {
 	outRefundNo := fmt.Sprintf("%s@%d", req.OrderId, time.Now().Unix())
 	options := &rRequest.RequestRefund{
 		OutTradeNo:   req.OrderId,
@@ -160,7 +160,7 @@ func (wx *WXPay) Refund(req *RefundRequest) (*RefundResp, error) {
 	}, nil
 }
 
-func (wx *WXPay) payNotify(r *http.Request, f func(orderId, attach string) error) (*http.Response, error) {
+func (wx *wxPay) payNotify(r *http.Request, f func(orderId, attach string) error) (*http.Response, error) {
 	res, err := wx.PaymentApp.HandlePaidNotify(
 		r,
 		func(message *nRequest.RequestNotify, transaction *models.Transaction, fail func(message string)) interface{} {
@@ -193,7 +193,7 @@ func (wx *WXPay) payNotify(r *http.Request, f func(orderId, attach string) error
 	return res, nil
 }
 
-func (wx *WXPay) refundNotify(r *http.Request, f func(orderId string) error) (*http.Response, error) {
+func (wx *wxPay) refundNotify(r *http.Request, f func(orderId string) error) (*http.Response, error) {
 	res, err := wx.PaymentApp.HandleRefundedNotify(
 		r,
 		func(message *nRequest.RequestNotify, transaction *models.Refund, fail func(message string)) interface{} {
@@ -226,7 +226,7 @@ func (wx *WXPay) refundNotify(r *http.Request, f func(orderId string) error) (*h
 }
 
 // QueryOrder 查询支付订单
-func (wx *WXPay) QueryOrder(orderId string) (*response.ResponseOrder, error) {
+func (wx *wxPay) QueryOrder(orderId string) (*response.ResponseOrder, error) {
 	order, err := wx.PaymentApp.Order.QueryByOutTradeNumber(context.Background(), orderId)
 	if err != nil {
 		return nil, err
@@ -235,7 +235,7 @@ func (wx *WXPay) QueryOrder(orderId string) (*response.ResponseOrder, error) {
 }
 
 // QueryRefundOrder 查询退款订单
-func (wx *WXPay) QueryRefundOrder(orderId string) (*rResponse.ResponseRefund, error) {
+func (wx *wxPay) QueryRefundOrder(orderId string) (*rResponse.ResponseRefund, error) {
 	order, err := wx.PaymentApp.Refund.Query(context.Background(), orderId)
 	if err != nil {
 		return nil, err

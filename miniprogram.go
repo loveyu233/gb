@@ -6,7 +6,7 @@ import (
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/miniProgram"
 )
 
-type WXMini struct {
+type wxMini struct {
 	MiniProgramApp *miniProgram.MiniProgram
 	isExistsUser   func(UnionID string) (user any, exists bool, err error)                                 // user:返回用户信息和token,exists:是否存在该用户,err错误
 	createUser     func(phoneNumber, unionID, openID, areaCodeByIP, clientIP string) (user any, err error) // 返回创建的用户信息
@@ -65,7 +65,7 @@ type MiniProgramServiceConfig struct {
 	WXMiniImp   WXMiniImp
 }
 
-func WXNewMiniProgramService(config MiniProgramServiceConfig) error {
+func InitWXMiniProgramService(config MiniProgramServiceConfig) error {
 	app, err := miniProgram.NewMiniProgram(&miniProgram.UserConfig{
 		AppID:        config.MiniProgram.AppID,
 		Secret:       config.MiniProgram.Secret,

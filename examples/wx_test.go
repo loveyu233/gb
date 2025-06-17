@@ -22,7 +22,7 @@ func (p PayImp) RefundSuccess(orderId string) error {
 }
 
 func TestWXPay(t *testing.T) {
-	gb.WXNewWXPaymentApp(gb.WXPaymentAppConfig{
+	gb.InitWXWXPaymentApp(gb.WXPaymentAppConfig{
 		Payment:  gb.Payment{},
 		WXPayImp: PayImp{},
 	})
@@ -78,7 +78,7 @@ func (W WXMiniImp) GenerateToken(user any, sessionKey string) (data any, err err
 }
 
 func TestWXMini(t *testing.T) {
-	gb.WXNewMiniProgramService(gb.MiniProgramServiceConfig{
+	gb.InitWXMiniProgramService(gb.MiniProgramServiceConfig{
 		MiniProgram: gb.MiniProgramConfig{},
 		WXMiniImp:   WXMiniImp{},
 	})
@@ -108,7 +108,7 @@ func (W WXOfficialImp) PushHandler(c *gin.Context) (toUsers []string, message st
 }
 
 func TestOffia(t *testing.T) {
-	gb.WXNewOfficialAccountAppService(gb.OfficialAccountAppServiceConfig{
+	gb.InitWXOfficialAccountAppService(gb.OfficialAccountAppServiceConfig{
 		OfficialAccount: gb.OfficialAccount{},
 		WXOfficialImp:   WXOfficialImp{},
 	})

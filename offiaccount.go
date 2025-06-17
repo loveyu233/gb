@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type WXOfficial struct {
+type wxOfficial struct {
 	OfficialAccountApp *officialAccount.OfficialAccount
 	subscribe          func(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
 	unSubscribe        func(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
@@ -36,7 +36,7 @@ type OfficialAccountAppServiceConfig struct {
 	WXOfficialImp   WXOfficialImp
 }
 
-func WXNewOfficialAccountAppService(conf OfficialAccountAppServiceConfig) error {
+func InitWXOfficialAccountAppService(conf OfficialAccountAppServiceConfig) error {
 	app, err := officialAccount.NewOfficialAccount(&officialAccount.UserConfig{
 		AppID:        conf.OfficialAccount.AppID,
 		Secret:       conf.OfficialAccount.AppSecret,

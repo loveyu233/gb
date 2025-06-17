@@ -1,13 +1,13 @@
 package gb
 
-var WX = &WXClient{
-	WXPay:      &WXPay{},
-	WXMini:     &WXMini{},
-	WXOfficial: &WXOfficial{},
+var WX = &wxClient{
+	WXPay:      &wxPay{},
+	WXMini:     &wxMini{},
+	WXOfficial: &wxOfficial{},
 }
 
-type WXClient struct {
-	WXPay      *WXPay
-	WXMini     *WXMini
-	WXOfficial *WXOfficial
+type wxClient struct {
+	WXPay      *wxPay
+	WXMini     *wxMini
+	WXOfficial *wxOfficial
 }

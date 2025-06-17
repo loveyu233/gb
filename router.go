@@ -82,7 +82,7 @@ func initRouter(opts ...GinRouterConfigOptionFunc) {
 
 func newGinRouter(mode string, globalMiddlewares ...gin.HandlerFunc) *gin.Engine {
 	gin.SetMode(mode)
-	engine := gin.Default()
+	engine := gin.New()
 
 	// 添加中间件
 	engine.Use(globalMiddlewares...)
