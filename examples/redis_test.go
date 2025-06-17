@@ -6,7 +6,7 @@ import (
 )
 
 func TestRedis(t *testing.T) {
-	err := gb.NewRedisClient("127.0.0.1:6379", gb.WithRedisClientDB(18))
+	err := gb.InitRedisClient("127.0.0.1:6379", gb.WithRedisClientDB(18))
 	if err != nil {
 		panic(err)
 	}

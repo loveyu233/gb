@@ -20,6 +20,10 @@ type Corn struct {
 	Scheduler             gocron.Scheduler
 }
 
+func (corn *Corn) RunJob(df gocron.JobDefinition, task gocron.Task, opts ...gocron.JobOption) (gocron.Job, error) {
+	return corn.Scheduler.NewJob(df, task, opts...)
+}
+
 type CornOptionFunc func(*Corn)
 
 func WithLocation(loc *time.Location) CornOptionFunc {
@@ -58,7 +62,7 @@ func WithCornRedisClient(client *redis.Client) CornOptionFunc {
 	}
 }
 
-func NewCornJob(options ...CornOptionFunc) error {
+func InitCornJob(options ...CornOptionFunc) error {
 	var corn = &Corn{
 		options: make([]gocron.SchedulerOption, 0),
 	}

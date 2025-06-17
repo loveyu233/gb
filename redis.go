@@ -47,7 +47,7 @@ func WithRedisClientWriteTimeout(timeout time.Duration) RedisClientOptionFunc {
 	}
 }
 
-func NewRedisClient(addr string, opts ...RedisClientOptionFunc) error {
+func InitRedisClient(addr string, opts ...RedisClientOptionFunc) error {
 	client := &Client{
 		Ctx: context.Background(),
 	}

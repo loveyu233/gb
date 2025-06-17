@@ -17,7 +17,7 @@ func (d Door) TableName() string {
 }
 
 func TestCreate(t *testing.T) {
-	err := gb.NewGormDB(gb.GormConnConfig{
+	err := gb.InitGormDB(gb.GormConnConfig{
 		Username: "root",
 		Password: "",
 		Host:     "127.0.0.1",
