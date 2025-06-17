@@ -1,0 +1,8 @@
+{
+  "username": "jsonUsername",
+  "password": "jsonPassword",
+  "user": {
+    "age": 14,
+    "address": "jsonAddress"
+  }
+}

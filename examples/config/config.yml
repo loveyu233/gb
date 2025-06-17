@@ -1,0 +1,6 @@
+username: ymlUsername
+password: ymlPassword
+user: {
+  age: 15,
+  address: ymlAddress
+}
