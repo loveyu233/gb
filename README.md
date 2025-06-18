@@ -35,19 +35,7 @@ package main
 import "github.com/loveyu233/gb"
 
 func main() {
-    // 初始化路由
-    gb.InitRouter("debug", "/api",
-        []gin.HandlerFunc{gb.GinAuth(&User{}, defaultGinConfig)},
-        gb.AddTraceID(),
-        gb.AddRequestTime(),
-        gb.ResponseLogger(),
-        gb.GinRecovery(true),
-    )
-
-    // 创建并启动服务器
-    server := gb.CreateHTTPServer(":8080")
-    go gb.StartHTTPServer(server)
-    gb.SetupGracefulShutdown(server)
+	gb.InitHTTPServerAndStart(":8080", gb.WithGinRouterModel("release"))
 }
 ```
 

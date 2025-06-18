@@ -42,8 +42,7 @@ type User struct {
 func TestHttp(t *testing.T) {
 	u := &User{ID: 1, Name: "test"}
 	t.Log(gb.NewJWTTokenService("").Generate(u, 1000*time.Second))
-	httpServer := gb.InitHTTPServer(":8080", gb.WithGinRouterModel("release"))
-	httpServer.StartHTTPServer()
+	gb.InitHTTPServerAndStart(":8080", gb.WithGinRouterModel("release"))
 }
 
 func TestParam(t *testing.T) {
