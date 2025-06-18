@@ -4,16 +4,22 @@ import (
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel"
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel/response"
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/payment"
+	"github.com/gin-gonic/gin"
 )
 
 type wxPay struct {
-	PaymentApp    *payment.Payment
-	paySuccess    func(orderId string, attach string) error
-	refundSuccess func(orderId string) error
+	PaymentApp          *payment.Payment
+	payNotifyHandler    func(orderId string, attach string) error
+	refundNotifyHandler func(orderId string) error
+	payHandler          func(c *gin.Context) (*PayRequest, error)
+	refundHandler       func(c *gin.Context) (*RefundRequest, error)
 }
 type WXPayImp interface {
-	PaySuccess(orderId string, attach string) error
-	RefundSuccess(orderId string) error
+	PayNotify(orderId string, attach string) error
+	RefundNotify(orderId string) error
+
+	Pay(c *gin.Context) (*PayRequest, error)
+	Refund(c *gin.Context) (*RefundRequest, error)
 }
 type Payment struct {
 	AppID              string                `json:"appID,omitempty"`              // 小程序、公众号或者企业微信的appid
@@ -65,7 +71,9 @@ func InitWXWXPaymentApp(paymentConfig WXPaymentAppConfig) error {
 		return err
 	}
 	WX.WXPay.PaymentApp = paymentApp
-	WX.WXPay.paySuccess = paymentConfig.WXPayImp.PaySuccess
-	WX.WXPay.refundSuccess = paymentConfig.WXPayImp.RefundSuccess
+	WX.WXPay.payNotifyHandler = paymentConfig.WXPayImp.PayNotify
+	WX.WXPay.refundNotifyHandler = paymentConfig.WXPayImp.RefundNotify
+	WX.WXPay.payHandler = paymentConfig.WXPayImp.Pay
+	WX.WXPay.refundHandler = paymentConfig.WXPayImp.Refund
 	return nil
 }

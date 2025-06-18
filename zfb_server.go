@@ -16,8 +16,8 @@ import (
 	"time"
 )
 
-// AliMiniImp 定义用户相关操作接口
-type AliMiniImp interface {
+// ZfbMiniImp 定义用户相关操作接口
+type ZfbMiniImp interface {
 	// IsExistsUser 检查用户是否存在
 	IsExistsUser(unionID string) (user any, exists bool, err error)
 
@@ -27,14 +27,19 @@ type AliMiniImp interface {
 	// GenerateToken 生成用户token
 	GenerateToken(user any, sessionKey string) (data any, err error)
 
+	// Pay 支付
+	Pay(c *gin.Context) (*ZFBPayParam, error)
+
+	Refund(c *gin.Context) (*ZFBRefundParam, error)
+
 	// PayNotify 支付成功的异步通知
-	PayNotify(*AliPay)
+	PayNotify(*ZFBPay)
 
 	// RefundNotify 支付退款的异步通知
-	RefundNotify(*ALiRefund)
+	RefundNotify(*ZFBRefund)
 }
 
-type AliClient struct {
+type ZFBClient struct {
 	appid         string // 应用的appid
 	appPrivateKey string // 应用私钥
 	aesKey        string // 接口加密aes密钥
@@ -43,13 +48,13 @@ type AliClient struct {
 	aliRootKey    []byte // 阿里根证书
 	client        *alipay.ClientV3
 	notifyUrl     string
-	aliMiniImp    AliMiniImp
+	zfbMiniImp    ZfbMiniImp
 }
 
-var Ali = new(AliClient)
+var ZFB = new(ZFBClient)
 
 // InitAliClient 其中appid,appPrivateKey,aesKey是内容本身,appPublicKey, aliPublicKey, aliRootKey是证书路径,notifyUrl为支付成功和退款异步通知地址
-func InitAliClient(appid, appPrivateKey, aesKey, appPublicKeyFilePath, aliPublicKeyFilePath, aliRootKeyFilePath, notifyUrl string, aliMiniImp AliMiniImp) error {
+func InitAliClient(appid, appPrivateKey, aesKey, appPublicKeyFilePath, aliPublicKeyFilePath, aliRootKeyFilePath, notifyUrl string, zfbMiniImp ZfbMiniImp) error {
 	appPublicKey, err := ReadFileContent(appPublicKeyFilePath)
 	if err != nil {
 		return err
@@ -63,14 +68,14 @@ func InitAliClient(appid, appPrivateKey, aesKey, appPublicKeyFilePath, aliPublic
 		return err
 	}
 
-	Ali.appid = appid
-	Ali.appPrivateKey = appPrivateKey
-	Ali.aesKey = aesKey
-	Ali.appPublicKey = appPublicKey
-	Ali.aliPublicKey = aliPublicKey
-	Ali.aliRootKey = aliRootKey
-	Ali.notifyUrl = notifyUrl
-	Ali.aliMiniImp = aliMiniImp
+	ZFB.appid = appid
+	ZFB.appPrivateKey = appPrivateKey
+	ZFB.aesKey = aesKey
+	ZFB.appPublicKey = appPublicKey
+	ZFB.aliPublicKey = aliPublicKey
+	ZFB.aliRootKey = aliRootKey
+	ZFB.notifyUrl = notifyUrl
+	ZFB.zfbMiniImp = zfbMiniImp
 
 	clientV3, err := alipay.NewClientV3(appid, appPrivateKey, true)
 	if err != nil {
@@ -81,43 +86,56 @@ func InitAliClient(appid, appPrivateKey, aesKey, appPublicKeyFilePath, aliPublic
 		return err
 	}
 
-	Ali.client = clientV3
+	ZFB.client = clientV3
 	return nil
 }
 
+type ZFBPayParam struct {
+	OutTradeNo  string
+	BuyerOpenID string
+	Subject     string
+	TotalAmount float64
+}
+
 // TradeCreate 支付
-func (a *AliClient) TradeCreate(outTradeNo, buyerOpenID, subject string, totalAmount float64) (aliRsp *alipay.TradeCreateRsp, err error) {
+func (a *ZFBClient) TradeCreate(param *ZFBPayParam) (aliRsp *alipay.TradeCreateRsp, err error) {
 	bm := make(gopay.BodyMap)
-	bm.Set("out_trade_no", outTradeNo).
-		Set("total_amount", totalAmount).
+	bm.Set("out_trade_no", param.OutTradeNo).
+		Set("total_amount", param.TotalAmount).
 		Set("product_code", "JSAPI_PAY").
 		Set("op_app_id", a.appid).
-		Set("buyer_open_id", buyerOpenID).
+		Set("buyer_open_id", param.BuyerOpenID).
 		Set("notify_url", a.notifyUrl).
-		Set("subject", subject)
+		Set("subject", param.Subject)
 
 	return a.client.TradeCreate(context.Background(), bm)
 }
 
 // TradeQuery 支付结果查询
-func (a *AliClient) TradeQuery(outTradeNo string) (*alipay.TradeQueryRsp, error) {
+func (a *ZFBClient) TradeQuery(outTradeNo string) (*alipay.TradeQueryRsp, error) {
 	bm := make(gopay.BodyMap)
 	bm.Set("out_trade_no", outTradeNo)
 	return a.client.TradeQuery(context.Background(), bm)
 }
 
+type ZFBRefundParam struct {
+	OutTradeNo   string
+	RefundReason string
+	RefundAmount float64
+}
+
 // TradeRefund 发起退款
-func (a *AliClient) TradeRefund(outTradeNo, refundReason string, refundAmount float64) (*alipay.TradeRefundRsp, error) {
+func (a *ZFBClient) TradeRefund(param *ZFBRefundParam) (*alipay.TradeRefundRsp, error) {
 	bm := make(gopay.BodyMap)
-	bm.Set("out_trade_no", outTradeNo).
-		Set("refund_amount", refundAmount).
-		Set("refund_reason", refundReason)
+	bm.Set("out_trade_no", param.OutTradeNo).
+		Set("refund_amount", param.RefundAmount).
+		Set("refund_reason", param.RefundReason)
 
 	return a.client.TradeRefund(context.Background(), bm)
 }
 
 // TradeFastPayRefundQuery 退款结果查询
-func (a *AliClient) TradeFastPayRefundQuery(outTradeNo, outRequestNo string) (*alipay.TradeFastPayRefundQueryRsp, error) {
+func (a *ZFBClient) TradeFastPayRefundQuery(outTradeNo, outRequestNo string) (*alipay.TradeFastPayRefundQueryRsp, error) {
 	bm := make(gopay.BodyMap)
 	bm.Set("out_trade_no", outTradeNo).
 		Set("out_request_no", outRequestNo)
@@ -126,7 +144,7 @@ func (a *AliClient) TradeFastPayRefundQuery(outTradeNo, outRequestNo string) (*a
 }
 
 // SystemOauthToken 获取用户code
-func (a *AliClient) SystemOauthToken(code string) (*alipay.SystemOauthTokenRsp, error) {
+func (a *ZFBClient) SystemOauthToken(code string) (*alipay.SystemOauthTokenRsp, error) {
 	bodyMap := make(gopay.BodyMap)
 	body := bodyMap.Set("grant_type", "authorization_code").
 		Set("code", code)
@@ -135,7 +153,7 @@ func (a *AliClient) SystemOauthToken(code string) (*alipay.SystemOauthTokenRsp, 
 }
 
 // UserInfoShare 用code换取用户信息
-func (a *AliClient) UserInfoShare(authToken string) (*alipay.UserInfoShareRsp, error) {
+func (a *ZFBClient) UserInfoShare(authToken string) (*alipay.UserInfoShareRsp, error) {
 	bodyMap := make(gopay.BodyMap)
 	body := bodyMap.Set("auth_token", authToken)
 
@@ -151,7 +169,7 @@ type MobilePhoneNumberDecryptionResp struct {
 }
 
 // MobilePhoneNumberDecryption 解密用户手机号
-func (a *AliClient) MobilePhoneNumberDecryption(response string) (*MobilePhoneNumberDecryptionResp, error) {
+func (a *ZFBClient) MobilePhoneNumberDecryption(response string) (*MobilePhoneNumberDecryptionResp, error) {
 	if a.aesKey == "" {
 		return nil, fmt.Errorf("aes key is empty")
 	}
@@ -200,7 +218,7 @@ func (a *AliClient) MobilePhoneNumberDecryption(response string) (*MobilePhoneNu
 	return resp, nil
 }
 
-func (a *AliClient) pkcs5Unpad(src []byte) ([]byte, error) {
+func (a *ZFBClient) pkcs5Unpad(src []byte) ([]byte, error) {
 	length := len(src)
 	unpadding := int(src[length-1])
 
@@ -211,12 +229,14 @@ func (a *AliClient) pkcs5Unpad(src []byte) ([]byte, error) {
 	return src[:(length - unpadding)], nil
 }
 
-func (a *AliClient) RegisterHandlers(r *gin.RouterGroup) {
+func (a *ZFBClient) RegisterHandlers(r *gin.RouterGroup) {
 	r.POST("/zfb/login", a.login)
 	r.POST("/zfb/notify", a.notify)
+	r.POST("/zfb/pay", a.pay)
+	r.POST("/zfb/refund", a.refund)
 }
 
-func (a *AliClient) login(c *gin.Context) {
+func (a *ZFBClient) login(c *gin.Context) {
 	var params struct {
 		Code          string `binding:"required" json:"code"`
 		EncryptedData string `json:"encrypted_data"`
@@ -239,7 +259,7 @@ func (a *AliClient) login(c *gin.Context) {
 	)
 
 	//检测用户是否注册
-	user, exists, err = a.aliMiniImp.IsExistsUser(session.OpenId)
+	user, exists, err = a.zfbMiniImp.IsExistsUser(session.OpenId)
 	if err != nil {
 		ResponseError(c, ErrDatabase.WithMessage("查询用户信息失败:%s", err.Error()))
 		return
@@ -257,13 +277,13 @@ func (a *AliClient) login(c *gin.Context) {
 		}
 
 		// UnionID 已提pr等合并后可调用
-		if user, err = a.aliMiniImp.CreateUser(decryption.Mobile, "session.UnionID", session.OpenId, getAreaCodeByIp(c.ClientIP()), c.ClientIP()); err != nil {
+		if user, err = a.zfbMiniImp.CreateUser(decryption.Mobile, "session.UnionID", session.OpenId, getAreaCodeByIp(c.ClientIP()), c.ClientIP()); err != nil {
 			ResponseError(c, ErrDatabase.WithMessage("创建用户信息失败:%s", err.Error()))
 			return
 		}
 	}
 
-	data, err := a.aliMiniImp.GenerateToken(user, session.OpenId)
+	data, err := a.zfbMiniImp.GenerateToken(user, session.OpenId)
 	if err != nil {
 		ResponseError(c, ErrServerBusy.WithMessage("token生成失败:%s", err.Error()))
 		return
@@ -271,7 +291,7 @@ func (a *AliClient) login(c *gin.Context) {
 	ResponseSuccess(c, data)
 }
 
-type AliSyncNotify struct {
+type ZFBSyncNotify struct {
 	AppId          string    `json:"app_id"`
 	NotifyTime     time.Time `json:"notify_time"`      // 发送通知时间
 	TradeNo        string    `json:"trade_no"`         // 支付宝交易号
@@ -294,17 +314,17 @@ type AliSyncNotify struct {
 	GmtClose       time.Time `json:"gmt_close"`        // 交易结束时间。该笔交易结束时间。格式为 yyyy-MM-dd HH:mm:ss
 }
 
-type ALiRefund struct {
+type ZFBRefund struct {
 	RefundFee   float64 `json:"refund_fee"`    // 总退款金额。退款通知中，返回总退款金额，单位为元，支持小数点后两位。
 	SendBackFee float64 `json:"send_back_fee"` // 实际退款金额。商家实际退款给用户的金额，单位为元，支持小数点后两位。
 }
-type AliPay struct {
+type ZFBPay struct {
 	TotalAmount    float64 `json:"total_amount"`     // 订单金额。本次交易支付的订单金额，单位为人民币（元）。支持小数点后两位。
 	ReceiptAmount  float64 `json:"receipt_amount"`   // 实收金额。商家在交易中实际收到的款项，单位为人民币（元）。支持小数点后两位。
 	BuyerPayAmount float64 `json:"buyer_pay_amount"` // 付款金额。用户在交易中支付的金额。支持小数点后两位。
 }
 
-func (a *AliClient) aliPayNotify(req *http.Request) (*AliSyncNotify, error) {
+func (a *ZFBClient) zfbPayNotify(req *http.Request) (*ZFBSyncNotify, error) {
 	bodyMap, err := alipayv2.ParseNotifyToBodyMap(req)
 	if err != nil {
 		return nil, err
@@ -317,20 +337,20 @@ func (a *AliClient) aliPayNotify(req *http.Request) (*AliSyncNotify, error) {
 		return nil, errors.New("sign err")
 	}
 
-	var resp = new(AliSyncNotify)
+	var resp = new(ZFBSyncNotify)
 	if err := bodyMap.Unmarshal(resp); err != nil {
 		return nil, err
 	}
 
 	if resp.RefundFee != 0 {
 		// 退款
-		a.aliMiniImp.RefundNotify(&ALiRefund{
+		a.zfbMiniImp.RefundNotify(&ZFBRefund{
 			RefundFee:   resp.RefundFee,
 			SendBackFee: resp.SendBackFee,
 		})
 	} else if resp.ReceiptAmount != 0 {
 		// 支付
-		a.aliMiniImp.PayNotify(&AliPay{
+		a.zfbMiniImp.PayNotify(&ZFBPay{
 			TotalAmount:    resp.TotalAmount,
 			ReceiptAmount:  resp.ReceiptAmount,
 			BuyerPayAmount: resp.BuyerPayAmount,
@@ -340,11 +360,54 @@ func (a *AliClient) aliPayNotify(req *http.Request) (*AliSyncNotify, error) {
 	return resp, nil
 }
 
-func (a *AliClient) notify(c *gin.Context) {
-	_, err := a.aliPayNotify(c.Request)
+func (a *ZFBClient) notify(c *gin.Context) {
+	_, err := a.zfbPayNotify(c.Request)
 	if err != nil {
 		c.Writer.WriteString("fail")
 		return
 	}
 	c.Writer.WriteString("success")
+}
+
+func (a *ZFBClient) pay(c *gin.Context) {
+	payParam, err := a.zfbMiniImp.Pay(c)
+	if err != nil {
+		ResponseError(c, ErrRequestAliPay.WithMessage(err.Error()))
+		return
+	}
+	aliRsp, err := a.TradeCreate(payParam)
+	if err != nil {
+		ResponseError(c, ErrRequestAliPay.WithMessage(err.Error()))
+		return
+	}
+	if aliRsp.StatusCode != 10000 {
+		ResponseError(c, ErrRequestAliPay.WithMessage(aliRsp.ErrResponse.Message))
+		return
+	}
+	ResponseSuccess(c, gin.H{
+		"trade_no":     aliRsp.TradeNo,
+		"out_trade_no": aliRsp.OutTradeNo,
+	})
+}
+
+func (a *ZFBClient) refund(c *gin.Context) {
+	param, err := a.zfbMiniImp.Refund(c)
+	if err != nil {
+		ResponseError(c, ErrRequestAliPay.WithMessage(err.Error()))
+		return
+	}
+	refund, err := a.TradeRefund(param)
+	if err != nil {
+		ResponseError(c, ErrRequestAliPay.WithMessage(err.Error()))
+		return
+	}
+	if refund.StatusCode != 10000 {
+		ResponseError(c, ErrRequestAliPay.WithMessage(refund.ErrResponse.Message))
+		return
+	}
+	ResponseSuccess(c, gin.H{
+		"trade_no":     refund.TradeNo,
+		"out_trade_no": refund.OutTradeNo,
+		"refund_fee":   refund.RefundFee,
+	})
 }

@@ -20,10 +20,42 @@ import (
 func (wx *wxPay) RegisterHandlers(r *gin.RouterGroup) {
 	r.POST("/wx/notify/payment", wx.wxPayCallback)
 	r.POST("/wx/notify/refund", wx.wxRefundCallback)
+	r.POST("/wx/pay", wx.pay)
+	r.POST("/wx/refund", wx.refund)
+}
+
+func (wx *wxPay) pay(c *gin.Context) {
+	payRequest, err := wx.payHandler(c)
+	if err != nil {
+		ResponseError(c, ErrRequestWechatPay.WithMessage(err.Error()))
+		return
+	}
+	pay, err := wx.Pay(payRequest)
+	if err != nil {
+		ResponseError(c, ErrRequestWechatPay.WithMessage(err.Error()))
+		return
+	}
+
+	ResponseSuccess(c, pay)
+}
+
+func (wx *wxPay) refund(c *gin.Context) {
+	refundRequest, err := wx.refundHandler(c)
+	if err != nil {
+		ResponseError(c, ErrRequestWechatPay.WithMessage(err.Error()))
+		return
+	}
+
+	refund, err := wx.Refund(refundRequest)
+	if err != nil {
+		ResponseError(c, ErrRequestWechatPay.WithMessage(err.Error()))
+	}
+
+	ResponseSuccess(c, refund)
 }
 
 func (wx *wxPay) wxPayCallback(c *gin.Context) {
-	res, err := wx.payNotify(c.Request, wx.paySuccess)
+	res, err := wx.payNotify(c.Request, wx.payNotifyHandler)
 	if err != nil {
 		c.XML(500, err.Error())
 		return
@@ -37,7 +69,7 @@ func (wx *wxPay) wxPayCallback(c *gin.Context) {
 }
 
 func (wx *wxPay) wxRefundCallback(c *gin.Context) {
-	res, err := wx.refundNotify(c.Request, wx.refundSuccess)
+	res, err := wx.refundNotify(c.Request, wx.refundNotifyHandler)
 	if err != nil {
 		c.XML(500, err.Error())
 		return
