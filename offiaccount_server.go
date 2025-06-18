@@ -18,9 +18,9 @@ import (
 )
 
 func (wx *wxOfficial) RegisterHandlers(r *gin.RouterGroup) {
-	r.GET("/callback", wx.oACallbackVerify)
-	r.POST("/callback", wx.oACallback)
-	r.POST("/push", wx.pushHand)
+	r.GET("/wx/callback", wx.oACallbackVerify)
+	r.POST("/wx/callback", wx.oACallback)
+	r.POST("/wx/push", wx.pushHand)
 }
 
 func (wx *wxOfficial) oACallbackVerify(c *gin.Context) {

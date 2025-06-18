@@ -18,8 +18,8 @@ import (
 )
 
 func (wx *wxPay) RegisterHandlers(r *gin.RouterGroup) {
-	r.POST("/notify/payment", wx.wxPayCallback)
-	r.POST("/notify/refund", wx.wxRefundCallback)
+	r.POST("/wx/notify/payment", wx.wxPayCallback)
+	r.POST("/wx/notify/refund", wx.wxRefundCallback)
 }
 
 func (wx *wxPay) wxPayCallback(c *gin.Context) {

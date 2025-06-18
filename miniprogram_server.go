@@ -11,7 +11,7 @@ import (
 )
 
 func (w *wxMini) RegisterHandlers(r *gin.RouterGroup) {
-	r.POST("/login", w.login)
+	r.POST("/wx/login", w.login)
 }
 
 type Phone struct {
