@@ -2,6 +2,7 @@ package gb
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -25,7 +26,7 @@ func InitHTTPServerAndStart(listenAddr string, opts ...GinRouterConfigOptionFunc
 
 // StartHTTPServer 启动http服务
 func (h *HTTPServer) startHTTPServer() {
-	if err := h.server.ListenAndServe(); err != nil {
+	if err := h.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		panic(err)
 	}
 }
