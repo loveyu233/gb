@@ -460,21 +460,23 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		requestLogger.Flush()
 
 		if mc.SaveLog != nil && !c.GetBool("no_record") {
-			mc.SaveLog(ReqLog{
-				ReqTime: startTime,
-				Module:  c.GetString("module"),
-				Option:  c.GetString("option"),
-				Method:  c.Request.Method,
-				Path:    c.Request.URL.Path,
-				URL:     fullURL,
-				IP:      c.ClientIP(),
-				Content: contentKV,
-				Headers: headerMap,
-				Params:  params,
-				Status:  c.Writer.Status(),
-				Latency: duration,
-				Body:    bodyMap,
-			})
+			go func() {
+				mc.SaveLog(ReqLog{
+					ReqTime: startTime,
+					Module:  c.GetString("module"),
+					Option:  c.GetString("option"),
+					Method:  c.Request.Method,
+					Path:    c.Request.URL.Path,
+					URL:     fullURL,
+					IP:      c.ClientIP(),
+					Content: contentKV,
+					Headers: headerMap,
+					Params:  params,
+					Status:  c.Writer.Status(),
+					Latency: duration,
+					Body:    bodyMap,
+				})
+			}()
 		}
 	})
 }

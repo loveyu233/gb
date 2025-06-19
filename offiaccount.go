@@ -13,6 +13,8 @@ type wxOfficial struct {
 	subscribe          func(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
 	unSubscribe        func(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
 	pushHandler        func(c *gin.Context) (toUsers []string, message string)
+	// 是否保存请求日志
+	IsSaveHandlerLog bool
 }
 
 type WXOfficialImp interface {
@@ -29,6 +31,8 @@ type OfficialAccount struct {
 	ResponseType  string                `json:"responseType,omitempty"`
 	Cache         kernel.CacheInterface `json:"cache,omitempty"`
 	HttpDebug     bool                  `json:"httpDebug,omitempty"`
+	// 是否保存请求日志
+	IsSaveHandlerLog bool
 }
 
 type OfficialAccountAppServiceConfig struct {
@@ -49,6 +53,7 @@ func InitWXOfficialAccountAppService(conf OfficialAccountAppServiceConfig) error
 	if err != nil {
 		return err
 	}
+	WX.WXOfficial.IsSaveHandlerLog = conf.OfficialAccount.IsSaveHandlerLog
 	WX.WXOfficial.OfficialAccountApp = app
 	WX.WXOfficial.subscribe = conf.WXOfficialImp.Subscribe
 	WX.WXOfficial.unSubscribe = conf.WXOfficialImp.UnSubscribe

@@ -11,7 +11,8 @@ import (
 )
 
 func (w *wxMini) RegisterHandlers(r *gin.RouterGroup) {
-	r.POST("/wx/login", w.login)
+	r.Use(SetModuleName("微信小程序"))
+	r.POST("/wx/login", SetOptionName("微信登录", w.IsSaveHandlerLog), w.login)
 }
 
 type Phone struct {
@@ -93,7 +94,7 @@ type AreaCode struct {
 
 func getAreaCodeByIp(ip string) (adCode string) {
 	var code AreaCode
-	res, err := resty.New().R().SetDebug(true).
+	res, err := resty.New().R().
 		Get(fmt.Sprintf("https://api.xtjzx.cn/geo-tool-pub/loc?ip=%s", ip))
 	if err != nil {
 		return "0"

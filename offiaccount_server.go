@@ -18,9 +18,10 @@ import (
 )
 
 func (wx *wxOfficial) RegisterHandlers(r *gin.RouterGroup) {
-	r.GET("/wx/callback", wx.oACallbackVerify)
-	r.POST("/wx/callback", wx.oACallback)
-	r.POST("/wx/push", wx.pushHand)
+	r.Use(SetModuleName("微信公众号"))
+	r.GET("/wx/callback", SetOptionName("回调验证", wx.IsSaveHandlerLog), wx.oACallbackVerify)
+	r.POST("/wx/callback", SetOptionName("收到消息", wx.IsSaveHandlerLog), wx.oACallback)
+	r.POST("/wx/push", SetOptionName("推送消息", wx.IsSaveHandlerLog), wx.pushHand)
 }
 
 func (wx *wxOfficial) oACallbackVerify(c *gin.Context) {

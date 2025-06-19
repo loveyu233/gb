@@ -11,6 +11,8 @@ type wxMini struct {
 	isExistsUser   func(UnionID string) (user any, exists bool, err error)                                 // user:返回用户信息和token,exists:是否存在该用户,err错误
 	createUser     func(phoneNumber, unionID, openID, areaCodeByIP, clientIP string) (user any, err error) // 返回创建的用户信息
 	generateToken  func(user any, sessionKey string) (data any, err error)
+	// 是否保存请求日志
+	IsSaveHandlerLog bool
 }
 
 type MiniProgram struct {
@@ -43,6 +45,9 @@ type MiniProgramConfig struct {
 	// 基础配置
 	AppID  string
 	Secret string
+
+	// 是否保存请求日志
+	IsSaveHandlerLog bool
 
 	// 消息相关配置
 	MessageToken  string
@@ -84,6 +89,7 @@ func InitWXMiniProgramService(config MiniProgramServiceConfig) error {
 		return err
 	}
 
+	WX.WXMini.IsSaveHandlerLog = config.MiniProgram.IsSaveHandlerLog
 	WX.WXMini.MiniProgramApp = app
 	WX.WXMini.isExistsUser = config.WXMiniImp.IsExistsUser
 	WX.WXMini.createUser = config.WXMiniImp.CreateUser

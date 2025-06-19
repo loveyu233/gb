@@ -13,6 +13,8 @@ type wxPay struct {
 	refundNotifyHandler func(orderId string) error
 	payHandler          func(c *gin.Context) (*PayRequest, error)
 	refundHandler       func(c *gin.Context) (*RefundRequest, error)
+	// 是否保存请求日志
+	IsSaveHandlerLog bool
 }
 type WXPayImp interface {
 	PayNotify(orderId string, attach string) error
@@ -39,6 +41,8 @@ type Payment struct {
 	Log                payment.Log           `json:"log"`                          // 可以重定向到你的目录下，如果设置File和Error，默认会在当前目录下的wechat文件夹下生成日志
 	Http               payment.Http          `json:"http"`                         // 设置微信支付地址，比如想要设置成沙盒地址，把里面的值改成https://api.mch.weixin.qq.com/sandboxnew
 	Cache              kernel.CacheInterface `json:"cache,omitempty"`              // 可选，不传默认走程序内存
+	// 是否保存请求日志
+	IsSaveHandlerLog bool
 }
 
 type WXPaymentAppConfig struct {
@@ -70,6 +74,7 @@ func InitWXWXPaymentApp(paymentConfig WXPaymentAppConfig) error {
 	if err != nil {
 		return err
 	}
+	WX.WXPay.IsSaveHandlerLog = paymentConfig.Payment.IsSaveHandlerLog
 	WX.WXPay.PaymentApp = paymentApp
 	WX.WXPay.payNotifyHandler = paymentConfig.WXPayImp.PayNotify
 	WX.WXPay.refundNotifyHandler = paymentConfig.WXPayImp.RefundNotify

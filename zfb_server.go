@@ -49,12 +49,14 @@ type ZFBClient struct {
 	client        *alipay.ClientV3
 	notifyUrl     string
 	zfbMiniImp    ZfbMiniImp
+	// 是否保存请求日志
+	IsSaveHandlerLog bool
 }
 
 var ZFB = new(ZFBClient)
 
-// InitAliClient 其中appid,appPrivateKey,aesKey是内容本身,appPublicKey, aliPublicKey, aliRootKey是证书路径,notifyUrl为支付成功和退款异步通知地址
-func InitAliClient(appid, appPrivateKey, aesKey, appPublicKeyFilePath, aliPublicKeyFilePath, aliRootKeyFilePath, notifyUrl string, zfbMiniImp ZfbMiniImp) error {
+// InitAliClient 其中appid,appPrivateKey,aesKey是内容本身,appPublicKey, aliPublicKey, aliRootKey是证书路径,notifyUrl为支付成功和退款异步通知地址,isSaveHandlerLog 是否保存请求日志
+func InitAliClient(appid, appPrivateKey, aesKey, appPublicKeyFilePath, aliPublicKeyFilePath, aliRootKeyFilePath, notifyUrl string, isSaveHandlerLog bool, zfbMiniImp ZfbMiniImp) error {
 	appPublicKey, err := ReadFileContent(appPublicKeyFilePath)
 	if err != nil {
 		return err
@@ -75,6 +77,7 @@ func InitAliClient(appid, appPrivateKey, aesKey, appPublicKeyFilePath, aliPublic
 	ZFB.aliPublicKey = aliPublicKey
 	ZFB.aliRootKey = aliRootKey
 	ZFB.notifyUrl = notifyUrl
+	ZFB.IsSaveHandlerLog = isSaveHandlerLog
 	ZFB.zfbMiniImp = zfbMiniImp
 
 	clientV3, err := alipay.NewClientV3(appid, appPrivateKey, true)
@@ -230,10 +233,11 @@ func (a *ZFBClient) pkcs5Unpad(src []byte) ([]byte, error) {
 }
 
 func (a *ZFBClient) RegisterHandlers(r *gin.RouterGroup) {
-	r.POST("/zfb/login", a.login)
-	r.POST("/zfb/notify", a.notify)
-	r.POST("/zfb/pay", a.pay)
-	r.POST("/zfb/refund", a.refund)
+	r.Use(SetModuleName("支付宝"))
+	r.POST("/zfb/login", SetOptionName("小程序登录", a.IsSaveHandlerLog), a.login)
+	r.POST("/zfb/notify", SetOptionName("支付回调", a.IsSaveHandlerLog), a.notify)
+	r.POST("/zfb/pay", SetOptionName("支付", a.IsSaveHandlerLog), a.pay)
+	r.POST("/zfb/refund", SetOptionName("退款", a.IsSaveHandlerLog), a.refund)
 }
 
 func (a *ZFBClient) login(c *gin.Context) {
