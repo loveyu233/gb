@@ -42,8 +42,8 @@ var (
 	ErrRequestXTJ             = NewAppError(100001, "请求新途径服务失败")
 	ErrRequestWechat          = NewAppError(100002, "请求wechat服务失败")
 	ErrRequestWechatPay       = NewAppError(100003, "请求wechat支付服务失败")
-	ErrRequestAli             = NewAppError(100004, "请求ali服务失败")
-	ErrRequestAliPay          = NewAppError(100005, "请求ali支付服务失败")
+	ErrRequestAli             = NewAppError(100004, "请求zfb服务失败")
+	ErrRequestAliPay          = NewAppError(100005, "请求zfb支付服务失败")
 
 	// 400xxx 客户端错误
 	ErrBadRequest   = NewAppError(400000, "请求错误")

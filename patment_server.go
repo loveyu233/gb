@@ -19,10 +19,10 @@ import (
 
 func (wx *wxPay) RegisterHandlers(r *gin.RouterGroup) {
 	r.Use(SetModuleName("微信支付"))
-	r.POST("/wx/notify/payment", SetOptionName("微信支付回调", wx.IsSaveHandlerLog), wx.wxPayCallback)
-	r.POST("/wx/notify/refund", SetOptionName("微信退款回调", wx.IsSaveHandlerLog), wx.wxRefundCallback)
-	r.POST("/wx/pay", SetOptionName("微信支付", wx.IsSaveHandlerLog), wx.pay)
-	r.POST("/wx/refund", SetOptionName("微信退款", wx.IsSaveHandlerLog), wx.refund)
+	r.POST("/wx/notify/payment", SetOptionName("支付异步回调", wx.IsSaveHandlerLog), wx.wxPayCallback)
+	r.POST("/wx/notify/refund", SetOptionName("退款异步回调", wx.IsSaveHandlerLog), wx.wxRefundCallback)
+	r.POST("/wx/pay", SetOptionName("支付请求", wx.IsSaveHandlerLog), wx.pay)
+	r.POST("/wx/refund", SetOptionName("退款请求", wx.IsSaveHandlerLog), wx.refund)
 }
 
 func (wx *wxPay) pay(c *gin.Context) {

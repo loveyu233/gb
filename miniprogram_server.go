@@ -12,7 +12,7 @@ import (
 
 func (w *wxMini) RegisterHandlers(r *gin.RouterGroup) {
 	r.Use(SetModuleName("微信小程序"))
-	r.POST("/wx/login", SetOptionName("微信登录", w.IsSaveHandlerLog), w.login)
+	r.POST("/wx/login", SetOptionName("小程序登录", w.IsSaveHandlerLog), w.login)
 }
 
 type Phone struct {

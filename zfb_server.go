@@ -235,9 +235,9 @@ func (a *ZFBClient) pkcs5Unpad(src []byte) ([]byte, error) {
 func (a *ZFBClient) RegisterHandlers(r *gin.RouterGroup) {
 	r.Use(SetModuleName("支付宝"))
 	r.POST("/zfb/login", SetOptionName("小程序登录", a.IsSaveHandlerLog), a.login)
-	r.POST("/zfb/notify", SetOptionName("支付回调", a.IsSaveHandlerLog), a.notify)
-	r.POST("/zfb/pay", SetOptionName("支付", a.IsSaveHandlerLog), a.pay)
-	r.POST("/zfb/refund", SetOptionName("退款", a.IsSaveHandlerLog), a.refund)
+	r.POST("/zfb/notify", SetOptionName("支付异步回调", a.IsSaveHandlerLog), a.notify)
+	r.POST("/zfb/pay", SetOptionName("支付请求", a.IsSaveHandlerLog), a.pay)
+	r.POST("/zfb/refund", SetOptionName("退款请求", a.IsSaveHandlerLog), a.refund)
 }
 
 func (a *ZFBClient) login(c *gin.Context) {
