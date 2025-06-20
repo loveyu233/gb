@@ -280,8 +280,7 @@ func (a *ZFBClient) login(c *gin.Context) {
 			ResponseError(c, ErrRequestAli.WithMessage("获取支付宝小程序用户数据失败"))
 		}
 
-		// UnionID 已提pr等合并后可调用
-		if user, err = a.zfbMiniImp.CreateUser(decryption.Mobile, "session.UnionID", session.OpenId, getAreaCodeByIp(c.ClientIP()), c.ClientIP()); err != nil {
+		if user, err = a.zfbMiniImp.CreateUser(decryption.Mobile, session.UnionId, session.OpenId, getAreaCodeByIp(c.ClientIP()), c.ClientIP()); err != nil {
 			ResponseError(c, ErrDatabase.WithMessage("创建用户信息失败:%s", err.Error()))
 			return
 		}

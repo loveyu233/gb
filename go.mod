@@ -8,7 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-co-op/gocron-redis-lock/v2 v2.0.1
 	github.com/go-co-op/gocron/v2 v2.16.2
-	github.com/go-pay/gopay v1.5.113
+	github.com/go-pay/gopay v1.5.114-0.20250619143951-3710e0fc2375
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.26.0
