@@ -11,13 +11,23 @@ import (
 type PayImp struct {
 }
 
-func (p PayImp) PaySuccess(orderId string, attach string) error {
-	//TODO 支付成功的处理
+func (p PayImp) PayNotify(orderId string, attach string) error {
+	//TODO implement me
 	panic("implement me")
 }
 
-func (p PayImp) RefundSuccess(orderId string) error {
-	//TODO 退款成功的处理
+func (p PayImp) RefundNotify(orderId string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (p PayImp) Pay(c *gin.Context) (*gb.PayRequest, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (p PayImp) Refund(c *gin.Context) (*gb.RefundRequest, error) {
+	//TODO implement me
 	panic("implement me")
 }
 
