@@ -157,6 +157,9 @@ func InitEtcd(opts ...WithEtcdOpt) error {
 	for _, opt := range opts {
 		opt(config)
 	}
+	if len(config.Endpoints) == 0 {
+		panic("etcd endpoints is empty")
+	}
 	client, err := clientv3.New(*config)
 	if err != nil {
 		return err
