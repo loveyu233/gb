@@ -185,3 +185,13 @@ func (db *GormClient) ScopeNextYears(columns ...string) func(db *gorm.DB) *gorm.
 	start, end := GetNextYearsInterval()
 	return db.ScopeTime(start, end, columns...)
 }
+
+// Transaction 开启事务(db.Transaction)
+func (db *GormClient) Transaction(tx func(tx *gorm.DB) error) error {
+	return db.DB.Transaction(tx)
+}
+
+// Lock 加锁
+func (db *GormClient) Lock() *gorm.DB {
+	return db.Clauses(clause.Locking{Strength: "UPDATE"})
+}
