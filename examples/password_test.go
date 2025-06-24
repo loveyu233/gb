@@ -6,5 +6,5 @@ import (
 )
 
 func TestA1(t *testing.T) {
-	t.Log(gb.PasswordValidateStrength("123aAaa.", 6))
+	t.Log(gb.PasswordValidateStrength("123aAaa.", 6, 12))
 }
