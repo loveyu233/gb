@@ -2,6 +2,7 @@ package examples
 
 import (
 	"github.com/loveyu233/gb"
+	"sync"
 	"testing"
 	"time"
 )
@@ -13,8 +14,11 @@ func TestRedis(t *testing.T) {
 		return
 	}
 
+	wg := sync.WaitGroup{}
 	for i := 0; i < 10; i++ {
+		wg.Add(1)
 		go func(index int) {
+			defer wg.Done()
 			lock := gb.RedisClient.NewLock("123")
 			for {
 				if err := lock.Lock(); err != nil {
@@ -25,9 +29,9 @@ func TestRedis(t *testing.T) {
 			}
 			defer lock.Unlock()
 
-			time.Sleep(1 * time.Second)
+			time.Sleep(2 * time.Second)
 			t.Log("加锁成功", index, time.Now().String())
 		}(i)
 	}
-	select {}
+	wg.Wait()
 }
