@@ -168,7 +168,7 @@ func InitEtcd(opts ...WithEtcdOpt) error {
 	return nil
 }
 
-// NewLock 初始化etcd分布式锁
+// NewLock 初始化etcd分布式锁,详细用法查看 examples/etcd_test.go
 func (e *Etcd) NewLock(key string, opts ...concurrency.SessionOption) (*concurrency.Mutex, error) {
 	session, err := concurrency.NewSession(e.Client, opts...)
 	if err != nil {

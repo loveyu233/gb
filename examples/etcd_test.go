@@ -34,9 +34,13 @@ func TestLock(t *testing.T) {
 			if err != nil {
 				panic(err)
 			}
-			lock.Lock(context.Background())
+			// 设置等待时间为3s超时则报错
+			if err = lock.Lock(gb.Context(3)); err != nil {
+				t.Log("加锁失败:", index)
+				return
+			}
 			defer lock.Unlock(context.Background())
-			time.Sleep(1 * time.Second)
+			time.Sleep(2 * time.Second)
 			t.Log("success", index, time.Now().String())
 		}(i)
 	}
