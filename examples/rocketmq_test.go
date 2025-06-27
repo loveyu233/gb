@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func init() {
+func initRock() {
 	config := gb.InitRocketMQConfig("127.0.0.1:8080", "cg", "rocketmq2", "12345678", []string{"test-1", "topic-time"})
 	err := config.GetProduct()
 	if err != nil {
