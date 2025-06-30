@@ -207,15 +207,29 @@ func (s *JWTTokenService) IsInvalidated(tokenID string) bool {
 
 // GinAuthConfig 配置Gin认证中间件
 type GinAuthConfig struct {
+	DataPtr         any
 	TokenService    TokenService
 	GetTokenStrFunc func(c *gin.Context) string
 	HandleError     func(c *gin.Context, err error)
 }
 
+var CustomGinAuthConfig *GinAuthConfig
+
+// InitCustomGinAuthConfig 初始化后会自动使用
+func InitCustomGinAuthConfig(authConfig *GinAuthConfig) {
+	CustomGinAuthConfig = authConfig
+}
+
 var defaultTokenSecret = "abcdef123456..."
+
+var DefaultGInTokenErrHandler = func(c *gin.Context, err error) {
+	ResponseError(c, ErrTokenInvalid.WithMessage(err.Error()))
+	c.Abort()
+}
 
 // DefaultGinTokenConfig 默认配置,生产一定不可以使用
 var DefaultGinTokenConfig = &GinAuthConfig{
+	DataPtr:      new(TokenDefaultData),
 	TokenService: NewJWTTokenService(defaultTokenSecret),
 	GetTokenStrFunc: func(c *gin.Context) string {
 		auth := c.GetHeader("Authorization")
@@ -231,10 +245,7 @@ var DefaultGinTokenConfig = &GinAuthConfig{
 		}
 		return strings.TrimSpace(strings.TrimPrefix(auth, "Bearer"))
 	},
-	HandleError: func(c *gin.Context, err error) {
-		ResponseError(c, ErrTokenInvalid.WithMessage(err.Error()))
-		c.Abort()
-	},
+	HandleError: DefaultGInTokenErrHandler,
 }
 
 type TokenDefaultData struct {
@@ -242,13 +253,9 @@ type TokenDefaultData struct {
 }
 
 // GinAuth 创建一个Gin认证中间件,config为空则使用默认
-func GinAuth(dataPtr any, config *GinAuthConfig) gin.HandlerFunc {
-	if !IsPtr(dataPtr) {
+func GinAuth(config *GinAuthConfig) gin.HandlerFunc {
+	if !IsPtr(config.DataPtr) {
 		panic("dataPtr is not ptr")
-	}
-	// 合并默认配置
-	if config == nil {
-		config = &GinAuthConfig{}
 	}
 
 	if config.GetTokenStrFunc == nil {
@@ -285,13 +292,13 @@ func GinAuth(dataPtr any, config *GinAuthConfig) gin.HandlerFunc {
 			return
 		}
 
-		if err = json.Unmarshal(bytes, dataPtr); err != nil {
+		if err = json.Unmarshal(bytes, config.DataPtr); err != nil {
 			config.HandleError(c, errors.New("用户数据解析失败"))
 			return
 		}
 
 		// 将用户信息存入上下文
-		c.Set("data", dataPtr)
+		c.Set("data", config.DataPtr)
 		c.Set("claims", claims)
 		c.Next()
 	}

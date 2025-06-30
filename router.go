@@ -30,7 +30,7 @@ type RouterConfig struct {
 	recordHeaderKeys []string            // 需要记录的请求头
 	saveLog          func(ReqLog)        // 保存请求日志
 	tokenData        any                 // token携带的信息
-	tokenConfig      *GinAuthConfig      // token配置
+	tokenConfig      *GinAuthConfig
 }
 
 type GinModel string
@@ -54,13 +54,6 @@ func WithGinRouterTokenData(data any) GinRouterConfigOptionFunc {
 			panic("data必须是指针类型")
 		}
 		config.tokenData = data
-	}
-}
-
-// WithGinRouterTokenConfig token配置
-func WithGinRouterTokenConfig(conf *GinAuthConfig) GinRouterConfigOptionFunc {
-	return func(config *RouterConfig) {
-		config.tokenConfig = conf
 	}
 }
 
@@ -155,12 +148,14 @@ func initRouter(opts ...GinRouterConfigOptionFunc) {
 		config.tokenData = new(TokenDefaultData)
 	}
 
-	if config.tokenConfig == nil {
+	if CustomGinAuthConfig != nil {
+		config.tokenConfig = CustomGinAuthConfig
+	} else {
 		config.tokenConfig = DefaultGinTokenConfig
 	}
 
 	if len(config.authMiddleware) == 0 {
-		config.authMiddleware = []gin.HandlerFunc{GinAuth(config.tokenData, config.tokenConfig)}
+		config.authMiddleware = []gin.HandlerFunc{GinAuth(config.tokenConfig)}
 	}
 
 	if len(config.globalMiddleware) == 0 {

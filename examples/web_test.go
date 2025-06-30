@@ -102,3 +102,23 @@ func TestToken(t *testing.T) {
 		gb.WithGinRouterTokenData(new(TokenTestUser)),
 	)
 }
+
+func TestZiDingYiToken(t *testing.T) {
+	// 不初始化就会使用默认的
+	gb.InitCustomGinAuthConfig(&gb.GinAuthConfig{
+		DataPtr:      new(TokenTestUser),
+		TokenService: gb.NewJWTTokenService("adadasdasdasdasdasd"),
+		GetTokenStrFunc: func(c *gin.Context) string {
+			return c.GetHeader("jwt-token")
+		},
+		HandleError: gb.DefaultGInTokenErrHandler,
+	})
+
+	// Generate的值必须和gb.InitCustomGinAuthConfig的DataPtr是一样的
+	t.Log(gb.CustomGinAuthConfig.TokenService.Generate(&TokenTestUser{Username: "hzyy", ID: 19}, 1000*time.Second))
+	gb.InitHTTPServerAndStart("127.0.0.1:8080",
+		gb.WithGinRouterModel(gb.GinModelDebug),
+		gb.WithGinRouterSkipHealthzLog(),
+		gb.WithGinRouterSkipApiMap("/api/test2/hello"),
+	)
+}
