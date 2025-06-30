@@ -14,21 +14,21 @@ import (
 )
 
 // Claims 是JWT的标准声明加自定义字段
-type Claims struct {
+type Claims[T any] struct {
 	jwt.RegisteredClaims
-	User interface{} `json:"user"`
+	User T `json:"user"`
 }
 
 // TokenService 提供Token相关操作的接口
-type TokenService interface {
-	Generate(user interface{}, expiration time.Duration) (string, error)
-	Validate(tokenStr string) (*Claims, error)
+type TokenService[T any] interface {
+	Generate(user T, expiration time.Duration) (string, error)
+	Validate(tokenStr string) (*Claims[T], error)
 	Invalidate(tokenID string) error
 	IsInvalidated(tokenID string) bool
 }
 
 // JWTTokenService 实现TokenService接口
-type JWTTokenService struct {
+type JWTTokenService[T any] struct {
 	secret                    string
 	redisClient               *redis.Client
 	signingMethod             jwt.SigningMethod
@@ -39,18 +39,18 @@ type JWTTokenService struct {
 }
 
 // TokenServiceOption 提供配置JWTTokenService的函数选项
-type TokenServiceOption func(*JWTTokenService)
+type TokenServiceOption[T any] func(*JWTTokenService[T])
 
 // WithRedisClient 设置redis客户端
-func WithRedisClient(client *redis.Client) TokenServiceOption {
-	return func(service *JWTTokenService) {
+func WithRedisClient[T any](client *redis.Client) TokenServiceOption[T] {
+	return func(service *JWTTokenService[T]) {
 		service.redisClient = client
 	}
 }
 
 // WithRedisBlacklist 启用Redis黑名单
-func WithRedisBlacklist(enabled bool, keyFn func(tokenID string) string) TokenServiceOption {
-	return func(service *JWTTokenService) {
+func WithRedisBlacklist[T any](enabled bool, keyFn func(tokenID string) string) TokenServiceOption[T] {
+	return func(service *JWTTokenService[T]) {
 		service.enableRedisCheckBlacklist = enabled
 		if keyFn != nil {
 			service.blacklistKeyFn = keyFn
@@ -63,15 +63,15 @@ func WithRedisBlacklist(enabled bool, keyFn func(tokenID string) string) TokenSe
 }
 
 // WithSigningMethod 设置签名方法
-func WithSigningMethod(method jwt.SigningMethod) TokenServiceOption {
-	return func(service *JWTTokenService) {
+func WithSigningMethod[T any](method jwt.SigningMethod) TokenServiceOption[T] {
+	return func(service *JWTTokenService[T]) {
 		service.signingMethod = method
 	}
 }
 
 // WithRedisTokenCheck 启用Redis校验token存在功能
-func WithRedisTokenCheck(enabled bool, keyFn func(tokenID string) string) TokenServiceOption {
-	return func(service *JWTTokenService) {
+func WithRedisTokenCheck[T any](enabled bool, keyFn func(tokenID string) string) TokenServiceOption[T] {
+	return func(service *JWTTokenService[T]) {
 		service.enableRedisCheck = enabled
 		if keyFn != nil {
 			service.redisTokenKeyFn = keyFn
@@ -84,11 +84,11 @@ func WithRedisTokenCheck(enabled bool, keyFn func(tokenID string) string) TokenS
 }
 
 // NewJWTTokenService 创建一个新的JWTTokenService
-func NewJWTTokenService(secret string, options ...TokenServiceOption) *JWTTokenService {
+func NewJWTTokenService[T any](secret string, options ...TokenServiceOption[T]) *JWTTokenService[T] {
 	if secret == "" {
 		secret = defaultTokenSecret
 	}
-	service := &JWTTokenService{
+	service := &JWTTokenService[T]{
 		secret:           secret,
 		signingMethod:    jwt.SigningMethodHS256,
 		enableRedisCheck: false, // 默认不启用Redis校验
@@ -102,11 +102,11 @@ func NewJWTTokenService(secret string, options ...TokenServiceOption) *JWTTokenS
 }
 
 // Generate 生成JWT令牌
-func (s *JWTTokenService) Generate(user interface{}, expiration time.Duration) (string, error) {
+func (s *JWTTokenService[T]) Generate(user T, expiration time.Duration) (string, error) {
 	now := time.Now()
 	tokenID := GetUUID()
 
-	claims := Claims{
+	claims := Claims[T]{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        tokenID,
 			IssuedAt:  jwt.NewNumericDate(now),
@@ -135,8 +135,8 @@ func (s *JWTTokenService) Generate(user interface{}, expiration time.Duration) (
 }
 
 // Validate 验证JWT令牌并返回声明
-func (s *JWTTokenService) Validate(tokenStr string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+func (s *JWTTokenService[T]) Validate(tokenStr string) (*Claims[T], error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &Claims[T]{}, func(token *jwt.Token) (interface{}, error) {
 		// 验证签名方法
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("加密方法错误: %v", token.Header["alg"])
@@ -152,7 +152,7 @@ func (s *JWTTokenService) Validate(tokenStr string) (*Claims, error) {
 		return nil, errors.New("令牌无效")
 	}
 
-	claims, ok := token.Claims.(*Claims)
+	claims, ok := token.Claims.(*Claims[T])
 	if !ok {
 		return nil, errors.New("转换JWT声明失败")
 	}
@@ -173,7 +173,7 @@ func (s *JWTTokenService) Validate(tokenStr string) (*Claims, error) {
 }
 
 // Invalidate 将令牌添加到黑名单
-func (s *JWTTokenService) Invalidate(tokenID string) error {
+func (s *JWTTokenService[T]) Invalidate(tokenID string) error {
 	if s.redisClient == nil {
 		return errors.New("未配置Redis，无法使用撤销功能")
 	}
@@ -196,7 +196,7 @@ func (s *JWTTokenService) Invalidate(tokenID string) error {
 }
 
 // IsInvalidated 检查令牌是否在黑名单中
-func (s *JWTTokenService) IsInvalidated(tokenID string) bool {
+func (s *JWTTokenService[T]) IsInvalidated(tokenID string) bool {
 	if s.redisClient == nil {
 		return false
 	}
@@ -206,18 +206,11 @@ func (s *JWTTokenService) IsInvalidated(tokenID string) bool {
 }
 
 // GinAuthConfig 配置Gin认证中间件
-type GinAuthConfig struct {
-	DataPtr         any
-	TokenService    TokenService
+type GinAuthConfig[T any] struct {
+	DataPtr         *T
+	TokenService    TokenService[T]
 	GetTokenStrFunc func(c *gin.Context) string
 	HandleError     func(c *gin.Context, err error)
-}
-
-var CustomGinAuthConfig *GinAuthConfig
-
-// InitCustomGinAuthConfig 初始化后会自动使用
-func InitCustomGinAuthConfig(authConfig *GinAuthConfig) {
-	CustomGinAuthConfig = authConfig
 }
 
 var defaultTokenSecret = "abcdef123456..."
@@ -228,9 +221,9 @@ var DefaultGInTokenErrHandler = func(c *gin.Context, err error) {
 }
 
 // DefaultGinTokenConfig 默认配置,生产一定不可以使用
-var DefaultGinTokenConfig = &GinAuthConfig{
+var DefaultGinTokenConfig = &GinAuthConfig[TokenDefaultData]{
 	DataPtr:      new(TokenDefaultData),
-	TokenService: NewJWTTokenService(defaultTokenSecret),
+	TokenService: NewJWTTokenService[TokenDefaultData](defaultTokenSecret),
 	GetTokenStrFunc: func(c *gin.Context) string {
 		auth := c.GetHeader("Authorization")
 		if auth == "" {
@@ -253,9 +246,13 @@ type TokenDefaultData struct {
 }
 
 // GinAuth 创建一个Gin认证中间件,config为空则使用默认
-func GinAuth(config *GinAuthConfig) gin.HandlerFunc {
-	if !IsPtr(config.DataPtr) {
-		panic("dataPtr is not ptr")
+func GinAuth[T any](config *GinAuthConfig[T]) gin.HandlerFunc {
+	if config == nil {
+		panic("config不能为nil")
+	}
+
+	if config.DataPtr == nil {
+		panic("dataPtr不能为nil")
 	}
 
 	if config.GetTokenStrFunc == nil {
@@ -305,13 +302,13 @@ func GinAuth(config *GinAuthConfig) gin.HandlerFunc {
 }
 
 // ExtractTokenClaims 从上下文中提取Claims
-func ExtractTokenClaims(c *gin.Context) (*Claims, bool) {
+func ExtractTokenClaims[T any](c *gin.Context) (*Claims[T], bool) {
 	claims, exists := c.Get("claims")
 	if !exists {
 		return nil, false
 	}
 
-	if tokenClaims, ok := claims.(*Claims); ok {
+	if tokenClaims, ok := claims.(*Claims[T]); ok {
 		return tokenClaims, true
 	}
 

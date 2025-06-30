@@ -1,7 +1,6 @@
 package examples
 
 import (
-	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/loveyu233/gb"
@@ -43,80 +42,25 @@ func registerDemo1PublicRoutes(r *gin.RouterGroup) {
 	}
 }
 
-type User struct {
-	ID   int
-	Name string
-}
-
-func TestHttp(t *testing.T) {
-	u := &User{ID: 1, Name: "test"}
-	t.Log(gb.NewJWTTokenService("").Generate(u, 1000*time.Second))
-	gb.InitHTTPServerAndStart(":8080", gb.WithGinRouterModel("release"))
-}
-
-func TestParam(t *testing.T) {
-	engine := gin.Default()
-	engine.GET("/", func(c *gin.Context) {
-		type Req struct {
-			Username string `json:"username" binding:"required"`
-		}
-		var req Req
-		if err := c.ShouldBindQuery(&req); err != nil {
-			gb.ResponseParamError(c, err)
-		}
-	})
-	engine.Run("127.0.0.1:8080")
-}
-
-func TestErr(t *testing.T) {
-	appError := gb.ConvertToAppError(errors.New("test error"))
-	fmt.Println(appError)
-}
-
-func TestLog(t *testing.T) {
-	engine := gin.Default()
-	engine.Use(gb.MiddlewareLogger(gb.MiddlewareLogConfig{HeaderKeys: []string{"token"}}))
-
-	engine.GET("/a", func(c *gin.Context) {
-		logger := gb.GetContextLogger(c)
-		logger.Info().Str("adadadasdasdas", "adasdasdasdasdasdas").Msg("adasdasdasdasdasdas")
-		gb.ResponseSuccess(c, map[string]any{
-			"test": "test",
-		})
-	})
-
-	engine.Run("127.0.0.1:8080")
-}
-
 type TokenTestUser struct {
 	Username string `json:"username"`
 	ID       int64  `json:"id"`
 }
 
-func TestToken(t *testing.T) {
-	t.Log(gb.DefaultGinTokenConfig.TokenService.Generate(&TokenTestUser{Username: "hzyy", ID: 19}, 1000*time.Second))
-	gb.InitHTTPServerAndStart("127.0.0.1:8080",
-		gb.WithGinRouterModel(gb.GinModelDebug),
-		gb.WithGinRouterSkipHealthzLog(),
-		gb.WithGinRouterSkipApiMap("/api/test2/hello"),
-		gb.WithGinRouterTokenData(new(TokenTestUser)),
-	)
-}
-
 func TestZiDingYiToken(t *testing.T) {
 	// 不初始化就会使用默认的
-	gb.InitCustomGinAuthConfig(&gb.GinAuthConfig{
+	authConfig := &gb.GinAuthConfig[TokenTestUser]{
 		DataPtr:      new(TokenTestUser),
-		TokenService: gb.NewJWTTokenService("adadasdasdasdasdasd"),
+		TokenService: gb.NewJWTTokenService[TokenTestUser]("adadasdasdasdasdasd"),
 		GetTokenStrFunc: func(c *gin.Context) string {
 			return c.GetHeader("jwt-token")
 		},
 		HandleError: gb.DefaultGInTokenErrHandler,
-	})
+	}
 
 	// Generate的值必须和gb.InitCustomGinAuthConfig的DataPtr是一样的
-	t.Log(gb.CustomGinAuthConfig.TokenService.Generate(&TokenTestUser{Username: "hzyy", ID: 19}, 1000*time.Second))
-	gb.InitHTTPServerAndStart("127.0.0.1:8080",
+	t.Log(authConfig.TokenService.Generate(TokenTestUser{ID: 1, Username: "hzyyy"}, 1000*time.Second))
+	gb.InitHTTPServerAndStart(authConfig, "127.0.0.1:8080",
 		gb.WithGinRouterModel(gb.GinModelDebug),
 		gb.WithGinRouterSkipHealthzLog(),
 		gb.WithGinRouterSkipApiMap("/api/test2/hello"),

@@ -30,7 +30,6 @@ type RouterConfig struct {
 	recordHeaderKeys []string            // 需要记录的请求头
 	saveLog          func(ReqLog)        // 保存请求日志
 	tokenData        any                 // token携带的信息
-	tokenConfig      *GinAuthConfig
 }
 
 type GinModel string
@@ -116,7 +115,7 @@ func WithGinRouterLogSaveLog(f func(ReqLog)) GinRouterConfigOptionFunc {
 }
 
 // initRouter model默认为debug,prefix默认为/api,authMiddleware,globalMiddleware默认添加AddTraceID,MiddlewareRequestTime,ResponseLogger,MiddlewareRecovery
-func initRouter(opts ...GinRouterConfigOptionFunc) {
+func initRouter[T any](authConfig *GinAuthConfig[T], opts ...GinRouterConfigOptionFunc) {
 	var config RouterConfig
 	for _, opt := range opts {
 		opt(&config)
@@ -148,14 +147,8 @@ func initRouter(opts ...GinRouterConfigOptionFunc) {
 		config.tokenData = new(TokenDefaultData)
 	}
 
-	if CustomGinAuthConfig != nil {
-		config.tokenConfig = CustomGinAuthConfig
-	} else {
-		config.tokenConfig = DefaultGinTokenConfig
-	}
-
 	if len(config.authMiddleware) == 0 {
-		config.authMiddleware = []gin.HandlerFunc{GinAuth(config.tokenConfig)}
+		config.authMiddleware = []gin.HandlerFunc{GinAuth(authConfig)}
 	}
 
 	if len(config.globalMiddleware) == 0 {
