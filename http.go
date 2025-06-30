@@ -38,8 +38,6 @@ func (h *HTTPServer) setupGracefulShutdown() {
 		defer cancel()
 		if err := h.server.Shutdown(ctx); err != nil {
 			log.Printf("setup graceful shutdown err: %s\n", err)
-		} else {
-			log.Printf("setup graceful shutdown success \n")
 		}
 	})
 }

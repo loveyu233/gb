@@ -266,8 +266,13 @@ type FileInfo struct {
 }
 
 // MiddlewareLogger 创建 Gin 中间件,在handler里面使用zlog := gb.GetContextLogger(c),使用zlog进行日志记录
-func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
-	return gin.HandlerFunc(func(c *gin.Context) {
+func MiddlewareLogger(mc MiddlewareLogConfig, skipMap ...map[string]struct{}) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if len(skipMap) > 0 {
+			if _, ok := skipMap[0][c.Request.URL.Path]; ok {
+				return
+			}
+		}
 		// 开始时间
 		startTime := GetCurrentTime()
 		// 创建请求日志器
@@ -421,6 +426,8 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		}
 		fullURL := scheme + "://" + c.Request.Host + c.Request.RequestURI
 
+		c.Next()
+
 		// 记录请求开始信息
 		requestLogger.AddEntry(zerolog.InfoLevel, "request", map[string]any{
 			"req_time":   startTime.Format(CSTLayout),
@@ -432,8 +439,6 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 			"client_ip":  c.ClientIP(),
 			"header":     headerMap,
 		})
-
-		c.Next()
 
 		var contentKV = make(map[string]any)
 		for _, key := range mc.ContentKeys {
@@ -478,7 +483,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 				})
 			}()
 		}
-	})
+	}
 }
 
 // GetContextLogger 从 Gin 上下文中获取链路日志器
@@ -494,14 +499,14 @@ func GetContextLogger(c *gin.Context) *ContextLogger {
 		requestLogger: NewRequestLogger(context.Background(), log.Logger),
 	}
 }
-func SetModuleName(name string) gin.HandlerFunc {
+func GinLogSetModuleName(name string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("module", name)
 		c.Next()
 	}
 }
 
-func SetOptionName(name string, noRecord ...bool) gin.HandlerFunc {
+func GinLogSetOptionName(name string, noRecord ...bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("option", name)
 		if len(noRecord) > 0 && noRecord[0] {

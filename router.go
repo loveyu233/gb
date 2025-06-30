@@ -1,7 +1,9 @@
 package gb
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"strings"
 )
 
 var (
@@ -19,18 +21,48 @@ func init() {
 }
 
 type RouterConfig struct {
-	model            string            // gin启动模式
-	prefix           string            // api前缀
-	authMiddleware   []gin.HandlerFunc // 认证api的中间件
-	globalMiddleware []gin.HandlerFunc // 全局中间件
+	skipApiMap       map[string]struct{} // 日志输出跳过的api
+	skipHealthz      bool                // 是否跳过健康检查请求的日志输出
+	model            GinModel            // gin启动模式
+	prefix           string              // api前缀
+	authMiddleware   []gin.HandlerFunc   // 认证api的中间件
+	globalMiddleware []gin.HandlerFunc   // 全局中间件
 }
+
+type GinModel string
+
+func (m GinModel) String() string {
+	return string(m)
+}
+
+var (
+	GinModelRelease GinModel = "release"
+	GinModelDebug   GinModel = "debug"
+	GinModelTest    GinModel = "test"
+)
 
 type GinRouterConfigOptionFunc func(*RouterConfig)
 
 // WithGinRouterModel 设置gin的工作模式,不设置默认为debug
-func WithGinRouterModel(model string) GinRouterConfigOptionFunc {
+func WithGinRouterModel(model GinModel) GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.model = model
+	}
+}
+
+// WithGinRouterSkipHealthzLog 是否跳过健康检查请求的日志输出
+func WithGinRouterSkipHealthzLog() GinRouterConfigOptionFunc {
+	return func(config *RouterConfig) {
+		config.skipHealthz = true
+	}
+}
+
+func WithGinRouterSkipApiMap(skipApis ...string) GinRouterConfigOptionFunc {
+	return func(config *RouterConfig) {
+		config.skipApiMap = make(map[string]struct{})
+		for _, item := range skipApis {
+			config.skipApiMap[item] = struct{}{}
+		}
 	}
 }
 
@@ -67,21 +99,40 @@ func initRouter(opts ...GinRouterConfigOptionFunc) {
 	if config.prefix == "" {
 		config.prefix = "/api"
 	}
+
+	if config.skipApiMap == nil {
+		config.skipApiMap = make(map[string]struct{})
+	}
+
+	if config.skipHealthz {
+		config.skipApiMap[fmt.Sprintf("%s/healthz", config.prefix)] = struct{}{}
+	}
+
+	if config.model == GinModelDebug {
+		var skips []string
+		for k, _ := range config.skipApiMap {
+			skips = append(skips, k)
+		}
+		fmt.Printf("跳过日志收集api:[%s]\n", strings.Join(skips, ";"))
+	}
+
 	if len(config.authMiddleware) == 0 {
 		config.authMiddleware = []gin.HandlerFunc{GinAuth(map[string]any{}, DefaultGinConfig)}
 	}
+
 	if len(config.globalMiddleware) == 0 {
 		config.globalMiddleware = []gin.HandlerFunc{MiddlewareTraceID(), MiddlewareRequestTime(), MiddlewareLogger(MiddlewareLogConfig{
 			HeaderKeys: []string{"Token", "Authorization"},
 			SaveLog:    nil,
-		}), MiddlewareRecovery(true)}
+		}, config.skipApiMap), MiddlewareRecovery()}
 	}
 	engine = newGinRouter(config.model, config.globalMiddleware...)
+
 	registerRoutes(engine, config.prefix, config.authMiddleware...)
 }
 
-func newGinRouter(mode string, globalMiddlewares ...gin.HandlerFunc) *gin.Engine {
-	gin.SetMode(mode)
+func newGinRouter(mode GinModel, globalMiddlewares ...gin.HandlerFunc) *gin.Engine {
+	gin.SetMode(mode.String())
 	engine := gin.New()
 
 	// 添加中间件
@@ -92,7 +143,6 @@ func newGinRouter(mode string, globalMiddlewares ...gin.HandlerFunc) *gin.Engine
 
 func registerRoutes(r *gin.Engine, baseRouterPrefix string, authMiddlewares ...gin.HandlerFunc) {
 	baseRouter := r.Group(baseRouterPrefix)
-
 	// 注册公开路由
 	for _, route := range PublicRoutes {
 		route(baseRouter)

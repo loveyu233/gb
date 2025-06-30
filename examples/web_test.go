@@ -15,9 +15,9 @@ func init() {
 }
 
 func registerDemo1PrivateRoutes(r *gin.RouterGroup) {
-	testRoutes := r.Group("/test1", gb.SetModuleName("这是测试1模块"))
+	testRoutes := r.Group("/test1", gb.GinLogSetModuleName("这是测试1模块"))
 	{
-		testRoutes.POST("/world", gb.SetOptionName("world"), func(c *gin.Context) {
+		testRoutes.POST("/world", gb.GinLogSetOptionName("world"), func(c *gin.Context) {
 			gb.ResponseSuccess(c, "world")
 		})
 	}
@@ -25,9 +25,9 @@ func registerDemo1PrivateRoutes(r *gin.RouterGroup) {
 }
 
 func registerDemo1PublicRoutes(r *gin.RouterGroup) {
-	test2Routes := r.Group("/test2", gb.SetModuleName("这是测试2模块"))
+	test2Routes := r.Group("/test2", gb.GinLogSetModuleName("这是测试2模块"))
 	{
-		test2Routes.GET("/hello", gb.SetOptionName("hello"), func(c *gin.Context) {
+		test2Routes.GET("/hello", gb.GinLogSetOptionName("hello"), func(c *gin.Context) {
 			page, size := gb.ParsePaginationParams(c, map[string]int{"page": 0, "size": 20})
 			gb.ResponseSuccess(c, fmt.Sprintf("hello %d %d", page, size))
 		})
@@ -77,4 +77,8 @@ func TestLog(t *testing.T) {
 	})
 
 	engine.Run("127.0.0.1:8080")
+}
+
+func TestPanic(t *testing.T) {
+	gb.InitHTTPServerAndStart("127.0.0.1:8080", gb.WithGinRouterModel(gb.GinModelRelease), gb.WithGinRouterSkipHealthzLog(), gb.WithGinRouterSkipApiMap("/api/test2/hello"))
 }
