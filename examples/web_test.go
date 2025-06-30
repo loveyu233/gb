@@ -48,7 +48,6 @@ type TokenTestUser struct {
 }
 
 func TestZiDingYiToken(t *testing.T) {
-	// 不初始化就会使用默认的
 	authConfig := &gb.GinAuthConfig[TokenTestUser]{
 		DataPtr:      new(TokenTestUser),
 		TokenService: gb.NewJWTTokenService[TokenTestUser]("adadasdasdasdasdasd"),
@@ -58,7 +57,6 @@ func TestZiDingYiToken(t *testing.T) {
 		HandleError: gb.DefaultGInTokenErrHandler,
 	}
 
-	// Generate的值必须和gb.InitCustomGinAuthConfig的DataPtr是一样的
 	t.Log(authConfig.TokenService.Generate(TokenTestUser{ID: 1, Username: "hzyyy"}, 1000*time.Second))
 	gb.InitHTTPServerAndStart(authConfig, "127.0.0.1:8080",
 		gb.WithGinRouterModel(gb.GinModelDebug),
