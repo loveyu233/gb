@@ -7,6 +7,7 @@ import (
 	"github.com/go-redsync/redsync/v4/redis/goredis/v9"
 	"github.com/redis/go-redis/v9"
 	"net"
+	"sort"
 	"sync"
 	"time"
 )
@@ -286,4 +287,27 @@ func (r *Redis) NewLock(key string, options ...redsync.Option) *redsync.Mutex {
 	})
 
 	return r.lock.NewMutex(key, options...)
+}
+
+// FindAllBitMapByTargetValue 返回bitmap类型key的value中bit位值为targetValue的bit位置
+func (r *Redis) FindAllBitMapByTargetValue(key string, targetValue int) ([]int64, error) {
+	value, err := r.Get(Context(), key).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	var setBits []int64
+	for byteIndex, b := range []byte(value) {
+		for bitIndex := 0; bitIndex < 8; bitIndex++ {
+			if (b>>bitIndex)&1 == targetValue {
+				bitPosition := int64(byteIndex*8 + (7 - bitIndex))
+				setBits = append(setBits, bitPosition)
+			}
+		}
+	}
+
+	sort.Slice(setBits, func(i, j int) bool {
+		return setBits[i] < setBits[j]
+	})
+	return setBits, nil
 }
