@@ -10,7 +10,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -105,7 +104,7 @@ func NewJWTTokenService(secret string, options ...TokenServiceOption) *JWTTokenS
 // Generate 生成JWT令牌
 func (s *JWTTokenService) Generate(user interface{}, expiration time.Duration) (string, error) {
 	now := time.Now()
-	tokenID := generateUUID()
+	tokenID := GetUUID()
 
 	claims := Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -215,8 +214,8 @@ type GinAuthConfig struct {
 
 var defaultTokenSecret = "abcdef123456..."
 
-// DefaultGinConfig 默认配置
-var DefaultGinConfig = &GinAuthConfig{
+// DefaultGinTokenConfig 默认配置,生产一定不可以使用
+var DefaultGinTokenConfig = &GinAuthConfig{
 	TokenService: NewJWTTokenService(defaultTokenSecret),
 	GetTokenStrFunc: func(c *gin.Context) string {
 		auth := c.GetHeader("Authorization")
@@ -238,19 +237,26 @@ var DefaultGinConfig = &GinAuthConfig{
 	},
 }
 
+type TokenDefaultData struct {
+	ID string `json:"id"`
+}
+
 // GinAuth 创建一个Gin认证中间件,config为空则使用默认
-func GinAuth(userPtr interface{}, config *GinAuthConfig) gin.HandlerFunc {
+func GinAuth(dataPtr any, config *GinAuthConfig) gin.HandlerFunc {
+	if !IsPtr(dataPtr) {
+		panic("dataPtr is not ptr")
+	}
 	// 合并默认配置
 	if config == nil {
 		config = &GinAuthConfig{}
 	}
 
 	if config.GetTokenStrFunc == nil {
-		config.GetTokenStrFunc = DefaultGinConfig.GetTokenStrFunc
+		config.GetTokenStrFunc = DefaultGinTokenConfig.GetTokenStrFunc
 	}
 
 	if config.HandleError == nil {
-		config.HandleError = DefaultGinConfig.HandleError
+		config.HandleError = DefaultGinTokenConfig.HandleError
 	}
 
 	if config.TokenService == nil {
@@ -279,24 +285,17 @@ func GinAuth(userPtr interface{}, config *GinAuthConfig) gin.HandlerFunc {
 			return
 		}
 
-		if err = json.Unmarshal(bytes, userPtr); err != nil {
+		if err = json.Unmarshal(bytes, dataPtr); err != nil {
 			config.HandleError(c, errors.New("用户数据解析失败"))
 			return
 		}
 
 		// 将用户信息存入上下文
-		c.Set("user", userPtr)
+		c.Set("data", dataPtr)
 		c.Set("claims", claims)
 		c.Next()
 	}
 }
-
-// generateUUID 生成唯一标识符
-func generateUUID() string {
-	return uuid.NewString()
-}
-
-// 以下是辅助功能
 
 // ExtractTokenClaims 从上下文中提取Claims
 func ExtractTokenClaims(c *gin.Context) (*Claims, bool) {

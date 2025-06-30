@@ -18,6 +18,15 @@ func registerDemo1PrivateRoutes(r *gin.RouterGroup) {
 	testRoutes := r.Group("/test1", gb.GinLogSetModuleName("这是测试1模块"))
 	{
 		testRoutes.POST("/world", gb.GinLogSetOptionName("world"), func(c *gin.Context) {
+			// 需要启动  TestToken 测试可以查看
+			value, exists := c.Get("data")
+			if exists {
+				if user, ok := value.(*TokenTestUser); ok {
+					gb.ResponseSuccess(c, user)
+					return
+				}
+			}
+
 			gb.ResponseSuccess(c, "world")
 		})
 	}
@@ -79,6 +88,17 @@ func TestLog(t *testing.T) {
 	engine.Run("127.0.0.1:8080")
 }
 
-func TestPanic(t *testing.T) {
-	gb.InitHTTPServerAndStart("127.0.0.1:8080", gb.WithGinRouterModel(gb.GinModelRelease), gb.WithGinRouterSkipHealthzLog(), gb.WithGinRouterSkipApiMap("/api/test2/hello"))
+type TokenTestUser struct {
+	Username string `json:"username"`
+	ID       int64  `json:"id"`
+}
+
+func TestToken(t *testing.T) {
+	t.Log(gb.DefaultGinTokenConfig.TokenService.Generate(&TokenTestUser{Username: "hzyy", ID: 19}, 1000*time.Second))
+	gb.InitHTTPServerAndStart("127.0.0.1:8080",
+		gb.WithGinRouterModel(gb.GinModelDebug),
+		gb.WithGinRouterSkipHealthzLog(),
+		gb.WithGinRouterSkipApiMap("/api/test2/hello"),
+		gb.WithGinRouterTokenData(new(TokenTestUser)),
+	)
 }

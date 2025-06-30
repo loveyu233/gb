@@ -27,6 +27,10 @@ type RouterConfig struct {
 	prefix           string              // api前缀
 	authMiddleware   []gin.HandlerFunc   // 认证api的中间件
 	globalMiddleware []gin.HandlerFunc   // 全局中间件
+	recordHeaderKeys []string            // 需要记录的请求头
+	saveLog          func(ReqLog)        // 保存请求日志
+	tokenData        any                 // token携带的信息
+	tokenConfig      *GinAuthConfig      // token配置
 }
 
 type GinModel string
@@ -42,6 +46,23 @@ var (
 )
 
 type GinRouterConfigOptionFunc func(*RouterConfig)
+
+// WithGinRouterTokenData token携带的信息,必须是指针,尽量使用: new(结构体) 方式
+func WithGinRouterTokenData(data any) GinRouterConfigOptionFunc {
+	return func(config *RouterConfig) {
+		if !IsPtr(data) {
+			panic("data必须是指针类型")
+		}
+		config.tokenData = data
+	}
+}
+
+// WithGinRouterTokenConfig token配置
+func WithGinRouterTokenConfig(conf *GinAuthConfig) GinRouterConfigOptionFunc {
+	return func(config *RouterConfig) {
+		config.tokenConfig = conf
+	}
+}
 
 // WithGinRouterModel 设置gin的工作模式,不设置默认为debug
 func WithGinRouterModel(model GinModel) GinRouterConfigOptionFunc {
@@ -87,6 +108,20 @@ func WithGinRouterGlobalMiddleware(handlers ...gin.HandlerFunc) GinRouterConfigO
 	}
 }
 
+// WithGinRouterLogRecordHeaderKeys 需要被记录的请求头
+func WithGinRouterLogRecordHeaderKeys(keys []string) GinRouterConfigOptionFunc {
+	return func(config *RouterConfig) {
+		config.recordHeaderKeys = keys
+	}
+}
+
+// WithGinRouterLogSaveLog 持久化日志可以在这里做
+func WithGinRouterLogSaveLog(f func(ReqLog)) GinRouterConfigOptionFunc {
+	return func(config *RouterConfig) {
+		config.saveLog = f
+	}
+}
+
 // initRouter model默认为debug,prefix默认为/api,authMiddleware,globalMiddleware默认添加AddTraceID,MiddlewareRequestTime,ResponseLogger,MiddlewareRecovery
 func initRouter(opts ...GinRouterConfigOptionFunc) {
 	var config RouterConfig
@@ -116,14 +151,22 @@ func initRouter(opts ...GinRouterConfigOptionFunc) {
 		fmt.Printf("跳过日志收集api:[%s]\n", strings.Join(skips, ";"))
 	}
 
+	if config.tokenData == nil {
+		config.tokenData = new(TokenDefaultData)
+	}
+
+	if config.tokenConfig == nil {
+		config.tokenConfig = DefaultGinTokenConfig
+	}
+
 	if len(config.authMiddleware) == 0 {
-		config.authMiddleware = []gin.HandlerFunc{GinAuth(map[string]any{}, DefaultGinConfig)}
+		config.authMiddleware = []gin.HandlerFunc{GinAuth(config.tokenData, config.tokenConfig)}
 	}
 
 	if len(config.globalMiddleware) == 0 {
 		config.globalMiddleware = []gin.HandlerFunc{MiddlewareTraceID(), MiddlewareRequestTime(), MiddlewareLogger(MiddlewareLogConfig{
-			HeaderKeys: []string{"Token", "Authorization"},
-			SaveLog:    nil,
+			HeaderKeys: config.recordHeaderKeys,
+			SaveLog:    config.saveLog,
 		}, config.skipApiMap), MiddlewareRecovery()}
 	}
 	engine = newGinRouter(config.model, config.globalMiddleware...)
