@@ -13,7 +13,6 @@ func TestRedis(t *testing.T) {
 		t.Fatal(err)
 		return
 	}
-
 	wg := sync.WaitGroup{}
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
@@ -34,4 +33,18 @@ func TestRedis(t *testing.T) {
 		}(i)
 	}
 	wg.Wait()
+}
+
+func TestBit(t *testing.T) {
+	err := gb.InitRedis(gb.WithRedisAddressOption([]string{"127.0.0.1:6379"}), gb.WithRedisDBOption(0))
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	value, err := gb.RedisClient.FindAllBitMapByTargetValue("bit1", 1)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(value)
 }
