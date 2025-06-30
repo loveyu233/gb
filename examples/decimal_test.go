@@ -21,3 +21,10 @@ func TestD1(t *testing.T) {
 	percent := gb.DecimalPercent(gb.Float64ToDecimal(100), gb.Float64ToDecimal(3))
 	t.Log(percent)
 }
+
+func TestD2(t *testing.T) {
+	t.Log(gb.DecimalADD(float64(0.1), float64(0.2), float64(0.3)))
+	t.Log(gb.DecimalADD("0.1", "0.2", 0.3))
+	t.Log(gb.DecimalSUB(float64(0.1), float64(0.2), float64(0.3)))
+	t.Log(gb.DecimalSUB("0.1", "0.2", "0.3"))
+}
