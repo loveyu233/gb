@@ -21,6 +21,9 @@ func registerDemo1PrivateRoutes(r *gin.RouterGroup) {
 			value, exists := c.Get("data")
 			if exists {
 				if user, ok := value.(*TokenTestUser); ok {
+					// 测试删除token
+					err := authConfig.TokenService.DeleteRedisToken(c.GetHeader("jwt-token"))
+					fmt.Println(err)
 					gb.ResponseSuccess(c, user)
 					return
 				}
@@ -50,9 +53,13 @@ type TokenTestUser struct {
 var authConfig *gb.GinAuthConfig[TokenTestUser]
 
 func TestZiDingYiToken(t *testing.T) {
+	gb.InitRedis(gb.WithRedisAddressOption([]string{"127.0.0.1:6379"}))
+
 	authConfig = &gb.GinAuthConfig[TokenTestUser]{
-		DataPtr:      new(TokenTestUser),
-		TokenService: gb.NewJWTTokenService[TokenTestUser]("adadasdasdasdasdasd"),
+		DataPtr: new(TokenTestUser),
+		TokenService: gb.NewJWTTokenService[TokenTestUser]("adadasdasdasdasdasd", gb.WithRedisClient[TokenTestUser](gb.RedisClient), gb.WithRedisTokenCheck[TokenTestUser](true, func(token string) string {
+			return fmt.Sprintf("zidingyikey:%s", token)
+		})),
 		GetTokenStrFunc: func(c *gin.Context) string {
 			return c.GetHeader("jwt-token")
 		},

@@ -10,7 +10,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/redis/go-redis/v9"
 )
 
 // Claims 是JWT的标准声明加自定义字段
@@ -22,15 +21,14 @@ type Claims[T any] struct {
 // TokenService 提供Token相关操作的接口
 type TokenService[T any] interface {
 	Generate(user T, expiration time.Duration) (string, error)
+	DeleteRedisToken(token string) error
 	Validate(tokenStr string) (*Claims[T], error)
-	Invalidate(tokenID string) error
-	IsInvalidated(tokenID string) bool
 }
 
 // JWTTokenService 实现TokenService接口
 type JWTTokenService[T any] struct {
 	secret                    string
-	redisClient               *redis.Client
+	redisClient               *Redis
 	signingMethod             jwt.SigningMethod
 	enableRedisCheckBlacklist bool // 是否启动redis黑名单
 	blacklistKeyFn            func(tokenID string) string
@@ -42,7 +40,7 @@ type JWTTokenService[T any] struct {
 type TokenServiceOption[T any] func(*JWTTokenService[T])
 
 // WithRedisClient 设置redis客户端
-func WithRedisClient[T any](client *redis.Client) TokenServiceOption[T] {
+func WithRedisClient[T any](client *Redis) TokenServiceOption[T] {
 	return func(service *JWTTokenService[T]) {
 		service.redisClient = client
 	}
@@ -134,6 +132,14 @@ func (s *JWTTokenService[T]) Generate(user T, expiration time.Duration) (string,
 	return signedToken, err
 }
 
+func (s *JWTTokenService[T]) DeleteRedisToken(token string) error {
+	validate, err := s.Validate(token)
+	if err != nil {
+		return err
+	}
+	return s.redisClient.Del(Context(), s.redisTokenKeyFn(validate.ID)).Err()
+}
+
 // Validate 验证JWT令牌并返回声明
 func (s *JWTTokenService[T]) Validate(tokenStr string) (*Claims[T], error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims[T]{}, func(token *jwt.Token) (interface{}, error) {
@@ -170,39 +176,6 @@ func (s *JWTTokenService[T]) Validate(tokenStr string) (*Claims[T], error) {
 	}
 
 	return claims, nil
-}
-
-// Invalidate 将令牌添加到黑名单
-func (s *JWTTokenService[T]) Invalidate(tokenID string) error {
-	if s.redisClient == nil {
-		return errors.New("未配置Redis，无法使用撤销功能")
-	}
-
-	var err error
-
-	// 如果启用了Redis校验，同时删除有效token记录
-	if s.enableRedisCheckBlacklist {
-		// 使用pipeline批量执行操作
-		pipe := s.redisClient.Pipeline()
-		pipe.Set(context.Background(), s.blacklistKeyFn(tokenID), 1, 7*24*time.Hour)
-		pipe.Del(context.Background(), s.redisTokenKeyFn(tokenID))
-		_, err = pipe.Exec(context.Background())
-	} else {
-		// 将令牌加入黑名单，设置一个合理的过期时间（如7天）
-		err = s.redisClient.Set(context.Background(), s.blacklistKeyFn(tokenID), 1, 7*24*time.Hour).Err()
-	}
-
-	return err
-}
-
-// IsInvalidated 检查令牌是否在黑名单中
-func (s *JWTTokenService[T]) IsInvalidated(tokenID string) bool {
-	if s.redisClient == nil {
-		return false
-	}
-
-	exists, err := s.redisClient.Exists(context.Background(), s.blacklistKeyFn(tokenID)).Result()
-	return err == nil && exists > 0
 }
 
 // GinAuthConfig 配置Gin认证中间件
