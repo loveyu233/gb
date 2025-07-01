@@ -47,8 +47,10 @@ type TokenTestUser struct {
 	ID       int64  `json:"id"`
 }
 
+var authConfig *gb.GinAuthConfig[TokenTestUser]
+
 func TestZiDingYiToken(t *testing.T) {
-	authConfig := &gb.GinAuthConfig[TokenTestUser]{
+	authConfig = &gb.GinAuthConfig[TokenTestUser]{
 		DataPtr:      new(TokenTestUser),
 		TokenService: gb.NewJWTTokenService[TokenTestUser]("adadasdasdasdasdasd"),
 		GetTokenStrFunc: func(c *gin.Context) string {
@@ -58,6 +60,7 @@ func TestZiDingYiToken(t *testing.T) {
 	}
 
 	t.Log(authConfig.TokenService.Generate(TokenTestUser{ID: 1, Username: "hzyyy"}, 1000*time.Second))
+
 	gb.InitHTTPServerAndStart(authConfig, "127.0.0.1:8080",
 		gb.WithGinRouterModel(gb.GinModelDebug),
 		gb.WithGinRouterSkipHealthzLog(),
