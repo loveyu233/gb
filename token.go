@@ -46,20 +46,6 @@ func WithRedisClient[T any](client *Redis) TokenServiceOption[T] {
 	}
 }
 
-// WithRedisBlacklist 启用Redis黑名单
-func WithRedisBlacklist[T any](enabled bool, keyFn func(tokenID string) string) TokenServiceOption[T] {
-	return func(service *JWTTokenService[T]) {
-		service.enableRedisCheckBlacklist = enabled
-		if keyFn != nil {
-			service.blacklistKeyFn = keyFn
-		} else {
-			service.blacklistKeyFn = func(tokenID string) string {
-				return fmt.Sprintf("token:blacklist:%s", tokenID)
-			}
-		}
-	}
-}
-
 // WithSigningMethod 设置签名方法
 func WithSigningMethod[T any](method jwt.SigningMethod) TokenServiceOption[T] {
 	return func(service *JWTTokenService[T]) {
@@ -68,9 +54,9 @@ func WithSigningMethod[T any](method jwt.SigningMethod) TokenServiceOption[T] {
 }
 
 // WithRedisTokenCheck 启用Redis校验token存在功能
-func WithRedisTokenCheck[T any](enabled bool, keyFn func(tokenID string) string) TokenServiceOption[T] {
+func WithRedisTokenCheck[T any](keyFn func(tokenID string) string) TokenServiceOption[T] {
 	return func(service *JWTTokenService[T]) {
-		service.enableRedisCheck = enabled
+		service.enableRedisCheck = true
 		if keyFn != nil {
 			service.redisTokenKeyFn = keyFn
 		} else {
