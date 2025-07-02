@@ -15,8 +15,8 @@ func PasswordEncryption(password string) (string, error) {
 }
 
 // PasswordCompare 判断密码是否正确
-func PasswordCompare(hashedPassword, password string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+func PasswordCompare(hashedPassword, password string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)) == nil
 }
 
 // PasswordValidateStrength 校验密码强度,判断是否同时包含大小写数字和字符,不能有空格
