@@ -6,7 +6,7 @@ import (
 	"runtime/debug"
 )
 
-// MiddlewareRecovery recover掉项目可能出现的panic，并使用zap记录相关日志
+// MiddlewareRecovery recover掉项目可能出现的panic
 func MiddlewareRecovery(log ...GBLog) gin.HandlerFunc {
 	var loclLog GBLog
 
