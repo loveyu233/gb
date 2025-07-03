@@ -39,8 +39,32 @@ func registerDemo1PublicRoutes(r *gin.RouterGroup) {
 	test2Routes := r.Group("/test2", gb.GinLogSetModuleName("这是测试2模块"))
 	{
 		test2Routes.GET("/hello", gb.GinLogSetOptionName("hello"), func(c *gin.Context) {
-			page, size := gb.ParsePaginationParams(c, map[string]int{"page": 0, "size": 20})
+			type Req struct {
+				Age int64 `json:"age" form:"age" binding:"oneof=10 11 12"`
+			}
+			var req Req
+			if err := c.BindQuery(&req); err != nil {
+				gb.ResponseParamError(c, err)
+				return
+			}
+			page, size := gb.ParsePaginationParams(c)
 			gb.ResponseSuccess(c, fmt.Sprintf("hello %d %d", page, size))
+		})
+		test2Routes.GET("/page", func(c *gin.Context) {
+			id, err := gb.ParseFromQuery(c, "id", "", gb.ParserInt64)
+			if err != nil {
+				gb.ResponseParamError(c, err)
+				return
+			}
+			gb.ResponseSuccess(c, id)
+		})
+		test2Routes.GET("/path/:id", func(c *gin.Context) {
+			id, err := gb.ParseFromPath(c, "id1", gb.ParserInt64)
+			if err != nil {
+				gb.ResponseParamError(c, err)
+				return
+			}
+			gb.ResponseSuccess(c, id)
 		})
 	}
 }

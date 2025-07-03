@@ -1,55 +1,149 @@
 package gb
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/cast"
 	"strconv"
-	"strings"
 )
 
-// ParseIDFromUrl 从请求中解析ID
-func ParseIDFromUrl(c *gin.Context) (int64, error) {
-	return ParseInt64FromUrl(c, "id")
+type PaginationParams struct {
+	minPage       int
+	minSize       int
+	maxSize       int
+	defaultPage   int
+	defaultSize   int
+	pageFieldName string
+	sizeFieldName string
 }
 
-// ParseInt64FromUrl 从请求中解析int64字段
-func ParseInt64FromUrl(c *gin.Context, paramName string) (int64, error) {
-	return strconv.ParseInt(c.Param(paramName), 10, 64)
+type PaginationParamsOption func(*PaginationParams)
+
+func WithPaginationMinPage(minPage int) PaginationParamsOption {
+	return func(p *PaginationParams) {
+		p.minPage = minPage
+	}
+}
+func WithPaginationMinSize(minSize int) PaginationParamsOption {
+	return func(p *PaginationParams) {
+		p.minSize = minSize
+	}
 }
 
-// ParseIntFromQueryString 从请求中解析int字段
-func ParseIntFromQueryString(c *gin.Context, fieldName string) (int, error) {
-	return strconv.Atoi(c.DefaultQuery(fieldName, "0"))
+func WithPaginationMaxSize(maxSize int) PaginationParamsOption {
+	return func(p *PaginationParams) {
+		p.maxSize = maxSize
+	}
+}
+func WithPaginationDefaultPage(defaultPage int) PaginationParamsOption {
+	return func(p *PaginationParams) {
+		p.defaultPage = defaultPage
+	}
+}
+func WithPaginationDefaultSize(defaultSize int) PaginationParamsOption {
+	return func(p *PaginationParams) {
+		p.defaultSize = defaultSize
+	}
 }
 
-// ParseInt64FromQueryString 从请求中解析int64字段
-func ParseInt64FromQueryString(c *gin.Context, fieldName string) (int64, error) {
-	return strconv.ParseInt(c.DefaultQuery(fieldName, "0"), 10, 64)
+func WithPaginationPageFieldName(pageFieldName string) PaginationParamsOption {
+	return func(p *PaginationParams) {
+		p.pageFieldName = pageFieldName
+	}
 }
-
-// ParseStringFromQueryString 从请求中解析string字段
-func ParseStringFromQueryString(c *gin.Context, fieldName string) string {
-	return strings.TrimSpace(c.Query(fieldName))
+func WithPaginationSizeFieldName(sizeFieldName string) PaginationParamsOption {
+	return func(p *PaginationParams) {
+		p.sizeFieldName = sizeFieldName
+	}
 }
 
 // ParsePaginationParams 从请求中解析分页参数
-func ParsePaginationParams(c *gin.Context, defaultPagination ...map[string]int) (page, size int) {
-	defaultPage := 1
-	defaultSize := 10
-
-	if len(defaultPagination) > 0 {
-		defaultPage = defaultPagination[0]["page"]
-		defaultSize = defaultPagination[0]["size"]
+func ParsePaginationParams(c *gin.Context, options ...PaginationParamsOption) (page, size int) {
+	var defaultPagination = &PaginationParams{
+		defaultPage:   1,
+		defaultSize:   10,
+		maxSize:       30,
+		minSize:       10,
+		minPage:       1,
+		pageFieldName: "page",
+		sizeFieldName: "size",
+	}
+	for _, opt := range options {
+		opt(defaultPagination)
 	}
 
-	page, err := ParseIntFromQueryString(c, "page")
-	if err != nil || page <= 0 {
-		page = defaultPage
+	page = cast.ToInt(c.Query(defaultPagination.pageFieldName))
+	if page < defaultPagination.minPage {
+		page = defaultPagination.defaultPage
 	}
 
-	size, err = ParseIntFromQueryString(c, "size")
-	if err != nil || size <= 0 || size >= 100 {
-		size = defaultSize
+	size = cast.ToInt(c.Query(defaultPagination.sizeFieldName))
+	if size < defaultPagination.minSize || size > defaultPagination.maxSize {
+		size = defaultPagination.defaultSize
 	}
 
 	return page, size
+}
+
+func ParserString(s string) (string, error) {
+	return s, nil
+}
+
+func ParserInt(s string) (int, error) {
+	return strconv.Atoi(s)
+}
+
+func ParserInt64(s string) (int64, error) {
+	return strconv.ParseInt(s, 10, 64)
+}
+
+func ParserFloat64(s string) (float64, error) {
+	return strconv.ParseFloat(s, 64)
+}
+
+func ParserBool(s string) (bool, error) {
+	return strconv.ParseBool(s)
+}
+
+// ParseFromQuery 有默认值使用默认值而不是返回错误,errStr为空则会只用key不能为空作为错误返回
+func ParseFromQuery[T any](c *gin.Context, key, errStr string, parser func(string) (T, error), defaultValue ...T) (T, error) {
+	if errStr == "" {
+		errStr = fmt.Sprintf("%s不能为空", key)
+	}
+	paramStr := c.Query(key)
+	if paramStr == "" {
+		if len(defaultValue) > 0 {
+			return defaultValue[0], nil
+		}
+		var zero T
+		return zero, ErrInvalidParam.WithMessage(errStr)
+	}
+
+	val, err := parser(paramStr)
+	if err != nil {
+		if len(defaultValue) > 0 {
+			return defaultValue[0], nil
+		}
+		var zero T
+		return zero, ErrInvalidParam.WithMessage(fmt.Sprintf("%s类型错误", key))
+	}
+
+	return val, nil
+}
+
+// ParseFromPath 有默认值使用默认值而不是返回错误,errStr为空则会只用key不能为空作为错误返回
+func ParseFromPath[T any](c *gin.Context, key string, parser func(string) (T, error)) (T, error) {
+	paramStr := c.Param(key)
+	if paramStr == "" {
+		var zero T
+		return zero, ErrInvalidParam.WithMessage(fmt.Sprintf("%s不存在", key))
+	}
+
+	val, err := parser(paramStr)
+	if err != nil {
+		var zero T
+		return zero, ErrInvalidParam.WithMessage(fmt.Sprintf("%s类型错误", key))
+	}
+
+	return val, nil
 }
