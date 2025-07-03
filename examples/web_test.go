@@ -77,11 +77,11 @@ type TokenTestUser struct {
 var authConfig *gb.GinAuthConfig[TokenTestUser]
 
 func TestZiDingYiToken(t *testing.T) {
-	gb.InitRedis(gb.WithRedisAddressOption([]string{"127.0.0.1:6379"}))
+	redis, _ := gb.InitRedis(gb.WithRedisAddressOption([]string{"127.0.0.1:6379"}))
 
 	authConfig = &gb.GinAuthConfig[TokenTestUser]{
 		DataPtr: new(TokenTestUser),
-		TokenService: gb.NewJWTTokenService[TokenTestUser]("adadasdasdasdasdasd", gb.WithRedisClient[TokenTestUser](gb.RedisClient), gb.WithRedisTokenCheck[TokenTestUser](func(token string) string {
+		TokenService: gb.NewJWTTokenService[TokenTestUser]("adadasdasdasdasdasd", gb.WithRedisClient[TokenTestUser](redis), gb.WithRedisTokenCheck[TokenTestUser](func(token string) string {
 			return fmt.Sprintf("zidingyikey:%s", token)
 		})),
 		GetTokenStrFunc: func(c *gin.Context) string {
@@ -97,4 +97,24 @@ func TestZiDingYiToken(t *testing.T) {
 		gb.WithGinRouterSkipHealthzLog(),
 		gb.WithGinRouterSkipApiMap("/api/test2/hello"),
 	)
+}
+
+func HandUser1() gin.HandlerFunc {
+	type User struct {
+		ID       int64  `json:"id"`
+		Username string `json:"username"`
+	}
+	return func(c *gin.Context) {
+		var (
+			req = new(User)
+			err error
+		)
+
+		if err = c.BindJSON(req); err != nil {
+			gb.ResponseParamError(c, err)
+			return
+		}
+
+		gb.ResponseSuccess(c, req)
+	}
 }

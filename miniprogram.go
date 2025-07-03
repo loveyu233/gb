@@ -6,7 +6,7 @@ import (
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/miniProgram"
 )
 
-type wxMini struct {
+type WXMini struct {
 	MiniProgramApp *miniProgram.MiniProgram
 	isExistsUser   func(UnionID string) (user any, exists bool, err error)                                 // user:返回用户信息和token,exists:是否存在该用户,err错误
 	createUser     func(phoneNumber, unionID, openID, areaCodeByIP, clientIP string) (user any, err error) // 返回创建的用户信息
@@ -70,7 +70,7 @@ type MiniProgramServiceConfig struct {
 	WXMiniImp   WXMiniImp
 }
 
-func InitWXMiniProgramService(config MiniProgramServiceConfig) error {
+func InitWXMiniProgramService(config MiniProgramServiceConfig) (*WXMini, error) {
 	app, err := miniProgram.NewMiniProgram(&miniProgram.UserConfig{
 		AppID:        config.MiniProgram.AppID,
 		Secret:       config.MiniProgram.Secret,
@@ -86,14 +86,15 @@ func InitWXMiniProgramService(config MiniProgramServiceConfig) error {
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	WX.WXMini.IsSaveHandlerLog = config.MiniProgram.IsSaveHandlerLog
-	WX.WXMini.MiniProgramApp = app
-	WX.WXMini.isExistsUser = config.WXMiniImp.IsExistsUser
-	WX.WXMini.createUser = config.WXMiniImp.CreateUser
-	WX.WXMini.generateToken = config.WXMiniImp.GenerateToken
+	var mini = new(WXMini)
+	mini.IsSaveHandlerLog = config.MiniProgram.IsSaveHandlerLog
+	mini.MiniProgramApp = app
+	mini.isExistsUser = config.WXMiniImp.IsExistsUser
+	mini.createUser = config.WXMiniImp.CreateUser
+	mini.generateToken = config.WXMiniImp.GenerateToken
 
-	return nil
+	return mini, nil
 }

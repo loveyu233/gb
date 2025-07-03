@@ -17,14 +17,14 @@ import (
 	"net/http"
 )
 
-func (wx *wxOfficial) RegisterHandlers(r *gin.RouterGroup) {
+func (wx *WXOfficial) RegisterHandlers(r *gin.RouterGroup) {
 	r.Use(GinLogSetModuleName("微信公众号"))
 	r.GET("/wx/callback", GinLogSetOptionName("回调验证", wx.IsSaveHandlerLog), wx.oACallbackVerify)
 	r.POST("/wx/callback", GinLogSetOptionName("收到消息", wx.IsSaveHandlerLog), wx.oACallback)
 	r.POST("/wx/push", GinLogSetOptionName("推送消息", wx.IsSaveHandlerLog), wx.pushHand)
 }
 
-func (wx *wxOfficial) oACallbackVerify(c *gin.Context) {
+func (wx *WXOfficial) oACallbackVerify(c *gin.Context) {
 	//回调验证
 	rs, err := wx.OfficialAccountApp.Server.VerifyURL(c.Request)
 	if err != nil {
@@ -34,7 +34,7 @@ func (wx *wxOfficial) oACallbackVerify(c *gin.Context) {
 	c.String(http.StatusOK, string(text))
 }
 
-func (wx *wxOfficial) oACallback(c *gin.Context) {
+func (wx *WXOfficial) oACallback(c *gin.Context) {
 	rs, err := wx.OfficialAccountApp.Server.Notify(c.Request, func(event contract.EventInterface) interface{} {
 		fmt.Println("event", event)
 		switch event.GetMsgType() {
@@ -73,7 +73,7 @@ func (wx *wxOfficial) oACallback(c *gin.Context) {
 	c.String(http.StatusOK, string(text))
 }
 
-func (wx *wxOfficial) pushHand(c *gin.Context) {
+func (wx *WXOfficial) pushHand(c *gin.Context) {
 	users, message := wx.pushHandler(c)
 	_, err := wx.push(users, message)
 	if err != nil {
@@ -83,7 +83,7 @@ func (wx *wxOfficial) pushHand(c *gin.Context) {
 	ResponseSuccess(c, nil)
 }
 
-func (wx *wxOfficial) push(toUser []string, message string) (interface{}, error) {
+func (wx *WXOfficial) push(toUser []string, message string) (interface{}, error) {
 	if len(toUser) == 1 {
 		//至少两个才能发送成功 添加一个空id
 		toUser = append(toUser, "")
@@ -102,7 +102,7 @@ func (wx *wxOfficial) push(toUser []string, message string) (interface{}, error)
 	return d, err
 }
 
-func (wx *wxOfficial) PushTemplateMessage(toUser, templateId string, data interface{}) (*response.ResponseTemplateSend, error) {
+func (wx *WXOfficial) PushTemplateMessage(toUser, templateId string, data interface{}) (*response.ResponseTemplateSend, error) {
 	d := make(power.HashMap)
 	dataMap, err := structToMapWithJSONTag(data)
 	if err != nil {

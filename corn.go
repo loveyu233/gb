@@ -8,8 +8,6 @@ import (
 	"time"
 )
 
-var CornJob *Corn
-
 type Corn struct {
 	location              *time.Location                                   // 时区
 	beforeJobRuns         func(jobID uuid.UUID, jobName string)            // 运行前
@@ -62,7 +60,7 @@ func WithCornRedisClient(client *redis.Client) CornOptionFunc {
 	}
 }
 
-func InitCornJob(options ...CornOptionFunc) error {
+func InitCornJob(options ...CornOptionFunc) (*Corn, error) {
 	var corn = &Corn{
 		options: make([]gocron.SchedulerOption, 0),
 	}
@@ -73,7 +71,7 @@ func InitCornJob(options ...CornOptionFunc) error {
 	if corn.location == nil {
 		cst, err := time.LoadLocation("Asia/Shanghai")
 		if err != nil {
-			return err
+			return nil, err
 		}
 		corn.location = cst
 	}
@@ -98,19 +96,18 @@ func InitCornJob(options ...CornOptionFunc) error {
 	if corn.redisClient != nil {
 		locker, err := redislock.NewRedisLocker(corn.redisClient)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		corn.options = append(corn.options, gocron.WithDistributedLocker(locker))
 	}
 
 	scheduler, err := gocron.NewScheduler(corn.options...)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	corn.Scheduler = scheduler
-	CornJob = corn
-	return nil
+	return corn, nil
 }
 
 func (corn *Corn) Start() {

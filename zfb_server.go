@@ -53,44 +53,43 @@ type ZFBClient struct {
 	IsSaveHandlerLog bool
 }
 
-var ZFB = new(ZFBClient)
-
 // InitAliClient 其中appid,appPrivateKey,aesKey是内容本身,appPublicKey, aliPublicKey, aliRootKey是证书路径,notifyUrl为支付成功和退款异步通知地址,isSaveHandlerLog 是否保存请求日志
-func InitAliClient(appid, appPrivateKey, aesKey, appPublicKeyFilePath, aliPublicKeyFilePath, aliRootKeyFilePath, notifyUrl string, isSaveHandlerLog bool, zfbMiniImp ZfbMiniImp) error {
+func InitAliClient(appid, appPrivateKey, aesKey, appPublicKeyFilePath, aliPublicKeyFilePath, aliRootKeyFilePath, notifyUrl string, isSaveHandlerLog bool, zfbMiniImp ZfbMiniImp) (*ZFBClient, error) {
 	appPublicKey, err := ReadFileContent(appPublicKeyFilePath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	aliPublicKey, err := ReadFileContent(aliPublicKeyFilePath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	aliRootKey, err := ReadFileContent(aliRootKeyFilePath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	ZFB.appid = appid
-	ZFB.appPrivateKey = appPrivateKey
-	ZFB.aesKey = aesKey
-	ZFB.appPublicKey = appPublicKey
-	ZFB.aliPublicKey = aliPublicKey
-	ZFB.aliRootKey = aliRootKey
-	ZFB.notifyUrl = notifyUrl
-	ZFB.IsSaveHandlerLog = isSaveHandlerLog
-	ZFB.zfbMiniImp = zfbMiniImp
+	var zfb = new(ZFBClient)
+	zfb.appid = appid
+	zfb.appPrivateKey = appPrivateKey
+	zfb.aesKey = aesKey
+	zfb.appPublicKey = appPublicKey
+	zfb.aliPublicKey = aliPublicKey
+	zfb.aliRootKey = aliRootKey
+	zfb.notifyUrl = notifyUrl
+	zfb.IsSaveHandlerLog = isSaveHandlerLog
+	zfb.zfbMiniImp = zfbMiniImp
 
 	clientV3, err := alipay.NewClientV3(appid, appPrivateKey, true)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	clientV3.SetAESKey(aesKey)
 	if err = clientV3.SetCert(appPublicKey, aliPublicKey, aliRootKey); err != nil {
-		return err
+		return nil, err
 	}
 
-	ZFB.client = clientV3
-	return nil
+	zfb.client = clientV3
+	return zfb, nil
 }
 
 type ZFBPayParam struct {

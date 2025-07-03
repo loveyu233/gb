@@ -8,15 +8,12 @@ import (
 	"time"
 )
 
-func init() {
-	err := gb.InitEtcd(gb.WithEtcdEndpointsOpt([]string{"127.0.0.1:2379"}))
+func TestEtcd(t *testing.T) {
+	etcd, err := gb.InitEtcd(gb.WithEtcdEndpointsOpt([]string{"127.0.0.1:2379"}))
 	if err != nil {
 		panic(err)
 	}
-}
-
-func TestEtcd(t *testing.T) {
-	put, err := gb.ETCDClient.Put(gb.Context(), "key", "value")
+	put, err := etcd.Put(gb.Context(), "key", "value")
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -25,12 +22,16 @@ func TestEtcd(t *testing.T) {
 }
 
 func TestLock(t *testing.T) {
+	etcd, err := gb.InitEtcd(gb.WithEtcdEndpointsOpt([]string{"127.0.0.1:2379"}))
+	if err != nil {
+		panic(err)
+	}
 	wg := sync.WaitGroup{}
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func(index int) {
 			defer wg.Done()
-			lock, err := gb.ETCDClient.NewLock("123")
+			lock, err := etcd.NewLock("123")
 			if err != nil {
 				panic(err)
 			}

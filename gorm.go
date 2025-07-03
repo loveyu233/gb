@@ -10,10 +10,6 @@ import (
 	"time"
 )
 
-var (
-	DB = new(GormClient)
-)
-
 type GormClient struct {
 	*gorm.DB
 }
@@ -28,7 +24,7 @@ type GormConnConfig struct {
 }
 
 // InitGormDB gormLogger可以使用默认的GormDefaultLogger
-func InitGormDB(gcc GormConnConfig, gormLogger logger.Interface, opt ...func(db *gorm.DB) error) error {
+func InitGormDB(gcc GormConnConfig, gormLogger logger.Interface, opt ...func(db *gorm.DB) error) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?", gcc.Username, gcc.Password, gcc.Host, gcc.Port, gcc.Database)
 	if gcc.Params["charset"] == nil {
 		dsn = fmt.Sprintf("%scharset=utf8", dsn)
@@ -52,18 +48,16 @@ func InitGormDB(gcc GormConnConfig, gormLogger logger.Interface, opt ...func(db 
 		},
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for _, fn := range opt {
 		if err := fn(db); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	DB.DB = db
-
-	return nil
+	return db, nil
 }
 
 func GormDefaultLogger(logLevel ...int) logger.Interface {

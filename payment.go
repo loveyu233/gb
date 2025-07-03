@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type wxPay struct {
+type WXPay struct {
 	PaymentApp          *payment.Payment
 	payNotifyHandler    func(orderId string, attach string) error
 	refundNotifyHandler func(orderId string) error
@@ -50,7 +50,7 @@ type WXPaymentAppConfig struct {
 	WXPayImp WXPayImp
 }
 
-func InitWXWXPaymentApp(paymentConfig WXPaymentAppConfig) error {
+func InitWXWXPaymentApp(paymentConfig WXPaymentAppConfig) (*WXPay, error) {
 	paymentApp, err := payment.NewPayment(&payment.UserConfig{
 		AppID:              paymentConfig.Payment.AppID,
 		MchID:              paymentConfig.Payment.MchID,
@@ -72,13 +72,14 @@ func InitWXWXPaymentApp(paymentConfig WXPaymentAppConfig) error {
 		NotifyURL:          paymentConfig.Payment.NotifyURL,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	WX.WXPay.IsSaveHandlerLog = paymentConfig.Payment.IsSaveHandlerLog
-	WX.WXPay.PaymentApp = paymentApp
-	WX.WXPay.payNotifyHandler = paymentConfig.WXPayImp.PayNotify
-	WX.WXPay.refundNotifyHandler = paymentConfig.WXPayImp.RefundNotify
-	WX.WXPay.payHandler = paymentConfig.WXPayImp.Pay
-	WX.WXPay.refundHandler = paymentConfig.WXPayImp.Refund
-	return nil
+	var pay = new(WXPay)
+	pay.IsSaveHandlerLog = paymentConfig.Payment.IsSaveHandlerLog
+	pay.PaymentApp = paymentApp
+	pay.payNotifyHandler = paymentConfig.WXPayImp.PayNotify
+	pay.refundNotifyHandler = paymentConfig.WXPayImp.RefundNotify
+	pay.payHandler = paymentConfig.WXPayImp.Pay
+	pay.refundHandler = paymentConfig.WXPayImp.Refund
+	return pay, nil
 }

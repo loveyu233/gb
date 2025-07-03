@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-var RedisClient = new(Redis)
-
 type Redis struct {
 	redis.UniversalClient
 	lock *redsync.Redsync
@@ -267,8 +265,9 @@ func WithRedisIsClusterModeOption(isClusterMode bool) WithRedisOption {
 	}
 }
 
-func InitRedis(ops ...WithRedisOption) error {
-	RedisClient.once = sync.Once{}
+func InitRedis(ops ...WithRedisOption) (*Redis, error) {
+	var redisClient = new(Redis)
+	redisClient.once = sync.Once{}
 	opts := &redis.UniversalOptions{}
 	for _, op := range ops {
 		op(opts)
@@ -276,14 +275,14 @@ func InitRedis(ops ...WithRedisOption) error {
 	if len(opts.Addrs) == 0 {
 		panic("redis address is empty")
 	}
-	RedisClient.UniversalClient = redis.NewUniversalClient(opts)
-	return RedisClient.UniversalClient.Ping(context.Background()).Err()
+	redisClient.UniversalClient = redis.NewUniversalClient(opts)
+	return redisClient, redisClient.UniversalClient.Ping(context.Background()).Err()
 }
 
 // NewLock 使用: https://github.com/go-redsync/redsync, 不设置options会有默认的重试次数和时间,也就是会lock会有错误返回,示例:examples/redis_test.go
 func (r *Redis) NewLock(key string, options ...redsync.Option) *redsync.Mutex {
 	r.once.Do(func() {
-		r.lock = redsync.New(goredis.NewPool(RedisClient))
+		r.lock = redsync.New(goredis.NewPool(r))
 	})
 
 	return r.lock.NewMutex(key, options...)

@@ -8,13 +8,13 @@ import (
 )
 
 func TestCorn(t *testing.T) {
-	err := gb.InitCornJob()
+	cron, err := gb.InitCornJob()
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
 
-	job, err := gb.CornJob.Scheduler.NewJob(gocron.DurationJob(1*time.Second), gocron.NewTask(func() {
+	job, err := cron.Scheduler.NewJob(gocron.DurationJob(1*time.Second), gocron.NewTask(func() {
 		println("hello world")
 	}), gocron.WithLimitedRuns(1))
 	if err != nil {
@@ -23,7 +23,7 @@ func TestCorn(t *testing.T) {
 	}
 	t.Log(job.ID())
 
-	gb.CornJob.Start()
-	defer gb.CornJob.Stop()
+	cron.Start()
+	defer cron.Stop()
 	select {}
 }

@@ -7,10 +7,6 @@ import (
 	"time"
 )
 
-var (
-	RocketMQ = new(RocketMQClient)
-)
-
 type RocketMQConf struct {
 	endpoint      string
 	consumerGroup string
@@ -36,7 +32,7 @@ type RocketMQClient struct {
 }
 
 // GetProduct 获取生产者
-func (conf *RocketMQConf) GetProduct() error {
+func (conf *RocketMQConf) GetProduct() (error, golang.Producer) {
 	config := &golang.Config{
 		Endpoint:      conf.endpoint,
 		ConsumerGroup: conf.consumerGroup,
@@ -48,18 +44,17 @@ func (conf *RocketMQConf) GetProduct() error {
 
 	producer, err := golang.NewProducer(config, golang.WithTopics(conf.topics...))
 	if err != nil {
-		return err
+		return err, nil
 	}
 	err = producer.Start()
 	if err != nil {
-		return err
+		return err, nil
 	}
-	RocketMQ.Product = producer
-	return nil
+	return nil, producer
 }
 
 // GetConsumer 获取消费者
-func (conf *RocketMQConf) GetConsumer(topic string, tag string, withAwaitDuration time.Duration) error {
+func (conf *RocketMQConf) GetConsumer(topic string, tag string, withAwaitDuration time.Duration) (golang.SimpleConsumer, error) {
 	simpleConsumer, err := golang.NewSimpleConsumer(&golang.Config{
 		Endpoint:      conf.endpoint,
 		ConsumerGroup: conf.consumerGroup,
@@ -74,14 +69,13 @@ func (conf *RocketMQConf) GetConsumer(topic string, tag string, withAwaitDuratio
 		}),
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = simpleConsumer.Start()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	RocketMQ.Consumer = simpleConsumer
-	return nil
+	return simpleConsumer, nil
 }
 
 // SendMsg 发送同步消息

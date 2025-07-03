@@ -6,13 +6,13 @@ import (
 )
 
 func TestR(t *testing.T) {
-	gb.InitCaptchaClient(gb.WithCaptchaRotateCapt(10))
+	client := gb.InitCaptchaClient(gb.WithCaptchaRotateCapt(10))
 
-	capt, err := gb.Captcha.RotateCapt("123")
+	capt, err := client.RotateCapt("123")
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
 
-	gb.Captcha.RotateCaptVerify(capt.Key, 10)
+	client.RotateCaptVerify(capt.Key, 10)
 }

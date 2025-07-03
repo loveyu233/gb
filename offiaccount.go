@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type wxOfficial struct {
+type WXOfficial struct {
 	OfficialAccountApp *officialAccount.OfficialAccount
 	subscribe          func(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
 	unSubscribe        func(rs *response.ResponseGetUserInfo, event contract.EventInterface) error
@@ -40,7 +40,7 @@ type OfficialAccountAppServiceConfig struct {
 	WXOfficialImp   WXOfficialImp
 }
 
-func InitWXOfficialAccountAppService(conf OfficialAccountAppServiceConfig) error {
+func InitWXOfficialAccountAppService(conf OfficialAccountAppServiceConfig) (*WXOfficial, error) {
 	app, err := officialAccount.NewOfficialAccount(&officialAccount.UserConfig{
 		AppID:        conf.OfficialAccount.AppID,
 		Secret:       conf.OfficialAccount.AppSecret,
@@ -51,12 +51,14 @@ func InitWXOfficialAccountAppService(conf OfficialAccountAppServiceConfig) error
 		HttpDebug:    conf.OfficialAccount.HttpDebug,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	WX.WXOfficial.IsSaveHandlerLog = conf.OfficialAccount.IsSaveHandlerLog
-	WX.WXOfficial.OfficialAccountApp = app
-	WX.WXOfficial.subscribe = conf.WXOfficialImp.Subscribe
-	WX.WXOfficial.unSubscribe = conf.WXOfficialImp.UnSubscribe
-	WX.WXOfficial.pushHandler = conf.WXOfficialImp.PushHandler
-	return nil
+	var officaial = new(WXOfficial)
+	officaial.IsSaveHandlerLog = conf.OfficialAccount.IsSaveHandlerLog
+	officaial.OfficialAccountApp = app
+	officaial.subscribe = conf.WXOfficialImp.Subscribe
+	officaial.unSubscribe = conf.WXOfficialImp.UnSubscribe
+	officaial.pushHandler = conf.WXOfficialImp.PushHandler
+	return officaial, nil
+
 }

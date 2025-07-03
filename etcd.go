@@ -10,8 +10,6 @@ import (
 	"time"
 )
 
-var ETCDClient = new(Etcd)
-
 type Etcd struct {
 	*clientv3.Client
 }
@@ -152,7 +150,7 @@ func WithEtcdBackoffJitterFractionOpt(jitterFraction float64) WithEtcdOpt {
 }
 
 // InitEtcd 初始化etcd客户端
-func InitEtcd(opts ...WithEtcdOpt) error {
+func InitEtcd(opts ...WithEtcdOpt) (*Etcd, error) {
 	config := &clientv3.Config{}
 	for _, opt := range opts {
 		opt(config)
@@ -162,10 +160,11 @@ func InitEtcd(opts ...WithEtcdOpt) error {
 	}
 	client, err := clientv3.New(*config)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	var ETCDClient = new(Etcd)
 	ETCDClient.Client = client
-	return nil
+	return ETCDClient, nil
 }
 
 // NewLock 初始化etcd分布式锁,详细用法查看 examples/etcd_test.go

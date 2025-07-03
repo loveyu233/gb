@@ -23,8 +23,6 @@ type CaptchaClient struct {
 	maxRetriesNumber  int
 }
 
-var Captcha = new(CaptchaClient)
-
 type CaptchaClientOption func(*CaptchaClient)
 
 // WithCaptchaRedisClient 设置redis客户端, ttl过期时间单位秒
@@ -62,21 +60,23 @@ func WithCaptchaRotateCapt(rotateCaptPadding int, val ...option.RangeVal) Captch
 }
 
 // InitCaptchaClient 如果不设置WithCaptchaRedisClient则使用内存保存key,过期时间不设置默认为120s
-func InitCaptchaClient(opts ...CaptchaClientOption) {
+func InitCaptchaClient(opts ...CaptchaClientOption) *CaptchaClient {
+	var captcha = new(CaptchaClient)
 	for _, opt := range opts {
-		opt(Captcha)
+		opt(captcha)
 	}
-	if Captcha.client == nil {
+	if captcha.client == nil {
 		panic("redis client is nil")
 	}
 
-	if Captcha.ttl == 0 {
-		Captcha.ttl = 120
+	if captcha.ttl == 0 {
+		captcha.ttl = 120
 	}
 
-	if Captcha.maxRetriesNumber == 0 {
-		Captcha.maxRetriesNumber = 3
+	if captcha.maxRetriesNumber == 0 {
+		captcha.maxRetriesNumber = 3
 	}
+	return captcha
 }
 
 type RotateCaptInfo struct {
