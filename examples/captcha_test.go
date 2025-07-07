@@ -8,8 +8,8 @@ import (
 
 func TestR(t *testing.T) {
 	gb.InitRedis(gb.WithRedisAddressOption([]string{"127.0.0.1:6379"}))
-	manager := gb.NewCaptchaManager(gb.RedisClient)
-	generate, err := manager.Generate(gb.TypeSlide)
+	gb.InitCaptchaManager(gb.RedisClient)
+	generate, err := gb.CaptchaManager.Generate(gb.TypeSlide)
 	if err != nil {
 		t.Fatal(err)
 		return
