@@ -36,7 +36,7 @@ func registerDemo1PrivateRoutes(r *gin.RouterGroup) {
 }
 
 func registerDemo1PublicRoutes(r *gin.RouterGroup) {
-	test2Routes := r.Group("/test2", gb.GinLogSetModuleName("这是测试2模块"))
+	test2Routes := r.Group("/test2", gb.GinLogSetSkipLogFlag(), gb.GinLogSetModuleName("这是测试2模块"))
 	{
 		test2Routes.GET("/hello", gb.GinLogSetOptionName("hello"), func(c *gin.Context) {
 			type Req struct {
@@ -95,6 +95,5 @@ func TestZiDingYiToken(t *testing.T) {
 	gb.InitHTTPServerAndStart(authConfig, "127.0.0.1:8080",
 		gb.WithGinRouterModel(gb.GinModelDebug),
 		gb.WithGinRouterSkipHealthzLog(),
-		gb.WithGinRouterSkipApiMap("/api/test2/hello"),
 	)
 }

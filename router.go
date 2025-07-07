@@ -1,9 +1,7 @@
 package gb
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"strings"
 )
 
 var (
@@ -12,24 +10,15 @@ var (
 	PrivateRoutes = make([]func(*gin.RouterGroup), 0) // 存储需要认证的私有路由处理函数
 )
 
-func init() {
-	PublicRoutes = append(PublicRoutes, func(group *gin.RouterGroup) {
-		group.Any("/healthz", func(c *gin.Context) {
-			c.Status(200)
-		})
-	})
-}
-
 type RouterConfig struct {
-	skipApiMap       map[string]struct{} // 日志输出跳过的api
-	skipHealthz      bool                // 是否跳过健康检查请求的日志输出
-	model            GinModel            // gin启动模式
-	prefix           string              // api前缀
-	authMiddleware   []gin.HandlerFunc   // 认证api的中间件
-	globalMiddleware []gin.HandlerFunc   // 全局中间件
-	recordHeaderKeys []string            // 需要记录的请求头
-	saveLog          func(ReqLog)        // 保存请求日志
-	tokenData        any                 // token携带的信息
+	skipHealthz      bool              // 是否跳过健康检查请求的日志输出
+	model            GinModel          // gin启动模式
+	prefix           string            // api前缀
+	authMiddleware   []gin.HandlerFunc // 认证api的中间件
+	globalMiddleware []gin.HandlerFunc // 全局中间件
+	recordHeaderKeys []string          // 需要记录的请求头
+	saveLog          func(ReqLog)      // 保存请求日志
+	tokenData        any               // token携带的信息
 }
 
 type GinModel string
@@ -67,15 +56,6 @@ func WithGinRouterModel(model GinModel) GinRouterConfigOptionFunc {
 func WithGinRouterSkipHealthzLog() GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.skipHealthz = true
-	}
-}
-
-func WithGinRouterSkipApiMap(skipApis ...string) GinRouterConfigOptionFunc {
-	return func(config *RouterConfig) {
-		config.skipApiMap = make(map[string]struct{})
-		for _, item := range skipApis {
-			config.skipApiMap[item] = struct{}{}
-		}
 	}
 }
 
@@ -127,20 +107,18 @@ func initRouter[T any](authConfig *GinAuthConfig[T], opts ...GinRouterConfigOpti
 		config.prefix = "/api"
 	}
 
-	if config.skipApiMap == nil {
-		config.skipApiMap = make(map[string]struct{})
-	}
-
 	if config.skipHealthz {
-		config.skipApiMap[fmt.Sprintf("%s/healthz", config.prefix)] = struct{}{}
-	}
-
-	if config.model == GinModelDebug {
-		var skips []string
-		for k, _ := range config.skipApiMap {
-			skips = append(skips, k)
-		}
-		fmt.Printf("跳过日志收集api:[%s]\n", strings.Join(skips, ";"))
+		PublicRoutes = append(PublicRoutes, func(group *gin.RouterGroup) {
+			group.Any("/healthz", GinLogSetSkipLogFlag(), func(c *gin.Context) {
+				c.Status(200)
+			})
+		})
+	} else {
+		PublicRoutes = append(PublicRoutes, func(group *gin.RouterGroup) {
+			group.Any("/healthz", func(c *gin.Context) {
+				c.Status(200)
+			})
+		})
 	}
 
 	if config.tokenData == nil {
@@ -155,7 +133,7 @@ func initRouter[T any](authConfig *GinAuthConfig[T], opts ...GinRouterConfigOpti
 		config.globalMiddleware = []gin.HandlerFunc{MiddlewareTraceID(), MiddlewareRequestTime(), MiddlewareLogger(MiddlewareLogConfig{
 			HeaderKeys: config.recordHeaderKeys,
 			SaveLog:    config.saveLog,
-		}, config.skipApiMap), MiddlewareRecovery()}
+		}), MiddlewareRecovery()}
 	}
 	engine = newGinRouter(config.model, config.globalMiddleware...)
 

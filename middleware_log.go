@@ -266,13 +266,8 @@ type FileInfo struct {
 }
 
 // MiddlewareLogger 创建 Gin 中间件,在handler里面使用zlog := gb.GetContextLogger(c),使用zlog进行日志记录
-func MiddlewareLogger(mc MiddlewareLogConfig, skipMap ...map[string]struct{}) gin.HandlerFunc {
+func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if len(skipMap) > 0 {
-			if _, ok := skipMap[0][c.Request.URL.Path]; ok {
-				return
-			}
-		}
 		// 开始时间
 		startTime := GetCurrentTime()
 		// 创建请求日志器
@@ -427,6 +422,10 @@ func MiddlewareLogger(mc MiddlewareLogConfig, skipMap ...map[string]struct{}) gi
 		fullURL := scheme + "://" + c.Request.Host + c.Request.RequestURI
 
 		c.Next()
+		if c.GetBool("skip") {
+			c.Next()
+			return
+		}
 
 		// 记录请求开始信息
 		requestLogger.AddEntry(zerolog.InfoLevel, "request", map[string]any{
@@ -512,6 +511,12 @@ func GinLogSetOptionName(name string, noRecord ...bool) gin.HandlerFunc {
 		if len(noRecord) > 0 && noRecord[0] {
 			c.Set("no_record", true)
 		}
+		c.Next()
+	}
+}
+func GinLogSetSkipLogFlag() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("skip", true)
 		c.Next()
 	}
 }
