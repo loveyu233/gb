@@ -427,6 +427,13 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 			return
 		}
 
+		var contentKV = make(map[string]any)
+		for _, key := range mc.ContentKeys {
+			value, exists := c.Get(key)
+			if exists {
+				contentKV[key] = value
+			}
+		}
 		// 记录请求开始信息
 		requestLogger.AddEntry(zerolog.InfoLevel, "request", map[string]any{
 			"req_time":   startTime.Format(CSTLayout),
@@ -437,27 +444,30 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 			"user_agent": c.Request.UserAgent(),
 			"client_ip":  c.ClientIP(),
 			"header":     headerMap,
+			"module":     c.GetString("module"),
+			"option":     c.GetString("option"),
+			"content_kv": contentKV,
 		})
 
-		var contentKV = make(map[string]any)
-		for _, key := range mc.ContentKeys {
-			value, exists := c.Get(key)
-			if exists {
-				contentKV[key] = value
-			}
+		if c.GetBool("only-req") {
+			// 输出所有收集的日志
+			requestLogger.Flush()
+			c.Next()
+			return
 		}
 
 		duration := time.Since(startTime)
+
 		bodyMap := make(map[string]any)
-		readAll, _ := io.ReadAll(io.NopCloser(bodyBuffer))
-		json.Unmarshal(readAll, &bodyMap)
+		if !c.GetBool("skip-resp-body") {
+			readAll, _ := io.ReadAll(io.NopCloser(bodyBuffer))
+			json.Unmarshal(readAll, &bodyMap)
+		}
+
 		requestLogger.AddEntry(zerolog.InfoLevel, "response", map[string]any{
-			"content_kv":  contentKV,
 			"status_code": c.Writer.Status(),
 			"duration":    duration.String(),
 			"resp_body":   bodyMap,
-			"module":      c.GetString("module"),
-			"option":      c.GetString("option"),
 		})
 
 		// 输出所有收集的日志
@@ -517,6 +527,20 @@ func GinLogSetOptionName(name string, noRecord ...bool) gin.HandlerFunc {
 func GinLogSetSkipLogFlag() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("skip", true)
+		c.Next()
+	}
+}
+
+func GinLogOnlyReqMsg() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("only-req", true)
+		c.Next()
+	}
+}
+
+func GinLogSkipRespBody() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("skip-resp-body", true)
 		c.Next()
 	}
 }
