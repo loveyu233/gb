@@ -1,18 +1,18 @@
 package examples
 
 import (
+	"fmt"
 	"github.com/loveyu233/gb"
 	"testing"
 )
 
 func TestR(t *testing.T) {
-	gb.InitCaptchaClient(gb.WithCaptchaRotateCapt(10))
-
-	capt, err := gb.Captcha.RotateCapt("123")
+	gb.InitRedis(gb.WithRedisAddressOption([]string{"127.0.0.1:6379"}))
+	manager := gb.NewCaptchaManager(gb.RedisClient)
+	generate, err := manager.Generate(gb.TypeSlide)
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
-
-	gb.Captcha.RotateCaptVerify(capt.Key, 10)
+	fmt.Printf("%+v", generate)
 }

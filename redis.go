@@ -311,3 +311,14 @@ func (r *Redis) FindAllBitMapByTargetValue(key string, targetValue byte) ([]int6
 	})
 	return setBits, nil
 }
+func (r *Redis) SetCaptcha(key string, value any, expiration time.Duration) error {
+	return r.SetNX(context.Background(), key, value, expiration).Err()
+}
+
+func (r *Redis) GetCaptcha(key string) (string, error) {
+	return r.Get(context.Background(), key).Result()
+}
+
+func (r *Redis) DelCaptcha(key string) error {
+	return r.Del(context.Background(), key).Err()
+}
