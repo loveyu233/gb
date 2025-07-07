@@ -238,20 +238,19 @@ func init() {
 }
 
 type ReqLog struct {
-	ReqTime    time.Time         `json:"req_time"`
-	Module     string            `json:"module,omitempty"`
-	Option     string            `json:"option,omitempty"`
-	Method     string            `json:"method,omitempty"`
-	Path       string            `json:"path,omitempty"`
-	URL        string            `json:"url,omitempty"`
-	IP         string            `json:"ip,omitempty"`
-	Content    map[string]any    `json:"content,omitempty"`
-	Headers    map[string]string `json:"headers,omitempty"`
-	Params     map[string]any    `json:"params,omitempty"`
-	Status     int               `json:"status,omitempty"`
-	RespStatus int               `json:"resp_status"`
-	Latency    time.Duration     `json:"latency,omitempty"`
-	Body       map[string]any    `json:"body,omitempty"`
+	ReqTime time.Time         `json:"req_time"`
+	Module  string            `json:"module,omitempty"`
+	Option  string            `json:"option,omitempty"`
+	Method  string            `json:"method,omitempty"`
+	Path    string            `json:"path,omitempty"`
+	URL     string            `json:"url,omitempty"`
+	IP      string            `json:"ip,omitempty"`
+	Content map[string]any    `json:"content,omitempty"`
+	Headers map[string]string `json:"headers,omitempty"`
+	Params  map[string]any    `json:"params,omitempty"`
+	Status  int               `json:"status,omitempty"`
+	Latency time.Duration     `json:"latency,omitempty"`
+	Body    map[string]any    `json:"body,omitempty"`
 }
 
 type MiddlewareLogConfig struct {
@@ -460,15 +459,16 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		duration := time.Since(startTime)
 
 		bodyMap := make(map[string]any)
-		if !c.GetBool("skip-resp-body") {
+		if !c.GetBool("brief") {
 			readAll, _ := io.ReadAll(io.NopCloser(bodyBuffer))
 			json.Unmarshal(readAll, &bodyMap)
+		} else {
+			bodyMap["status"] = c.GetInt("resp-status")
+			bodyMap["message"] = c.GetString("resp-msg")
 		}
 
-		respStatus := c.GetInt("resp-status")
 		requestLogger.AddEntry(zerolog.InfoLevel, "response", map[string]any{
 			"status_code": c.Writer.Status(),
-			"resp_status": respStatus,
 			"duration":    duration.String(),
 			"resp_body":   bodyMap,
 		})
@@ -479,20 +479,19 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		if mc.SaveLog != nil && !c.GetBool("no_record") {
 			go func() {
 				mc.SaveLog(ReqLog{
-					ReqTime:    startTime,
-					Module:     c.GetString("module"),
-					Option:     c.GetString("option"),
-					Method:     c.Request.Method,
-					Path:       c.Request.URL.Path,
-					URL:        fullURL,
-					IP:         c.ClientIP(),
-					Content:    contentKV,
-					Headers:    headerMap,
-					Params:     params,
-					Status:     c.Writer.Status(),
-					RespStatus: respStatus,
-					Latency:    duration,
-					Body:       bodyMap,
+					ReqTime: startTime,
+					Module:  c.GetString("module"),
+					Option:  c.GetString("option"),
+					Method:  c.Request.Method,
+					Path:    c.Request.URL.Path,
+					URL:     fullURL,
+					IP:      c.ClientIP(),
+					Content: contentKV,
+					Headers: headerMap,
+					Params:  params,
+					Status:  c.Writer.Status(),
+					Latency: duration,
+					Body:    bodyMap,
 				})
 			}()
 		}
@@ -512,6 +511,8 @@ func GetContextLogger(c *gin.Context) *ContextLogger {
 		requestLogger: NewRequestLogger(context.Background(), log.Logger),
 	}
 }
+
+// GinLogSetModuleName 设置模块名称
 func GinLogSetModuleName(name string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("module", name)
@@ -519,6 +520,7 @@ func GinLogSetModuleName(name string) gin.HandlerFunc {
 	}
 }
 
+// GinLogSetOptionName 设置操作名称
 func GinLogSetOptionName(name string, noRecord ...bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("option", name)
@@ -528,6 +530,8 @@ func GinLogSetOptionName(name string, noRecord ...bool) gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// GinLogSetSkipLogFlag 跳过日志记录
 func GinLogSetSkipLogFlag() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("skip", true)
@@ -535,6 +539,7 @@ func GinLogSetSkipLogFlag() gin.HandlerFunc {
 	}
 }
 
+// GinLogOnlyReqMsg 只记录请求不记录响应
 func GinLogOnlyReqMsg() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("only-req", true)
@@ -542,9 +547,10 @@ func GinLogOnlyReqMsg() gin.HandlerFunc {
 	}
 }
 
-func GinLogSkipRespBody() gin.HandlerFunc {
+// GinLogBriefInformation 记录简短的日志信息
+func GinLogBriefInformation() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Set("skip-resp-body", true)
+		c.Set("brief", true)
 		c.Next()
 	}
 }

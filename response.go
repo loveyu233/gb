@@ -117,6 +117,7 @@ type Response struct {
 func ResponseError(c *gin.Context, err error) {
 	appErr := ConvertToAppError(err)
 	c.Set("resp-status", appErr.Code)
+	c.Set("resp-msg", appErr.Message)
 	c.JSON(http.StatusOK, &Response{
 		Code:    appErr.Code,
 		Message: appErr.Message,
@@ -125,16 +126,19 @@ func ResponseError(c *gin.Context, err error) {
 }
 
 func ResponseParamError(c *gin.Context, err error) {
+	te := TranslateError(err).Error()
 	c.Set("resp-status", ErrInvalidParam.Code)
+	c.Set("resp-msg", te)
 	c.JSON(http.StatusOK, &Response{
 		Code:    ErrInvalidParam.Code,
-		Message: TranslateError(err).Error(),
+		Message: te,
 		TraceID: c.GetString("trace_id"),
 	})
 }
 
 func ResponseSuccess(c *gin.Context, data interface{}) {
 	c.Set("resp-status", http.StatusOK)
+	c.Set("resp-msg", "请求成功")
 	c.JSON(http.StatusOK, &Response{
 		Code:    http.StatusOK,
 		Message: "请求成功",
