@@ -107,19 +107,17 @@ func initRouter[T any](authConfig *GinAuthConfig[T], opts ...GinRouterConfigOpti
 		config.prefix = "/api"
 	}
 
-	if config.skipHealthz {
-		PublicRoutes = append(PublicRoutes, func(group *gin.RouterGroup) {
+	PublicRoutes = append(PublicRoutes, func(group *gin.RouterGroup) {
+		if config.skipHealthz {
 			group.Any("/healthz", GinLogSetSkipLogFlag(), func(c *gin.Context) {
 				c.Status(200)
 			})
-		})
-	} else {
-		PublicRoutes = append(PublicRoutes, func(group *gin.RouterGroup) {
+		} else {
 			group.Any("/healthz", func(c *gin.Context) {
 				c.Status(200)
 			})
-		})
-	}
+		}
+	})
 
 	if config.tokenData == nil {
 		config.tokenData = new(TokenDefaultData)
