@@ -37,10 +37,7 @@ func (m *Manager) RegisterGenerator(generator CaptchaInterface) {
 
 // Generate 生成验证码
 func (m *Manager) Generate(captchaType CaptchaType, configs ...CaptchaConfig) (*CaptchaResponse, error) {
-	m.mu.RLock()
 	generator, exists := m.generators[captchaType]
-	m.mu.RUnlock()
-
 	config := DefaultConfig
 	if len(configs) > 0 {
 		config = configs[0]
@@ -64,11 +61,7 @@ func (m *Manager) Verify(req *CaptchaVerifyRequest) error {
 	if err != nil {
 		return err
 	}
-
-	m.mu.RLock()
 	generator, exists := m.generators[captchaType]
-	m.mu.RUnlock()
-
 	if !exists {
 		return fmt.Errorf("unsupported captcha type: %s", captchaType)
 	}

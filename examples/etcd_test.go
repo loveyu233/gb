@@ -30,17 +30,16 @@ func TestLock(t *testing.T) {
 		wg.Add(1)
 		go func(index int) {
 			defer wg.Done()
-			lock, err := gb.ETCDClient.NewLock("123")
+			lock, err := gb.ETCDClient.NewLock("lock-event-d09777dfa1ab37c5")
 			if err != nil {
 				panic(err)
 			}
 			// 设置等待时间为3s超时则报错
-			if err = lock.Lock(gb.Context(3)); err != nil {
-				t.Log("加锁失败:", index)
+			if err = lock.Lock(context.Background()); err != nil {
+				t.Log("加锁失败:", index, err)
 				return
 			}
-			defer lock.Unlock(context.Background())
-			time.Sleep(2 * time.Second)
+			defer lock.Unlock(gb.Context())
 			t.Log("success", index, time.Now().String())
 		}(i)
 	}
