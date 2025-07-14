@@ -4,6 +4,11 @@ go 1.23.7
 
 require (
 	github.com/ArtisanCloud/PowerWeChat/v3 v3.4.13
+	github.com/alibabacloud-go/darabonba-openapi/v2 v2.1.8
+	github.com/alibabacloud-go/dysmsapi-20170525/v5 v5.1.2
+	github.com/alibabacloud-go/tea v1.3.9
+	github.com/alibabacloud-go/tea-utils/v2 v2.0.7
+	github.com/aliyun/credentials-go v1.4.6
 	github.com/apache/rocketmq-clients/golang/v5 v5.1.2
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/gin-gonic/gin v1.10.1
@@ -17,6 +22,7 @@ require (
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/go-sql-driver/mysql v1.9.2
 	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/google/uuid v1.6.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/panjf2000/ants/v2 v2.11.3
@@ -46,6 +52,10 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/ArtisanCloud/PowerLibs/v3 v3.3.2 // indirect
 	github.com/ArtisanCloud/PowerSocialite/v3 v3.0.7 // indirect
+	github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.5 // indirect
+	github.com/alibabacloud-go/debug v1.0.1 // indirect
+	github.com/alibabacloud-go/endpoint-util v1.1.0 // indirect
+	github.com/alibabacloud-go/openapi-util v0.1.1 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
@@ -66,7 +76,6 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -93,6 +102,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
+	github.com/tjfoc/gmsm v1.4.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/valyala/fastrand v1.1.0 // indirect
@@ -112,5 +122,6 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20250528174236-200df99c418a // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
+	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
