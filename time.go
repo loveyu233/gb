@@ -182,8 +182,8 @@ func GetCurrentTimeSubHours(hours int) time.Time {
 	return time.Now().Add(-time.Duration(hours) * time.Hour)
 }
 
-// FormatRelativeDate 根据输入时间返回相对日期描述,otherTimeStr空则返回2006-01-02格式时间
-func FormatRelativeDate(inputTime time.Time) string {
+// FormatDateRelativeDate 根据输入时间返回相对日期描述,otherTimeStr空则返回2006-01-02格式时间
+func FormatDateRelativeDate(inputTime time.Time) string {
 	now := GetCurrentTime()
 
 	year, month, day := inputTime.Date()
@@ -205,6 +205,24 @@ func FormatRelativeDate(inputTime time.Time) string {
 
 	// 不符合任何条件，返回空字符串
 	return ""
+}
+
+func FormatTimeRelativeDate(t time.Time) string {
+	hour := t.Hour()
+	switch {
+	case hour >= 0 && hour < 6:
+		return "凌晨"
+	case hour >= 6 && hour < 12:
+		return "上午"
+	case hour == 12:
+		return "中午"
+	case hour >= 13 && hour < 18:
+		return "下午"
+	case hour >= 18 && hour < 24:
+		return "晚上"
+	default:
+		return ""
+	}
 }
 
 // GetTodayInterval 获取今天从开始到结束的时间区间

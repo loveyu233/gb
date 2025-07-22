@@ -122,7 +122,7 @@ func (d *DateOnly) UnmarshalJSON(data []byte) error {
 }
 
 func (d DateOnly) FormatRelativeDate() string {
-	return FormatRelativeDate(d.Time())
+	return FormatDateRelativeDate(d.Time())
 }
 
 type Slice[T any] []T
@@ -322,4 +322,8 @@ func (t TimeOnly) Equal(other TimeOnly) bool {
 // Sub 方法 - 计算两个时间的差值，返回 Duration
 func (t TimeOnly) Sub(other TimeOnly) time.Duration {
 	return t.Time().Sub(other.Time())
+}
+
+func (t TimeOnly) FormatRelativeDate() string {
+	return FormatTimeRelativeDate(t.Time())
 }
