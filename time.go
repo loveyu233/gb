@@ -186,40 +186,20 @@ func GetCurrentTimeSubHours(hours int) time.Time {
 func FormatRelativeDate(inputTime time.Time) string {
 	now := GetCurrentTime()
 
-	// 获取今天的开始时间（00:00:00）
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-
-	// 获取昨天的开始时间
-	yesterday := today.AddDate(0, 0, -1)
-
-	// 获取本月的开始时间
-	thisMonthStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
-
-	// 获取上月的开始时间和结束时间
-	lastMonthStart := thisMonthStart.AddDate(0, -1, 0)
-	lastMonthEnd := thisMonthStart.AddDate(0, 0, -1)
-
-	// 获取输入时间的日期部分（忽略具体时间）
-	inputDate := time.Date(inputTime.Year(), inputTime.Month(), inputTime.Day(), 0, 0, 0, 0, inputTime.Location())
-
-	// 判断是否是今天
-	if inputDate.Equal(today) {
+	year, month, day := inputTime.Date()
+	if year == now.Year() && month == now.Month() && day == now.Day() {
 		return "今天"
 	}
-
-	// 判断是否是昨天
-	if inputDate.Equal(yesterday) {
+	if year == now.Year() && month == now.Month() && day == now.AddDate(0, 0, 1).Day() {
+		return "明天"
+	}
+	if year == now.Year() && month == now.Month() && day == now.AddDate(0, 0, -1).Day() {
 		return "昨天"
 	}
-
-	// 判断是否是本月（但不是今天和昨天）
-	if inputDate.After(yesterday) && inputDate.Before(today.AddDate(0, 1, 0)) {
+	if year == now.Year() && month == now.Month() {
 		return "本月"
 	}
-
-	// 判断是否是上月
-	if (inputDate.Equal(lastMonthStart) || inputDate.After(lastMonthStart)) &&
-		(inputDate.Equal(lastMonthEnd) || inputDate.Before(lastMonthEnd.AddDate(0, 0, 1))) {
+	if year == now.Year() && month == now.AddDate(0, -1, 0).Month() {
 		return "上月"
 	}
 
