@@ -404,12 +404,12 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 	}
 
 	for _, item := range genConfig.tags {
-		gen.FieldTag(item.ColumnName, func(tag field.Tag) field.Tag {
+		fieldTypes = append(fieldTypes, gen.FieldTag(item.ColumnName, func(tag field.Tag) field.Tag {
 			for k, v := range item.Tags {
 				tag.Set(k, v)
 			}
 			return tag
-		})
+		}))
 	}
 
 	g.ApplyBasic(g.GenerateAllTable(fieldTypes...)...)
