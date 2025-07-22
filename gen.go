@@ -11,17 +11,12 @@ import (
 type GenFieldType struct {
 	ColumnName string
 	ColumnType string
-}
-
-type GenTag struct {
-	ColumnName string
 	Tags       map[string]string
 }
 
 type GenConfig struct {
 	OutFilePath string
 	fieldType   []GenFieldType
-	tags        []GenTag
 }
 
 type WithGenConfig func(*GenConfig)
@@ -35,12 +30,6 @@ func WithGenOutFilePath(outFilePath string) WithGenConfig {
 func WithGenFieldType(fields []GenFieldType) WithGenConfig {
 	return func(gc *GenConfig) {
 		gc.fieldType = fields
-	}
-}
-
-func WithGenJsonTag(tags []GenTag) WithGenConfig {
-	return func(gc *GenConfig) {
-		gc.tags = tags
 	}
 }
 
@@ -401,15 +390,14 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 	var fieldTypes []gen.ModelOpt
 	for _, item := range genConfig.fieldType {
 		fieldTypes = append(fieldTypes, gen.FieldType(item.ColumnName, item.ColumnType))
-	}
-
-	for _, item := range genConfig.tags {
-		fieldTypes = append(fieldTypes, gen.FieldTag(item.ColumnName, func(tag field.Tag) field.Tag {
-			for k, v := range item.Tags {
-				tag.Set(k, v)
-			}
-			return tag
-		}))
+		if len(item.Tags) > 0 {
+			fieldTypes = append(fieldTypes, gen.FieldTag(item.ColumnName, func(tag field.Tag) field.Tag {
+				for k, v := range item.Tags {
+					tag.Set(k, v)
+				}
+				return tag
+			}))
+		}
 	}
 
 	g.ApplyBasic(g.GenerateAllTable(fieldTypes...)...)
