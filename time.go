@@ -183,34 +183,48 @@ func GetCurrentTimeSubHours(hours int) time.Time {
 }
 
 // FormatRelativeDate 根据输入时间返回相对日期描述,otherTimeStr空则返回2006-01-02格式时间
-func FormatRelativeDate(inputTime time.Time, otherTimeStr ...string) string {
+func FormatRelativeDate(inputTime time.Time) string {
 	now := GetCurrentTime()
 
-	// 获取今天零点时间
+	// 获取今天的开始时间（00:00:00）
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
-	// 获取昨天零点时间
+	// 获取昨天的开始时间
 	yesterday := today.AddDate(0, 0, -1)
 
-	// 获取明天零点时间
-	tomorrow := today.AddDate(0, 0, 1)
+	// 获取本月的开始时间
+	thisMonthStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 
-	// 获取输入时间的日期部分（零点时间）
+	// 获取上月的开始时间和结束时间
+	lastMonthStart := thisMonthStart.AddDate(0, -1, 0)
+	lastMonthEnd := thisMonthStart.AddDate(0, 0, -1)
+
+	// 获取输入时间的日期部分（忽略具体时间）
 	inputDate := time.Date(inputTime.Year(), inputTime.Month(), inputTime.Day(), 0, 0, 0, 0, inputTime.Location())
 
-	// 判断是今天、昨天还是其他
+	// 判断是否是今天
 	if inputDate.Equal(today) {
 		return "今天"
-	} else if inputDate.Equal(yesterday) {
-		return "昨天"
-	} else if inputDate.Equal(tomorrow) {
-		return "明天"
-	} else {
-		if len(otherTimeStr) > 0 {
-			return otherTimeStr[0]
-		}
-		return inputTime.Format("2006-01-02")
 	}
+
+	// 判断是否是昨天
+	if inputDate.Equal(yesterday) {
+		return "昨天"
+	}
+
+	// 判断是否是本月（但不是今天和昨天）
+	if inputDate.After(yesterday) && inputDate.Before(today.AddDate(0, 1, 0)) {
+		return "本月"
+	}
+
+	// 判断是否是上月
+	if (inputDate.Equal(lastMonthStart) || inputDate.After(lastMonthStart)) &&
+		(inputDate.Equal(lastMonthEnd) || inputDate.Before(lastMonthEnd.AddDate(0, 0, 1))) {
+		return "上月"
+	}
+
+	// 不符合任何条件，返回空字符串
+	return ""
 }
 
 // GetTodayInterval 获取今天从开始到结束的时间区间

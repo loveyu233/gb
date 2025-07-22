@@ -121,6 +121,10 @@ func (d *DateOnly) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func (d DateOnly) FormatRelativeDate() string {
+	return FormatRelativeDate(d.Time())
+}
+
 type Slice[T any] []T
 
 func (Slice[T]) GormDataType() string {
