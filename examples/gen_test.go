@@ -19,10 +19,8 @@ func TestGenConfig(t *testing.T) {
 	gb.DB.Gen(gb.WithGenOutFilePath("../gen/query"), gb.WithGenFieldType([]gb.GenFieldType{{
 		ColumnName: "json_field",
 		ColumnType: "types.User",
-	}}), gb.WithGenJsonTag([]gb.GenTag{{
-		ColumnName: "json_field",
 		Tags: map[string]string{
-			"gorm": "column:json_field;serializer:json;default:'[]'",
+			"gorm": "column:json_field;serializer:json",
 		},
 	}}))
 }
