@@ -279,3 +279,43 @@ func (t *TimeOnly) UnmarshalJSON(data []byte) error {
 	*t = TimeOnly(parsed)
 	return nil
 }
+
+func (t TimeOnly) AddTime(hours, minutes, seconds int) TimeOnly {
+	tm := time.Time(t)
+
+	// 添加指定的时间
+	newTime := tm.Add(
+		time.Duration(hours)*time.Hour +
+			time.Duration(minutes)*time.Minute +
+			time.Duration(seconds)*time.Second,
+	)
+
+	// 确保日期部分保持为 1970-01-01，只保留时间部分
+	fixedTime := time.Date(
+		1970, 1, 1,
+		newTime.Hour(), newTime.Minute(), newTime.Second(), newTime.Nanosecond(),
+		time.UTC,
+	)
+
+	return TimeOnly(fixedTime)
+}
+
+// Before 方法 - 判断当前时间是否早于另一个时间
+func (t TimeOnly) Before(other TimeOnly) bool {
+	return t.Time().Before(other.Time())
+}
+
+// After 方法 - 判断当前时间是否晚于另一个时间
+func (t TimeOnly) After(other TimeOnly) bool {
+	return t.Time().Before(other.Time())
+}
+
+// Equal 方法 - 判断两个时间是否相等
+func (t TimeOnly) Equal(other TimeOnly) bool {
+	return t.Time().Equal(other.Time())
+}
+
+// Sub 方法 - 计算两个时间的差值，返回 Duration
+func (t TimeOnly) Sub(other TimeOnly) time.Duration {
+	return t.Time().Sub(other.Time())
+}
