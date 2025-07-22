@@ -17,3 +17,7 @@ func IsPtr(target any) bool {
 
 	return true
 }
+
+func PtrType[T any](v T) *T {
+	return &v
+}
