@@ -16,16 +16,6 @@ func TestGenConfig(t *testing.T) {
 		panic(err)
 	}
 
-	gb.DB.Gen(gb.WithGenOutFilePath("../gen/query"),
-		gb.WithGenUseTablesName("simple_table"),
-		gb.WithGenTableColumnType(map[string][]gb.GenFieldType{
-			"simple_table": {
-				{
-					ColumnName:       "json_field",
-					ColumnType:       "model.User",
-					IsJsonStatusType: true,
-				},
-			},
-		}),
-	)
+	gb.DB.Gen(gb.WithGenOutFilePath("../gen/query"), gb.WithGenUseTablesName("simple_table"))
+
 }

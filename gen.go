@@ -6,6 +6,7 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 	"strings"
+	"time"
 )
 
 type GenFieldType struct {
@@ -543,9 +544,15 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 			}
 			gms = append(gms, g.GenerateModel(table, opts...))
 		}
-		g.ApplyBasic(gms...)
+		g.ApplyInterface(func(CustomDeleted) {}, gms...)
 	} else {
-		g.ApplyBasic(g.GenerateAllTable(fieldTypes...)...)
+		g.ApplyInterface(func(CustomDeleted) {}, g.GenerateAllTable(fieldTypes...)...)
 	}
+
 	g.Execute()
+}
+
+type CustomDeleted interface {
+	// UPDATE  @@table SET `deleted_at`=@deletedAt,`deleted_at_flag`=1 WHERE id=@id
+	CustomDeletedFlag(id any, deletedAt time.Time) ([]gen.T, error)
 }
