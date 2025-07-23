@@ -9,9 +9,10 @@ import (
 )
 
 type GenFieldType struct {
-	ColumnName string
-	ColumnType string
-	Tags       map[string]string
+	ColumnName       string            // 字段名称,表中字段的名称不是结构体的名称
+	ColumnType       string            // 字段类型,时间,日期默认为datatypes.Time和datatypes.Date,如果是json类型的数组自行设置为datatypes.JSONSlice[类型]无其他需求不需要设置IsJsonStatusType和Tags,如果是结构体则写入结构体路径,例如:model.User,无其他需求设置IsJsonStatusType为true即可
+	IsJsonStatusType bool              // 默认false设置为true自动添加标签:gorm:column:ColumnName;serializer:json,如果为true且在Tags中设置了gorm则会忽略,需要自行添加serializer:json
+	Tags             map[string]string // 可以设置生成后字段的标签,key为标签名,value为标签值
 }
 
 type GenConfig struct {
@@ -255,16 +256,16 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 		// 日期时间类型
 		"date": func(columnType gorm.ColumnType) (dataType string) {
 			if nullable, ok := columnType.Nullable(); ok && nullable {
-				return "*gb.DateOnly"
+				return "*datatypes.Date"
 			}
-			return "gb.DateOnly"
+			return "datatypes.Date"
 		},
 
 		"time": func(columnType gorm.ColumnType) (dataType string) {
 			if nullable, ok := columnType.Nullable(); ok && nullable {
-				return "*gb.TimeOnly"
+				return "*datatypes.Time"
 			}
-			return "gb.TimeOnly"
+			return "datatypes.Time"
 		},
 
 		"datetime": func(columnType gorm.ColumnType) (dataType string) {
@@ -394,6 +395,17 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 		}
 		if item.ColumnType != "" {
 			fieldTypes = append(fieldTypes, gen.FieldType(item.ColumnName, item.ColumnType))
+		}
+		if item.IsJsonStatusType {
+			if len(item.Tags) == 0 {
+				item.Tags = map[string]string{
+					"gorm": fmt.Sprintf("column:%s;serializer:json", item.ColumnName),
+				}
+			} else {
+				if _, ok := item.Tags["gorm"]; !ok {
+					item.Tags["gorm"] = fmt.Sprintf("column:%s;serializer:json", item.ColumnName)
+				}
+			}
 		}
 		if len(item.Tags) > 0 {
 			fieldTypes = append(fieldTypes, gen.FieldTag(item.ColumnName, func(tag field.Tag) field.Tag {
