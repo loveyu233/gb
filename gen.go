@@ -23,6 +23,7 @@ type GenConfig struct {
 	useTablesName          []string
 	tableColumnType        map[string][]GenFieldType
 	deletedFieldIsShow     bool
+	customGlobalJsonTag    map[string]string
 }
 
 type WithGenConfig func(*GenConfig)
@@ -36,6 +37,11 @@ func WithGenOutFilePath(outFilePath string) WithGenConfig {
 func WithGenDeletedFieldIsShow(deletedJsonIsNull bool) WithGenConfig {
 	return func(gc *GenConfig) {
 		gc.deletedFieldIsShow = deletedJsonIsNull
+	}
+}
+func WithGenGlobalCustomJsonTag(tags map[string]string) WithGenConfig {
+	return func(gc *GenConfig) {
+		gc.customGlobalJsonTag = tags
 	}
 }
 
@@ -508,6 +514,14 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 			ColumnType: "int",
 			Tags: map[string]string{
 				"json": "-",
+			},
+		})
+	}
+	for k, v := range genConfig.customGlobalJsonTag {
+		genConfig.globalSimpleColumnType = append(genConfig.globalSimpleColumnType, GenFieldType{
+			ColumnName: k,
+			Tags: map[string]string{
+				"json": v,
 			},
 		})
 	}
