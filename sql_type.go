@@ -256,7 +256,7 @@ func (t TimeOnly) Value() (driver.Value, error) {
 }
 
 func (t TimeOnly) String() string {
-	return time.Time(t).Format("15:04")
+	return time.Time(t).Format("15:04:05")
 }
 
 func (t TimeOnly) Format(layout string) string {
@@ -267,7 +267,7 @@ func (t TimeOnly) Time() time.Time {
 	return time.Time(t)
 }
 func (t TimeOnly) MarshalJSON() ([]byte, error) {
-	formatted := time.Time(t).Format("15:04")
+	formatted := time.Time(t).Format("15:04:05")
 	return json.Marshal(formatted)
 }
 
