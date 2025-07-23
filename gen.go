@@ -554,5 +554,5 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 
 type CustomDeleted interface {
 	// UPDATE  @@table SET `deleted_at` = @deletedAt,`deleted_at_flag` = 1 WHERE id = @id
-	CustomDeletedFlag(id any, deletedAt time.Time) ([]gen.RowsAffected, error)
+	CustomDeletedFlag(id any, deletedAt time.Time) (gen.RowsAffected, error)
 }
