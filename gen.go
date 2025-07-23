@@ -487,6 +487,9 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 	}, GenFieldType{
 		ColumnName: "deleted_at_flag",
 		ColumnType: "int",
+		Tags: map[string]string{
+			"json": "-",
+		},
 	})
 	for _, item := range genConfig.globalSimpleColumnType {
 		if item.ColumnName == "" {
@@ -549,7 +552,8 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 					}
 				}
 			}
-			gms = append(gms, g.GenerateModel(table, opts...))
+			fieldTypes = append(fieldTypes, opts...)
+			gms = append(gms, g.GenerateModel(table, fieldTypes...))
 		}
 		g.ApplyInterface(func(CustomDeleted) {}, gms...)
 	} else {
