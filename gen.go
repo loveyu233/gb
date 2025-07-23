@@ -481,6 +481,13 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 	g.UseDB(db.DB)
 
 	var fieldTypes []gen.ModelOpt
+	genConfig.globalSimpleColumnType = append(genConfig.globalSimpleColumnType, GenFieldType{
+		ColumnName: "deleted_at",
+		ColumnType: "gorm.DeletedAt",
+	}, GenFieldType{
+		ColumnName: "deleted_at_flag",
+		ColumnType: "int",
+	})
 	for _, item := range genConfig.globalSimpleColumnType {
 		if item.ColumnName == "" {
 			panic("column_name不能为空")
@@ -555,4 +562,6 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 type CustomDeleted interface {
 	// UPDATE  @@table SET `deleted_at` = @deletedAt,`deleted_at_flag` = 1 WHERE id = @id
 	CustomDeletedFlag(id any, deletedAt time.Time) (gen.RowsAffected, error)
+	// DELETE FROM @@table WHERE id = @id
+	CustomDeletedUnscoped(id any) (gen.RowsAffected, error)
 }
