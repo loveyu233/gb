@@ -22,6 +22,7 @@ type GenConfig struct {
 	globalSimpleColumnType []GenFieldType
 	useTablesName          []string
 	tableColumnType        map[string][]GenFieldType
+	deletedFieldIsShow     bool
 }
 
 type WithGenConfig func(*GenConfig)
@@ -29,6 +30,12 @@ type WithGenConfig func(*GenConfig)
 func WithGenOutFilePath(outFilePath string) WithGenConfig {
 	return func(gc *GenConfig) {
 		gc.outFilePath = outFilePath
+	}
+}
+
+func WithGenDeletedFieldIsShow(deletedJsonIsNull bool) WithGenConfig {
+	return func(gc *GenConfig) {
+		gc.deletedFieldIsShow = deletedJsonIsNull
 	}
 }
 
@@ -481,16 +488,29 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 	g.UseDB(db.DB)
 
 	var fieldTypes []gen.ModelOpt
-	genConfig.globalSimpleColumnType = append(genConfig.globalSimpleColumnType, GenFieldType{
-		ColumnName: "deleted_at",
-		ColumnType: "gorm.DeletedAt",
-	}, GenFieldType{
-		ColumnName: "deleted_at_flag",
-		ColumnType: "int",
-		Tags: map[string]string{
-			"json": "-",
-		},
-	})
+	if genConfig.deletedFieldIsShow {
+		genConfig.globalSimpleColumnType = append(genConfig.globalSimpleColumnType, GenFieldType{
+			ColumnName: "deleted_at",
+			ColumnType: "gorm.DeletedAt",
+		}, GenFieldType{
+			ColumnName: "deleted_at_flag",
+			ColumnType: "int",
+		})
+	} else {
+		genConfig.globalSimpleColumnType = append(genConfig.globalSimpleColumnType, GenFieldType{
+			ColumnName: "deleted_at",
+			ColumnType: "gorm.DeletedAt",
+			Tags: map[string]string{
+				"json": "-",
+			},
+		}, GenFieldType{
+			ColumnName: "deleted_at_flag",
+			ColumnType: "int",
+			Tags: map[string]string{
+				"json": "-",
+			},
+		})
+	}
 	for _, item := range genConfig.globalSimpleColumnType {
 		if item.ColumnName == "" {
 			panic("column_name不能为空")
