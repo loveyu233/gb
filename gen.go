@@ -46,6 +46,16 @@ func WithGenGlobalSimpleColumnTypeAddJsonSliceType(sliceFieldName, sliceType str
 	}
 }
 
+func WithGenGlobalSimpleColumnTypeAddJsonType(sliceFieldName, sliceType string) WithGenConfig {
+	return func(gc *GenConfig) {
+		gc.globalSimpleColumnType = append(gc.globalSimpleColumnType, GenFieldType{
+			ColumnName:       sliceFieldName,
+			ColumnType:       sliceType,
+			IsJsonStatusType: true,
+		})
+	}
+}
+
 func WithGenGlobalColumnType(value map[string]func(gorm.ColumnType) string) WithGenConfig {
 	return func(gc *GenConfig) {
 		if len(gc.globalColumnType) == 0 {
