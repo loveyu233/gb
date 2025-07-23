@@ -10,17 +10,14 @@ func TestGenConfig(t *testing.T) {
 		Username: "root",
 		Host:     "127.0.0.1",
 		Port:     3306,
-		Database: "demo",
-	}, gb.GormDefaultLogger(1))
+		Database: "demo2",
+	}, gb.GormDefaultLogger())
 	if err != nil {
 		panic(err)
 	}
 
-	gb.DB.Gen(gb.WithGenOutFilePath("../gen/query"), gb.WithGenFieldType([]gb.GenFieldType{{
-		ColumnName: "json_field",
-		ColumnType: "types.User",
-		Tags: map[string]string{
-			"gorm": "column:json_field;serializer:json",
-		},
-	}}))
+	gb.DB.Gen(gb.WithGenOutFilePath("../gen/query"),
+		gb.WithGenGlobalSimpleColumnTypeAddJsonSliceType("arr", "int64"),
+		gb.WithGenGlobalSimpleColumnTypeAddJsonSliceType("json_field", "model.User"),
+	)
 }

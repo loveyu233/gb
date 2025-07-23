@@ -10,42 +10,104 @@ import (
 
 type GenFieldType struct {
 	ColumnName       string            // 字段名称,表中字段的名称不是结构体的名称
-	ColumnType       string            // 字段类型,时间,日期默认为datatypes.Time和datatypes.Date,如果是json类型的数组自行设置为datatypes.JSONSlice[类型]无其他需求不需要设置IsJsonStatusType和Tags,如果是结构体则写入结构体路径,例如:model.User,无其他需求设置IsJsonStatusType为true即可
+	ColumnType       string            // 字段类型,时间,日期默认使用gb实现,其他类型写对应go包路径,例如:model.User
 	IsJsonStatusType bool              // 默认false设置为true自动添加标签:gorm:column:ColumnName;serializer:json,如果为true且在Tags中设置了gorm则会忽略,需要自行添加serializer:json
 	Tags             map[string]string // 可以设置生成后字段的标签,key为标签名,value为标签值
 }
 
 type GenConfig struct {
-	OutFilePath string
-	fieldType   []GenFieldType
+	outFilePath            string
+	globalColumnType       map[string]func(gorm.ColumnType) string
+	globalSimpleColumnType []GenFieldType
 }
 
 type WithGenConfig func(*GenConfig)
 
 func WithGenOutFilePath(outFilePath string) WithGenConfig {
 	return func(gc *GenConfig) {
-		gc.OutFilePath = outFilePath
+		gc.outFilePath = outFilePath
 	}
 }
 
-func WithGenFieldType(fields []GenFieldType) WithGenConfig {
+func WithGenGlobalSimpleColumnType(fields []GenFieldType) WithGenConfig {
 	return func(gc *GenConfig) {
-		gc.fieldType = fields
+		gc.globalSimpleColumnType = append(gc.globalSimpleColumnType, fields...)
 	}
 }
 
+// WithGenGlobalSimpleColumnTypeAddJsonSliceType 简化的使用方式,例如:WithGenGlobalSimpleColumnTypeAddJsonSliceType("arrFieldName","int64")
+func WithGenGlobalSimpleColumnTypeAddJsonSliceType(sliceFieldName, sliceType string) WithGenConfig {
+	return func(gc *GenConfig) {
+		gc.globalSimpleColumnType = append(gc.globalSimpleColumnType, GenFieldType{
+			ColumnName:       sliceFieldName,
+			ColumnType:       fmt.Sprintf("datatypes.JSONSlice[%s]", sliceType),
+			IsJsonStatusType: true,
+		})
+	}
+}
+
+func WithGenGlobalColumnType(value map[string]func(gorm.ColumnType) string) WithGenConfig {
+	return func(gc *GenConfig) {
+		if len(gc.globalColumnType) == 0 {
+			gc.globalColumnType = value
+		} else {
+			for k, v := range value {
+				gc.globalColumnType[k] = v
+			}
+		}
+	}
+}
+
+// WithGenGlobalColumnTypeAddDatatypes 使用官方的date和time,官方包的date输出的日期包含了时间部分,自行取舍
+func WithGenGlobalColumnTypeAddDatatypes() WithGenConfig {
+	return func(gc *GenConfig) {
+		if len(gc.globalColumnType) == 0 {
+			gc.globalColumnType = map[string]func(gorm.ColumnType) string{
+				"date": func(columnType gorm.ColumnType) (dataType string) {
+					if nullable, ok := columnType.Nullable(); ok && nullable {
+						return "*datatypes.Date"
+					}
+					return "datatypes.Date"
+				},
+
+				"time": func(columnType gorm.ColumnType) (dataType string) {
+					if nullable, ok := columnType.Nullable(); ok && nullable {
+						return "*datatypes.Time"
+					}
+					return "datatypes.Time"
+				},
+			}
+		} else {
+			gc.globalColumnType["date"] = func(columnType gorm.ColumnType) (dataType string) {
+				if nullable, ok := columnType.Nullable(); ok && nullable {
+					return "*datatypes.Date"
+				}
+				return "datatypes.Date"
+			}
+			gc.globalColumnType["time"] = func(columnType gorm.ColumnType) (dataType string) {
+				if nullable, ok := columnType.Nullable(); ok && nullable {
+					return "*datatypes.Time"
+				}
+				return "datatypes.Time"
+			}
+		}
+
+	}
+}
+
+// Gen 默认字段如果是date和time类型生成go的类型为gb实现的,如果要使用官方库的时间和日期类型,请使用WithGenGlobalColumnTypeAddDatatypes,输出路径不设置默认为:gen/query
 func (db *GormClient) Gen(opts ...WithGenConfig) {
 	var genConfig = new(GenConfig)
 	for i := range opts {
 		opts[i](genConfig)
 	}
 
-	if genConfig.OutFilePath == "" {
-		genConfig.OutFilePath = "gen/query"
+	if genConfig.outFilePath == "" {
+		genConfig.outFilePath = "gen/query"
 	}
 
 	g := gen.NewGenerator(gen.Config{
-		OutPath:        fmt.Sprintf(genConfig.OutFilePath),
+		OutPath:        fmt.Sprintf(genConfig.outFilePath),
 		FieldCoverable: false,
 		Mode:           gen.WithDefaultQuery | gen.WithQueryInterface | gen.WithoutContext,
 	})
@@ -256,16 +318,16 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 		// 日期时间类型
 		"date": func(columnType gorm.ColumnType) (dataType string) {
 			if nullable, ok := columnType.Nullable(); ok && nullable {
-				return "*datatypes.Date"
+				return "*gb.DateOnly"
 			}
-			return "datatypes.Date"
+			return "gb.DateOnly"
 		},
 
 		"time": func(columnType gorm.ColumnType) (dataType string) {
 			if nullable, ok := columnType.Nullable(); ok && nullable {
-				return "*datatypes.Time"
+				return "*gb.TimeOnly"
 			}
-			return "datatypes.Time"
+			return "gb.TimeOnly"
 		},
 
 		"datetime": func(columnType gorm.ColumnType) (dataType string) {
@@ -385,11 +447,15 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 		},
 	}
 
+	for k, v := range genConfig.globalColumnType {
+		dataMap[k] = v
+	}
+
 	g.WithDataTypeMap(dataMap)
 	g.UseDB(db.DB)
 
 	var fieldTypes []gen.ModelOpt
-	for _, item := range genConfig.fieldType {
+	for _, item := range genConfig.globalSimpleColumnType {
 		if item.ColumnName == "" {
 			panic("column_name不能为空")
 		}
