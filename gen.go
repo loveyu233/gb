@@ -19,6 +19,8 @@ type GenConfig struct {
 	outFilePath            string
 	globalColumnType       map[string]func(gorm.ColumnType) string
 	globalSimpleColumnType []GenFieldType
+	useTablesName          []string
+	tableColumnType        map[string][]GenFieldType
 }
 
 type WithGenConfig func(*GenConfig)
@@ -26,6 +28,19 @@ type WithGenConfig func(*GenConfig)
 func WithGenOutFilePath(outFilePath string) WithGenConfig {
 	return func(gc *GenConfig) {
 		gc.outFilePath = outFilePath
+	}
+}
+
+// WithGenTableColumnType 只有使用了WithGenTableColumnType该方法才有效,map的key为表名称,value为自定义数据类型,方式和全局定义一样
+func WithGenTableColumnType(value map[string][]GenFieldType) WithGenConfig {
+	return func(gc *GenConfig) {
+		gc.tableColumnType = value
+	}
+}
+
+func WithGenUseTablesName(tablesName ...string) WithGenConfig {
+	return func(gc *GenConfig) {
+		gc.useTablesName = tablesName
 	}
 }
 
@@ -493,6 +508,44 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 		}
 	}
 
-	g.ApplyBasic(g.GenerateAllTable(fieldTypes...)...)
+	if len(genConfig.useTablesName) > 0 {
+		var gms []interface{}
+		for _, table := range genConfig.useTablesName {
+			var opts []gen.ModelOpt
+			if genFieldTypes, ok := genConfig.tableColumnType[table]; ok {
+				for _, fieldType := range genFieldTypes {
+					if fieldType.ColumnName == "" {
+						panic("column_name不能为空")
+					}
+					if fieldType.ColumnType != "" {
+						opts = append(opts, gen.FieldType(fieldType.ColumnName, fieldType.ColumnType))
+					}
+					if fieldType.IsJsonStatusType {
+						if len(fieldType.Tags) == 0 {
+							fieldType.Tags = map[string]string{
+								"gorm": fmt.Sprintf("column:%s;serializer:json", fieldType.ColumnName),
+							}
+						} else {
+							if _, ok := fieldType.Tags["gorm"]; !ok {
+								fieldType.Tags["gorm"] = fmt.Sprintf("column:%s;serializer:json", fieldType.ColumnName)
+							}
+						}
+					}
+					if len(fieldType.Tags) > 0 {
+						opts = append(opts, gen.FieldTag(fieldType.ColumnName, func(tag field.Tag) field.Tag {
+							for k, v := range fieldType.Tags {
+								tag.Set(k, v)
+							}
+							return tag
+						}))
+					}
+				}
+			}
+			gms = append(gms, g.GenerateModel(table, opts...))
+		}
+		g.ApplyBasic(gms...)
+	} else {
+		g.ApplyBasic(g.GenerateAllTable(fieldTypes...)...)
+	}
 	g.Execute()
 }
