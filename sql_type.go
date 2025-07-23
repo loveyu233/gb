@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/spf13/cast"
 	"time"
 )
 
@@ -326,4 +327,53 @@ func (t TimeOnly) Sub(other TimeOnly) time.Duration {
 
 func (t TimeOnly) FormatRelativeDate() string {
 	return FormatTimeRelativeDate(t.Time())
+}
+
+type DateTime time.Time
+
+func (t *DateTime) Scan(v interface{}) error {
+	if v == nil {
+		*t = DateTime(time.Time{})
+		return nil
+	}
+
+	*t = DateTime(cast.ToTime(v).In(cst))
+	return nil
+}
+
+func (t DateTime) Value() (driver.Value, error) {
+	tm := time.Time(t)
+	if tm.IsZero() {
+		return nil, nil
+	}
+	return tm.In(cst).Format(CSTLayout), nil
+}
+
+func (t DateTime) String() string {
+	return time.Time(t).In(cst).Format(CSTLayout)
+}
+
+func (t DateTime) Format(layout string) string {
+	return time.Time(t).In(cst).Format(layout)
+}
+
+func (t DateTime) Time() time.Time {
+	return time.Time(t).In(cst)
+}
+func (t DateTime) MarshalJSON() ([]byte, error) {
+	formatted := time.Time(t).In(cst).Format(CSTLayout)
+	return json.Marshal(formatted)
+}
+
+func (t *DateTime) UnmarshalJSON(data []byte) error {
+	var timeStr string
+	if err := json.Unmarshal(data, &timeStr); err != nil {
+		return err
+	}
+	parsed, err := time.ParseInLocation(CSTLayout, timeStr, cst)
+	if err != nil {
+		return err
+	}
+	*t = DateTime(parsed)
+	return nil
 }

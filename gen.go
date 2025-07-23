@@ -357,16 +357,16 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 
 		"datetime": func(columnType gorm.ColumnType) (dataType string) {
 			if nullable, ok := columnType.Nullable(); ok && nullable {
-				return "*time.Time"
+				return "*gb.DateTime"
 			}
-			return "time.Time"
+			return "gb.DateTime"
 		},
 
 		"timestamp": func(columnType gorm.ColumnType) (dataType string) {
 			if nullable, ok := columnType.Nullable(); ok && nullable {
-				return "*time.Time"
+				return "*gb.DateTime"
 			}
-			return "time.Time"
+			return "gb.DateTime"
 		},
 
 		"year": func(columnType gorm.ColumnType) (dataType string) {
