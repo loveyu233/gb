@@ -12,6 +12,10 @@ import (
 // DateOnly 表示只有日期的类型
 type DateOnly time.Time
 
+func (DateOnly) GormDataType() string {
+	return "date"
+}
+
 // NewDateString 根据日期字符串创建一个 DateOnly 实例
 func NewDateString(dateString string) (*DateOnly, error) {
 	date, err := time.Parse("2006-01-02", dateString)
@@ -182,6 +186,9 @@ func (s *Slice[T]) UnmarshalJSON(data []byte) error {
 
 type TimeOnly time.Time
 
+func (b TimeOnly) GormDataType() string {
+	return "time" // 告诉 GORM 在数据库中存储为 tinyint
+}
 func (t *TimeOnly) Scan(v interface{}) error {
 	if v == nil {
 		*t = TimeOnly(time.Time{})
@@ -331,6 +338,10 @@ func (t TimeOnly) FormatRelativeDate() string {
 
 type DateTime time.Time
 
+func (b DateTime) GormDataType() string {
+	return "timestamp" // 告诉 GORM 在数据库中存储为 tinyint
+}
+
 func (t *DateTime) Scan(v interface{}) error {
 	if v == nil {
 		*t = DateTime(time.Time{})
@@ -380,8 +391,12 @@ func (t *DateTime) UnmarshalJSON(data []byte) error {
 
 type BoolType bool
 
+func (b BoolType) GormDataType() string {
+	return "tinyint" // 告诉 GORM 在数据库中存储为 tinyint
+}
+
 func (b BoolType) Bool() bool {
-	return cast.ToBool(b)
+	return bool(b)
 }
 
 func (t *BoolType) Scan(v interface{}) error {
@@ -395,9 +410,9 @@ func (t *BoolType) Scan(v interface{}) error {
 
 func (t BoolType) Value() (driver.Value, error) {
 	if t {
-		return 1, nil
+		return int64(1), nil
 	}
-	return 0, nil
+	return int64(0), nil
 }
 
 func (t BoolType) String() string {
