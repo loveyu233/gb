@@ -484,6 +484,13 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 			}
 			return "bool"
 		},
+
+		"tinyint(1)": func(columnType gorm.ColumnType) (dataType string) {
+			if nullable, ok := columnType.Nullable(); ok && nullable {
+				return "*bool"
+			}
+			return "bool"
+		},
 	}
 
 	for k, v := range genConfig.globalColumnType {
