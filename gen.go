@@ -152,18 +152,11 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 	})
 
 	var dataMap = map[string]func(columnType gorm.ColumnType) (dataType string){
-		// 整数类型
-		"tinyint": func(columnType gorm.ColumnType) (dataType string) {
+		"tinyint(1)": func(columnType gorm.ColumnType) (dataType string) {
 			if nullable, ok := columnType.Nullable(); ok && nullable {
-				if unsigned, ok := columnType.ColumnType(); ok && strings.Contains(strings.ToLower(unsigned), "unsigned") {
-					return "*uint8"
-				}
-				return "*int8"
+				return "*bool"
 			}
-			if unsigned, ok := columnType.ColumnType(); ok && strings.Contains(strings.ToLower(unsigned), "unsigned") {
-				return "uint8"
-			}
-			return "int8"
+			return "bool"
 		},
 
 		"smallint": func(columnType gorm.ColumnType) (dataType string) {
@@ -479,13 +472,6 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 		},
 
 		"bool": func(columnType gorm.ColumnType) (dataType string) {
-			if nullable, ok := columnType.Nullable(); ok && nullable {
-				return "*bool"
-			}
-			return "bool"
-		},
-
-		"tinyint(1)": func(columnType gorm.ColumnType) (dataType string) {
 			if nullable, ok := columnType.Nullable(); ok && nullable {
 				return "*bool"
 			}
