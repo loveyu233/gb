@@ -380,6 +380,10 @@ func (t *DateTime) UnmarshalJSON(data []byte) error {
 
 type BoolType bool
 
+func (b BoolType) Bool() bool {
+	return cast.ToBool(b)
+}
+
 func (t *BoolType) Scan(v interface{}) error {
 	if v == nil {
 		*t = false
