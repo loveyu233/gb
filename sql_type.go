@@ -394,7 +394,10 @@ func (t *BoolType) Scan(v interface{}) error {
 }
 
 func (t BoolType) Value() (driver.Value, error) {
-	return cast.ToBool(t), nil
+	if t {
+		return 1, nil
+	}
+	return 0, nil
 }
 
 func (t BoolType) String() string {
