@@ -377,3 +377,31 @@ func (t *DateTime) UnmarshalJSON(data []byte) error {
 	*t = DateTime(parsed)
 	return nil
 }
+
+type BoolType bool
+
+func (t *BoolType) Scan(v interface{}) error {
+	if v == nil {
+		*t = false
+		return nil
+	}
+	*t = BoolType(cast.ToBool(v))
+	return nil
+}
+
+func (t BoolType) Value() (driver.Value, error) {
+	return cast.ToBool(t), nil
+}
+
+func (t BoolType) String() string {
+	return fmt.Sprintf("%v", cast.ToBool(t))
+}
+
+func (t BoolType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(cast.ToBool(t))
+}
+
+func (t *BoolType) UnmarshalJSON(data []byte) error {
+	*t = BoolType(cast.ToBool(string(data)))
+	return nil
+}
