@@ -238,19 +238,21 @@ func init() {
 }
 
 type ReqLog struct {
-	ReqTime time.Time         `json:"req_time"`
-	Module  string            `json:"module,omitempty"`
-	Option  string            `json:"option,omitempty"`
-	Method  string            `json:"method,omitempty"`
-	Path    string            `json:"path,omitempty"`
-	URL     string            `json:"url,omitempty"`
-	IP      string            `json:"ip,omitempty"`
-	Content map[string]any    `json:"content,omitempty"`
-	Headers map[string]string `json:"headers,omitempty"`
-	Params  map[string]any    `json:"params,omitempty"`
-	Status  int               `json:"status,omitempty"`
-	Latency time.Duration     `json:"latency,omitempty"`
-	Body    map[string]any    `json:"body,omitempty"`
+	ReqTime     time.Time         `json:"req_time"`
+	Module      string            `json:"module,omitempty"`
+	Option      string            `json:"option,omitempty"`
+	Method      string            `json:"method,omitempty"`
+	Path        string            `json:"path,omitempty"`
+	URL         string            `json:"url,omitempty"`
+	IP          string            `json:"ip,omitempty"`
+	Content     map[string]any    `json:"content,omitempty"`
+	Headers     map[string]string `json:"headers,omitempty"`
+	Params      map[string]any    `json:"params,omitempty"`
+	Status      int               `json:"status,omitempty"`
+	Latency     time.Duration     `json:"latency,omitempty"`
+	Body        map[string]any    `json:"body,omitempty"`
+	RespStatus  int               `json:"resp_status"`  // 响应数据中的状态码
+	RespMessage string            `json:"resp_message"` // 响应数据中的message
 }
 
 type MiddlewareLogConfig struct {
@@ -462,10 +464,9 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		if !c.GetBool("brief") {
 			readAll, _ := io.ReadAll(io.NopCloser(bodyBuffer))
 			json.Unmarshal(readAll, &bodyMap)
-		} else {
-			bodyMap["status"] = c.GetInt("resp-status")
-			bodyMap["message"] = c.GetString("resp-msg")
 		}
+		bodyMap["resp-status"] = c.GetInt("resp-status")
+		bodyMap["resp-message"] = c.GetString("resp-msg")
 
 		requestLogger.AddEntry(zerolog.InfoLevel, "response", map[string]any{
 			"status_code": c.Writer.Status(),
@@ -479,19 +480,21 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		if mc.SaveLog != nil && !c.GetBool("no_record") {
 			go func() {
 				mc.SaveLog(ReqLog{
-					ReqTime: startTime,
-					Module:  c.GetString("module"),
-					Option:  c.GetString("option"),
-					Method:  c.Request.Method,
-					Path:    c.Request.URL.Path,
-					URL:     fullURL,
-					IP:      c.ClientIP(),
-					Content: contentKV,
-					Headers: headerMap,
-					Params:  params,
-					Status:  c.Writer.Status(),
-					Latency: duration,
-					Body:    bodyMap,
+					ReqTime:     startTime,
+					Module:      c.GetString("module"),
+					Option:      c.GetString("option"),
+					Method:      c.Request.Method,
+					Path:        c.Request.URL.Path,
+					URL:         fullURL,
+					IP:          c.ClientIP(),
+					Content:     contentKV,
+					Headers:     headerMap,
+					Params:      params,
+					Status:      c.Writer.Status(),
+					Latency:     duration,
+					Body:        bodyMap,
+					RespStatus:  c.GetInt("resp-status"),
+					RespMessage: c.GetString("resp-msg"),
 				})
 			}()
 		}
@@ -510,6 +513,19 @@ func GetContextLogger(c *gin.Context) *ContextLogger {
 	return &ContextLogger{
 		requestLogger: NewRequestLogger(context.Background(), log.Logger),
 	}
+}
+
+func WriteGinInfoLog(c *gin.Context, format string, args ...any) {
+	GetContextLogger(c).Info().Msgf(format, args)
+}
+func WriteGinDebugLog(c *gin.Context, format string, args ...any) {
+	GetContextLogger(c).Debug().Msgf(format, args)
+}
+func WriteGinWarnLog(c *gin.Context, format string, args ...any) {
+	GetContextLogger(c).Warn().Msgf(format, args)
+}
+func WriteGinErrLog(c *gin.Context, format string, args ...any) {
+	GetContextLogger(c).Error().Msgf(format, args)
 }
 
 // GinLogSetModuleName 设置模块名称
