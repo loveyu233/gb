@@ -138,54 +138,6 @@ func (db *GormClient) ScopeTime(start, end string, columns ...string) func(db *g
 	}
 }
 
-// ScopeToday 今天
-func (db *GormClient) ScopeToday(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start, end := GetTodayInterval()
-	return db.ScopeTime(start, end, columns...)
-}
-
-// ScopeYesterday 昨天
-func (db *GormClient) ScopeYesterday(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start, end := GetYesterdayInterval()
-	return db.ScopeTime(start, end, columns...)
-}
-
-// ScopeLastMonth 上个月
-func (db *GormClient) ScopeLastMonth(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start, end := GetLastMonthInterval()
-	return db.ScopeTime(start, end, columns...)
-}
-
-// ScopeCurrentMonth 本月
-func (db *GormClient) ScopeCurrentMonth(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start, end := GetCurrentMonthInterval()
-	return db.ScopeTime(start, end, columns...)
-}
-
-// ScopeNextMonth 下个月
-func (db *GormClient) ScopeNextMonth(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start, end := GetNextMonthInterval()
-	return db.ScopeTime(start, end, columns...)
-}
-
-// ScopeLastYears 去年
-func (db *GormClient) ScopeLastYears(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start, end := GetLastYearsInterval()
-	return db.ScopeTime(start, end, columns...)
-}
-
-// ScopeCurrentYears 今年
-func (db *GormClient) ScopeCurrentYears(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start, end := GetCurrentYearsInterval()
-	return db.ScopeTime(start, end, columns...)
-}
-
-// ScopeNextYears 明年
-func (db *GormClient) ScopeNextYears(columns ...string) func(db *gorm.DB) *gorm.DB {
-	start, end := GetNextYearsInterval()
-	return db.ScopeTime(start, end, columns...)
-}
-
 // Transaction 开启事务(db.Transaction)
 func (db *GormClient) Transaction(tx func(tx *gorm.DB) error) error {
 	return db.DB.Transaction(tx)
