@@ -6,7 +6,6 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 	"strings"
-	"time"
 )
 
 type GenFieldType struct {
@@ -591,8 +590,8 @@ func (db *GormClient) Gen(opts ...WithGenConfig) {
 }
 
 type CustomDeleted interface {
-	// UPDATE  @@table SET `deleted_at` = @deletedAt,`deleted_at_flag` = 1 WHERE id = @id
-	CustomDeletedFlag(id any, deletedAt time.Time) (gen.RowsAffected, error)
+	// UPDATE  @@table SET `deleted_at` = now(),`deleted_at_flag` = 1 WHERE id = @id
+	CustomDeletedFlag(id any) (gen.RowsAffected, error)
 	// DELETE FROM @@table WHERE id = @id
 	CustomDeletedUnscoped(id any) (gen.RowsAffected, error)
 }
