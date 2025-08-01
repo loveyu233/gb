@@ -561,7 +561,7 @@ func GinLogOnlyReqMsg() gin.HandlerFunc {
 	}
 }
 
-// GinLogBriefInformation 记录简短的日志信息
+// GinLogBriefInformation 记录简短的日志信息, 不记录响应数据中的data,适用于返回的data数据太大的情况
 func GinLogBriefInformation() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("brief", true)
