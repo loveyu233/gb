@@ -25,8 +25,8 @@ func registerDemo1PrivateRoutes(r *gin.RouterGroup) {
 		testRoutes.POST("/world", gb.GinLogSetOptionName("world"), func(c *gin.Context) {
 			// 需要启动  TestToken 测试可以查看
 			//tu, ex := gb.GetGinContextValue[TokenTestUser](c, "data")
-			data, _ := gb.GetTokenLoadData[TokenTestUser](c)
-			claims, _ := gb.GetTokenClaims[TokenTestUser](c)
+			data, _ := gb.GetGinContextTokenLoadData[TokenTestUser](c)
+			claims, _ := gb.GetGinContextTokenClaims[TokenTestUser](c)
 			gb.ResponseSuccess(c, map[string]any{
 				"token":  data,
 				"claims": claims,

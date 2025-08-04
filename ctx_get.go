@@ -218,7 +218,8 @@ func convertMap[T any](value interface{}, targetType reflect.Type) (T, bool) {
 	return result.Interface().(T), true
 }
 
-func GetTokenLoadData[T any](c *gin.Context) (T, error) {
+// GetGinContextTokenLoadData 获取Gin上下文中的token的自定义数据
+func GetGinContextTokenLoadData[T any](c *gin.Context) (T, error) {
 	var zero T
 	value, exists := GetGinContextValue[T](c, "tokenLoadData")
 	if !exists {
@@ -227,7 +228,8 @@ func GetTokenLoadData[T any](c *gin.Context) (T, error) {
 	return value, nil
 }
 
-func GetTokenClaims[T any](c *gin.Context) (*Claims[T], error) {
+// GetGinContextTokenClaims 获取Gin上下文中的token全部负载数据
+func GetGinContextTokenClaims[T any](c *gin.Context) (*Claims[T], error) {
 	value, exists := GetGinContextValue[Claims[T]](c, "tokenClaims")
 	if !exists {
 		return nil, errors.New("token负载数据不存在")
