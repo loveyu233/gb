@@ -21,36 +21,47 @@ type Corn struct {
 }
 
 // RunJob 运行自定义的定时任务
-func (corn *Corn) RunJob(df gocron.JobDefinition, task gocron.Task, opts ...gocron.JobOption) (gocron.Job, error) {
-	return corn.Scheduler.NewJob(df, task, opts...)
+func (corn *Corn) RunJob(df gocron.JobDefinition, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
+	return corn.Scheduler.NewJob(df, task, options...)
+}
+
+// RunJobEvery30Minutes 创建每duration时间执行一次的定时任务
+func (corn *Corn) RunJobEvery30Minutes(duration time.Duration, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
+	return corn.Scheduler.NewJob(
+		gocron.DurationJob(duration),
+		task,
+		options...,
+	)
 }
 
 // RunJobiATime 运行指定时间的定时任务
-func (corn *Corn) RunJobiATime(time time.Time, task gocron.Task, parameters ...any) (gocron.Job, error) {
-	return corn.Scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartDateTime(time)), task)
+func (corn *Corn) RunJobiATime(time time.Time, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
+	return corn.Scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartDateTime(time)), task, options...)
 }
 
 // RunJobiATimes 运行多个时间的定时任务
-func (corn *Corn) RunJobiATimes(times []time.Time, task gocron.Task, parameters ...any) (gocron.Job, error) {
-	return corn.Scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartDateTimes(times...)), task)
+func (corn *Corn) RunJobiATimes(times []time.Time, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
+	return corn.Scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartDateTimes(times...)), task, options...)
 }
 
 // RunJobEverDay 在指定的时间内每天运行interval次task
-func (corn *Corn) RunJobEverDay(hours, minutes, seconds, interval uint, task gocron.Task) (gocron.Job, error) {
+func (corn *Corn) RunJobEverDay(hours, minutes, seconds, interval uint, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	job, err := corn.Scheduler.NewJob(
 		gocron.DailyJob(interval, gocron.NewAtTimes(
 			gocron.NewAtTime(hours, minutes, seconds), // 5点0分0秒
 		)),
 		task,
+		options...,
 	)
 	return job, err
 }
 
 // RunJobCrontab 使用 Cron 表达式,如果withSeconds设置为true，则可以在开始时使用可选的第6个字段
-func (corn *Corn) RunJobCrontab(crontab string, withSeconds bool, task gocron.Task) (gocron.Job, error) {
+func (corn *Corn) RunJobCrontab(crontab string, withSeconds bool, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	job, err := corn.Scheduler.NewJob(
 		gocron.CronJob(crontab, withSeconds), // 每天5点执行
 		task,
+		options...,
 	)
 	return job, err
 }
