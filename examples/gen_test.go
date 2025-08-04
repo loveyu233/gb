@@ -16,7 +16,10 @@ func TestGenConfig(t *testing.T) {
 		panic(err)
 	}
 
-	gb.DB.Gen(gb.WithGenOutFilePath("../gen/query"), gb.WithGenUseTablesName("simple_table"))
+	gb.DB.Gen(gb.WithGenOutFilePath("../gen/query"),
+		gb.WithGenGlobalSimpleColumnTypeAddJsonType("arr", "gb.Slice[int]"),
+		gb.WithGenUseTablesName("simple_table"),
+	)
 
 }
 

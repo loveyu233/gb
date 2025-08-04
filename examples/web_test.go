@@ -13,30 +13,37 @@ func init() {
 	gb.PrivateRoutes = append(gb.PrivateRoutes, registerDemo1PrivateRoutes)
 }
 
+type Ctx struct {
+	Username string   `json:"username"`
+	Age      int64    `json:"age"`
+	Address  []string `json:"address"`
+}
+
 func registerDemo1PrivateRoutes(r *gin.RouterGroup) {
 	testRoutes := r.Group("/test1", gb.GinLogSetModuleName("这是测试1模块"))
 	{
 		testRoutes.POST("/world", gb.GinLogSetOptionName("world"), func(c *gin.Context) {
 			// 需要启动  TestToken 测试可以查看
-			value, exists := c.Get("data")
-			if exists {
-				if user, ok := value.(*TokenTestUser); ok {
-					// 测试删除token
-					err := authConfig.TokenService.DeleteRedisToken(c.GetHeader("jwt-token"))
-					fmt.Println(err)
-					gb.ResponseSuccess(c, user)
-					return
-				}
-			}
-
-			gb.ResponseSuccess(c, "world")
+			//tu, ex := gb.GetGinContextValue[TokenTestUser](c, "data")
+			data, _ := gb.GetTokenLoadData[TokenTestUser](c)
+			claims, _ := gb.GetTokenClaims[TokenTestUser](c)
+			gb.ResponseSuccess(c, map[string]any{
+				"token":  data,
+				"claims": claims,
+			})
 		})
 	}
 
 }
 
 func registerDemo1PublicRoutes(r *gin.RouterGroup) {
-	test2Routes := r.Group("/test2", gb.GinLogSetSkipLogFlag(), gb.GinLogSetModuleName("这是测试2模块"))
+	test2Routes := r.Group("/test2", gb.GinLogSetSkipLogFlag(), gb.GinLogSetModuleName("这是测试2模块"), func(c *gin.Context) {
+		c.Set("id", Ctx{
+			Username: "username-1",
+			Age:      11,
+			Address:  []string{"a", "b", "c"},
+		})
+	})
 	{
 		test2Routes.GET("/hello", gb.GinLogSetOptionName("hello"), func(c *gin.Context) {
 			type Req struct {
@@ -59,12 +66,11 @@ func registerDemo1PublicRoutes(r *gin.RouterGroup) {
 			gb.ResponseSuccess(c, id)
 		})
 		test2Routes.GET("/path/:id", func(c *gin.Context) {
-			id, err := gb.ParseFromPath(c, "id1", gb.ParserInt64)
-			if err != nil {
-				gb.ResponseParamError(c, err)
-				return
-			}
-			gb.ResponseSuccess(c, id)
+			id, exists := gb.GetGinContextValue[Ctx](c, "id")
+			gb.ResponseSuccess(c, map[string]any{
+				"value":  id,
+				"exists": exists,
+			})
 		})
 	}
 }

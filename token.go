@@ -254,8 +254,8 @@ func GinAuth[T any](config *GinAuthConfig[T]) gin.HandlerFunc {
 		}
 
 		// 将用户信息存入上下文
-		c.Set("data", config.DataPtr)
-		c.Set("claims", claims)
+		c.Set("tokenLoadData", config.DataPtr)
+		c.Set("tokenClaims", claims)
 		c.Next()
 	}
 }
