@@ -18,7 +18,6 @@ type RouterConfig struct {
 	globalMiddleware []gin.HandlerFunc // 全局中间件
 	recordHeaderKeys []string          // 需要记录的请求头
 	saveLog          func(ReqLog)      // 保存请求日志
-	tokenData        any               // token携带的信息
 }
 
 type GinModel string
@@ -34,16 +33,6 @@ var (
 )
 
 type GinRouterConfigOptionFunc func(*RouterConfig)
-
-// WithGinRouterTokenData token携带的信息,必须是指针,尽量使用: new(结构体) 方式
-func WithGinRouterTokenData(data any) GinRouterConfigOptionFunc {
-	return func(config *RouterConfig) {
-		if !IsPtr(data) {
-			panic("data必须是指针类型")
-		}
-		config.tokenData = data
-	}
-}
 
 // WithGinRouterModel 设置gin的工作模式,不设置默认为debug
 func WithGinRouterModel(model GinModel) GinRouterConfigOptionFunc {
@@ -119,20 +108,12 @@ func initRouter[T any](authConfig *GinAuthConfig[T], opts ...GinRouterConfigOpti
 		}
 	})
 
-	if config.tokenData == nil {
-		config.tokenData = new(TokenDefaultData)
-	}
+	config.authMiddleware = append(config.authMiddleware, GinAuth(authConfig))
+	config.globalMiddleware = append(config.globalMiddleware, MiddlewareTraceID(), MiddlewareRequestTime(), MiddlewareLogger(MiddlewareLogConfig{
+		HeaderKeys: config.recordHeaderKeys,
+		SaveLog:    config.saveLog,
+	}), MiddlewareRecovery())
 
-	if len(config.authMiddleware) == 0 {
-		config.authMiddleware = []gin.HandlerFunc{GinAuth(authConfig)}
-	}
-
-	if len(config.globalMiddleware) == 0 {
-		config.globalMiddleware = []gin.HandlerFunc{MiddlewareTraceID(), MiddlewareRequestTime(), MiddlewareLogger(MiddlewareLogConfig{
-			HeaderKeys: config.recordHeaderKeys,
-			SaveLog:    config.saveLog,
-		}), MiddlewareRecovery()}
-	}
 	engine = newGinRouter(config.model, config.globalMiddleware...)
 
 	registerRoutes(engine, config.prefix, config.authMiddleware...)

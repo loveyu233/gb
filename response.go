@@ -20,6 +20,9 @@ func (e *AppError) Error() string {
 }
 
 func (e *AppError) WithMessage(format string, args ...any) *AppError {
+	if e.Message != "" {
+		format = fmt.Sprintf("%s: %s", e.Message, format)
+	}
 	if len(args) > 0 {
 		format = fmt.Sprintf(format, args...)
 	}
@@ -131,7 +134,7 @@ func ResponseParamError(c *gin.Context, err error) {
 	c.Set("resp-msg", te)
 	c.JSON(http.StatusOK, &Response{
 		Code:    ErrInvalidParam.Code,
-		Message: te,
+		Message: fmt.Sprintf("%s: %s", ErrInvalidParam.Message, te),
 		TraceID: c.GetString("trace_id"),
 	})
 }
