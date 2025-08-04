@@ -2,7 +2,6 @@ package examples
 
 import (
 	"github.com/loveyu233/gb"
-	//"github.com/loveyu233/gb/gen/query"
 	"testing"
 )
 
@@ -36,4 +35,18 @@ func TestUseGin(t *testing.T) {
 	//affected, err := table.CustomDeletedFlag(111)
 	//t.Log(err)
 	//t.Log(affected)
+}
+func TestGen2(t *testing.T) {
+	gb.InitGormDB(gb.GormConnConfig{
+		Username: "root",
+		Host:     "127.0.0.1",
+		Port:     3306,
+		Database: "demo2",
+	}, gb.GormDefaultLogger())
+
+	//query.SetDefault(gb.DB.DB)
+	//find, _ := query.SimpleTable.Find()
+	//for _, item := range find {
+	//	fmt.Printf("%+v\n", item)
+	//}
 }
