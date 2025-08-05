@@ -12,3 +12,6 @@ func IsErrRecordNotFound(err error) bool {
 	}
 	return false
 }
+func redisClientNilErr() error {
+	return errors.New("RedisClient为空,需要先使用gb.InitRedis()进行初始化")
+}

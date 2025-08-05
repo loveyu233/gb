@@ -12,9 +12,9 @@ import (
 	"time"
 )
 
-var RedisClient = new(Redis)
+var RedisClient *RedisConfig
 
-type Redis struct {
+type RedisConfig struct {
 	redis.UniversalClient
 	lock *redsync.Redsync
 	once sync.Once
@@ -268,6 +268,7 @@ func WithRedisIsClusterModeOption(isClusterMode bool) WithRedisOption {
 }
 
 func InitRedis(ops ...WithRedisOption) error {
+	RedisClient = new(RedisConfig)
 	RedisClient.once = sync.Once{}
 	opts := &redis.UniversalOptions{}
 	for _, op := range ops {
@@ -281,7 +282,7 @@ func InitRedis(ops ...WithRedisOption) error {
 }
 
 // NewLock 使用: https://github.com/go-redsync/redsync, 不设置options会有默认的重试次数和时间,也就是会lock会有错误返回,示例:examples/redis_test.go
-func (r *Redis) NewLock(key string, options ...redsync.Option) *redsync.Mutex {
+func (r *RedisConfig) NewLock(key string, options ...redsync.Option) *redsync.Mutex {
 	r.once.Do(func() {
 		r.lock = redsync.New(goredis.NewPool(RedisClient))
 	})
@@ -290,7 +291,7 @@ func (r *Redis) NewLock(key string, options ...redsync.Option) *redsync.Mutex {
 }
 
 // FindAllBitMapByTargetValue 返回bitmap类型key的value中bit位值为targetValue的bit位置
-func (r *Redis) FindAllBitMapByTargetValue(key string, targetValue byte) ([]int64, error) {
+func (r *RedisConfig) FindAllBitMapByTargetValue(key string, targetValue byte) ([]int64, error) {
 	value, err := r.Get(Context(), key).Result()
 	if err != nil {
 		return nil, err
@@ -311,14 +312,14 @@ func (r *Redis) FindAllBitMapByTargetValue(key string, targetValue byte) ([]int6
 	})
 	return setBits, nil
 }
-func (r *Redis) SetCaptcha(key string, value any, expiration time.Duration) error {
+func (r *RedisConfig) SetCaptcha(key string, value any, expiration time.Duration) error {
 	return r.SetNX(context.Background(), key, value, expiration).Err()
 }
 
-func (r *Redis) GetCaptcha(key string) (string, error) {
+func (r *RedisConfig) GetCaptcha(key string) (string, error) {
 	return r.Get(context.Background(), key).Result()
 }
 
-func (r *Redis) DelCaptcha(key string) error {
+func (r *RedisConfig) DelCaptcha(key string) error {
 	return r.Del(context.Background(), key).Err()
 }

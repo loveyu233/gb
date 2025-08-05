@@ -8,14 +8,21 @@ import (
 )
 
 func TestCorn(t *testing.T) {
+	gb.InitRedis(gb.WithRedisAddressOption([]string{"127.0.0.1:6379"}))
+
 	err := gb.InitCornJob()
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
-	gb.CornJob.RunJobEveryDuration(10*time.Second, gocron.NewTask(func() {
-		t.Log(gb.FormatCurrentTime())
-	}))
+	for i := 0; i < 10; i++ {
+		go func() {
+			_, err := gb.CornJob.RunJobEveryDurationTheOne(1, 2*time.Second, gocron.NewTask(func() {
+				t.Log(gb.FormatCurrentTime())
+			}))
+			t.Log(err)
+		}()
+	}
 	time.Sleep(time.Second)
 	gb.CornJob.Start()
 	select {}

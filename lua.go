@@ -127,7 +127,7 @@ func LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValueAsc(zSetKey,
 }
 
 // LuaRedisZSetGetTargetKeyAndStartToEndRankByScore 同时获取指定key的从start到end排名的数据和targetMember的排名和分数
-// key: Redis ZSet 的键名
+// key: RedisConfig ZSet 的键名
 // start: 起始排名
 // end: 结束排名
 // targetMember: 目标成员
@@ -246,7 +246,7 @@ type MemberInfo struct {
 }
 
 // LuaRedisZSetGetMemberScoreAndRankAndGetHashValue 获取指定 member 的 score 和 rank 以及hash value
-// key: Redis ZSet 的 key
+// key: RedisConfig ZSet 的 key
 // member: 要查询的成员
 // descending: true 表示从大到小排序(ZREVRANK), false 表示从小到大排序(ZRANK)
 func LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, hashKey string, member string, descending bool) (*MemberInfo, error) {
@@ -318,7 +318,7 @@ func LuaRedisZSetGetMemberScoreAndRankAndGetHashValueAsc(zSetKey, hashKey string
 }
 
 // LuaRedisZSetGetMemberScoreAndRank 获取指定 member 的 score 和 rank
-// key: Redis ZSet 的 key
+// key: RedisConfig ZSet 的 key
 // member: 要查询的成员
 // descending: true 表示从大到小排序(ZREVRANK), false 表示从小到大排序(ZRANK)
 func LuaRedisZSetGetMemberScoreAndRank(key string, member string, descending bool) (*MemberInfo, error) {
@@ -473,7 +473,7 @@ func LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesAsc(zSetKey, hashKey
 }
 
 // LuaRedisZSetGetMultipleMembersScoreAndRank 批量获取多个 member 的 score 和 rank
-// key: Redis ZSet 的 key
+// key: RedisConfig ZSet 的 key
 // members: 要查询的成员列表
 // descending: true 表示从大到小排序, false 表示从小到大排序
 func LuaRedisZSetGetMultipleMembersScoreAndRank(key string, members []string, descending bool) ([]*MemberInfo, error) {

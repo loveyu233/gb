@@ -1,10 +1,9 @@
 package gb
 
 import (
-	redislock "github.com/go-co-op/gocron-redis-lock/v2"
+	"fmt"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
 	"time"
 )
 
@@ -16,13 +15,26 @@ type Corn struct {
 	afterJobRuns          func(jobID uuid.UUID, jobName string)            // 运行后
 	afterJobRunsWithError func(jobID uuid.UUID, jobName string, err error) // 出错
 	options               []gocron.SchedulerOption
-	redisClient           redis.UniversalClient
 	Scheduler             gocron.Scheduler
 }
 
 // RunJob 运行自定义的定时任务
 func (corn *Corn) RunJob(df gocron.JobDefinition, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	return corn.Scheduler.NewJob(df, task, options...)
+}
+func (corn *Corn) redisKey(id any) string {
+	return fmt.Sprintf("corn-%v-lock", id)
+}
+
+// RunJobTheOne 运行自定义的定时任务,使用redis分布式锁进行控制同一id只会运行一个任务
+func (corn *Corn) RunJobTheOne(id any, df gocron.JobDefinition, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
+	if RedisClient == nil {
+		return nil, redisClientNilErr()
+	}
+	if err := RedisClient.NewLock(corn.redisKey(id)).TryLock(); err == nil {
+		return corn.Scheduler.NewJob(df, task, options...)
+	}
+	return nil, nil
 }
 
 // RunJobEveryDuration 创建每duration时间执行一次的定时任务
@@ -34,9 +46,36 @@ func (corn *Corn) RunJobEveryDuration(duration time.Duration, task gocron.Task, 
 	)
 }
 
+// RunJobEveryDurationTheOne 使用redis分布式锁进行控制同一id只会运行一个任务
+func (corn *Corn) RunJobEveryDurationTheOne(id any, duration time.Duration, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
+	if RedisClient == nil {
+		return nil, redisClientNilErr()
+	}
+	if err := RedisClient.NewLock(corn.redisKey(id)).TryLock(); err == nil {
+		return corn.Scheduler.NewJob(
+			gocron.DurationJob(duration),
+			task,
+			options...,
+		)
+	}
+	return nil, nil
+}
+
 // RunJobiATime 运行指定时间的定时任务
 func (corn *Corn) RunJobiATime(time time.Time, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	return corn.Scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartDateTime(time)), task, options...)
+}
+
+// RunJobiATimeTheOne 使用redis分布式锁进行控制同一id只会运行一个任务
+func (corn *Corn) RunJobiATimeTheOne(id any, time time.Time, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
+	if RedisClient == nil {
+		return nil, redisClientNilErr()
+	}
+	if err := RedisClient.NewLock(corn.redisKey(id)).TryLock(); err == nil {
+		return corn.Scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartDateTime(time)), task, options...)
+	}
+	return nil, nil
+
 }
 
 // RunJobiATimes 运行多个时间的定时任务
@@ -44,26 +83,67 @@ func (corn *Corn) RunJobiATimes(times []time.Time, task gocron.Task, options ...
 	return corn.Scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartDateTimes(times...)), task, options...)
 }
 
+// RunJobiATimesTheOne 使用redis分布式锁进行控制同一id只会运行一个任务
+func (corn *Corn) RunJobiATimesTheOne(id any, times []time.Time, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
+	if RedisClient == nil {
+		return nil, redisClientNilErr()
+	}
+	if err := RedisClient.NewLock(corn.redisKey(id)).TryLock(); err == nil {
+		return corn.Scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartDateTimes(times...)), task, options...)
+	}
+	return nil, nil
+}
+
 // RunJobEverDay 在指定的时间内每天运行interval次task
 func (corn *Corn) RunJobEverDay(hours, minutes, seconds, interval uint, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
-	job, err := corn.Scheduler.NewJob(
+	return corn.Scheduler.NewJob(
 		gocron.DailyJob(interval, gocron.NewAtTimes(
 			gocron.NewAtTime(hours, minutes, seconds),
 		)),
 		task,
 		options...,
 	)
-	return job, err
+}
+
+// RunJobEverDayTheOne 使用redis分布式锁进行控制同一id只会运行一个任务
+func (corn *Corn) RunJobEverDayTheOne(id any, hours, minutes, seconds, interval uint, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
+	if RedisClient == nil {
+		return nil, redisClientNilErr()
+	}
+	if err := RedisClient.NewLock(corn.redisKey(id)).TryLock(); err == nil {
+		return corn.Scheduler.NewJob(
+			gocron.DailyJob(interval, gocron.NewAtTimes(
+				gocron.NewAtTime(hours, minutes, seconds),
+			)),
+			task,
+			options...,
+		)
+	}
+	return nil, nil
 }
 
 // RunJobCrontab 使用 Cron 表达式,如果withSeconds设置为true，则可以在开始时使用可选的第6个字段
 func (corn *Corn) RunJobCrontab(crontab string, withSeconds bool, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
-	job, err := corn.Scheduler.NewJob(
+	return corn.Scheduler.NewJob(
 		gocron.CronJob(crontab, withSeconds),
 		task,
 		options...,
 	)
-	return job, err
+}
+
+// RunJobCrontabTheOne 使用redis分布式锁进行控制同一id只会运行一个任务
+func (corn *Corn) RunJobCrontabTheOne(id any, crontab string, withSeconds bool, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
+	if RedisClient == nil {
+		return nil, redisClientNilErr()
+	}
+	if err := RedisClient.NewLock(corn.redisKey(id)).TryLock(); err == nil {
+		return corn.Scheduler.NewJob(
+			gocron.CronJob(crontab, withSeconds),
+			task,
+			options...,
+		)
+	}
+	return nil, nil
 }
 
 type CornOptionFunc func(*Corn)
@@ -98,13 +178,6 @@ func WithCornJobs(options ...gocron.SchedulerOption) CornOptionFunc {
 	}
 }
 
-// WithCornRedisClient 启动redis分布式锁确保一个任务只会被一个示例执行
-func WithCornRedisClient(client redis.UniversalClient) CornOptionFunc {
-	return func(c *Corn) {
-		c.redisClient = client
-	}
-}
-
 // InitCornJob 初始化定时任务,默认时区使用ShangHaiTimeLocation
 func InitCornJob(options ...CornOptionFunc) error {
 	var corn = &Corn{
@@ -133,14 +206,6 @@ func InitCornJob(options ...CornOptionFunc) error {
 		corn.options = append(corn.options, gocron.WithGlobalJobOptions(
 			gocron.WithEventListeners(eventListeners...),
 		))
-	}
-
-	if corn.redisClient != nil {
-		locker, err := redislock.NewRedisLocker(corn.redisClient)
-		if err != nil {
-			return err
-		}
-		corn.options = append(corn.options, gocron.WithDistributedLocker(locker))
 	}
 
 	scheduler, err := gocron.NewScheduler(corn.options...)

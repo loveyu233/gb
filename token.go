@@ -28,7 +28,7 @@ type TokenService[T any] interface {
 // JWTTokenService 实现TokenService接口
 type JWTTokenService[T any] struct {
 	secret                    string
-	redisClient               *Redis
+	redisClient               *RedisConfig
 	signingMethod             jwt.SigningMethod
 	enableRedisCheckBlacklist bool // 是否启动redis黑名单
 	blacklistKeyFn            func(tokenID string) string
@@ -40,7 +40,7 @@ type JWTTokenService[T any] struct {
 type TokenServiceOption[T any] func(*JWTTokenService[T])
 
 // WithRedisClient 设置redis客户端
-func WithRedisClient[T any](client *Redis) TokenServiceOption[T] {
+func WithRedisClient[T any](client *RedisConfig) TokenServiceOption[T] {
 	return func(service *JWTTokenService[T]) {
 		service.redisClient = client
 	}

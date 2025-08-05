@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	DB = new(GormClient)
+	DB *GormClient
 )
 
 type GormClient struct {
@@ -61,6 +61,7 @@ func InitGormDB(gcc GormConnConfig, gormLogger logger.Interface, opt ...func(db 
 		}
 	}
 
+	DB = new(GormClient)
 	DB.DB = db
 
 	return nil
