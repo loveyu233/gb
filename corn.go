@@ -113,11 +113,7 @@ func InitCornJob(options ...CornOptionFunc) error {
 	}
 
 	if corn.location == nil {
-		cst, err := time.LoadLocation("Asia/Shanghai")
-		if err != nil {
-			return err
-		}
-		corn.location = cst
+		corn.location = ShangHaiTimeLocation
 	}
 	corn.options = append(corn.options, gocron.WithLocation(corn.location))
 
