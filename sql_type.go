@@ -14,7 +14,7 @@ type DateOnly time.Time
 
 // NewDateString 根据日期字符串创建一个 DateOnly 实例
 func NewDateString(dateString string) (*DateOnly, error) {
-	date, err := time.Parse("2006-01-02", dateString)
+	date, err := time.ParseInLocation("2006-01-02", dateString, ShangHaiTimeLocation)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (d *DateOnly) Scan(v interface{}) error {
 	switch value := v.(type) {
 	case []byte:
 		dateStr := string(value)
-		parsedDate, err := time.Parse("2006-01-02", dateStr)
+		parsedDate, err := time.ParseInLocation("2006-01-02", dateStr, ShangHaiTimeLocation)
 		if err != nil {
 			return err
 		}
@@ -40,7 +40,7 @@ func (d *DateOnly) Scan(v interface{}) error {
 		fixedDate := time.Date(
 			parsedDate.Year(), parsedDate.Month(), parsedDate.Day(),
 			0, 0, 0, 0,
-			time.UTC,
+			ShangHaiTimeLocation,
 		)
 
 		*d = DateOnly(fixedDate)
@@ -48,7 +48,7 @@ func (d *DateOnly) Scan(v interface{}) error {
 
 	case string:
 		dateStr := value
-		parsedDate, err := time.Parse("2006-01-02", dateStr)
+		parsedDate, err := time.ParseInLocation("2006-01-02", dateStr, ShangHaiTimeLocation)
 		if err != nil {
 			return err
 		}
@@ -57,7 +57,7 @@ func (d *DateOnly) Scan(v interface{}) error {
 		fixedDate := time.Date(
 			parsedDate.Year(), parsedDate.Month(), parsedDate.Day(),
 			0, 0, 0, 0,
-			time.UTC,
+			ShangHaiTimeLocation,
 		)
 
 		*d = DateOnly(fixedDate)
@@ -68,7 +68,7 @@ func (d *DateOnly) Scan(v interface{}) error {
 		fixedDate := time.Date(
 			value.Year(), value.Month(), value.Day(),
 			0, 0, 0, 0,
-			time.UTC,
+			ShangHaiTimeLocation,
 		)
 
 		*d = DateOnly(fixedDate)
@@ -84,27 +84,27 @@ func (d DateOnly) Value() (driver.Value, error) {
 	if tm.IsZero() {
 		return nil, nil
 	}
-	return tm.Format("2006-01-02"), nil
+	return tm.In(ShangHaiTimeLocation).Format("2006-01-02"), nil
 }
 
 // 添加辅助方法以方便使用
 func (d DateOnly) String() string {
-	return time.Time(d).Format("2006-01-02")
+	return time.Time(d).In(ShangHaiTimeLocation).Format("2006-01-02")
 }
 
 // Format 允许自定义格式化输出
 func (d DateOnly) Format(layout string) string {
-	return time.Time(d).Format(layout)
+	return time.Time(d).In(ShangHaiTimeLocation).Format(layout)
 }
 
 // Time 返回对应的 time.Time 值
 func (d DateOnly) Time() time.Time {
-	return time.Time(d)
+	return time.Time(d).In(ShangHaiTimeLocation)
 }
 
 // MarshalJSON 实现 JSON 序列化
 func (d DateOnly) MarshalJSON() ([]byte, error) {
-	formatted := time.Time(d).Format("2006-01-02")
+	formatted := time.Time(d).In(ShangHaiTimeLocation).Format("2006-01-02")
 	return json.Marshal(formatted)
 }
 
@@ -114,7 +114,7 @@ func (d *DateOnly) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &dateStr); err != nil {
 		return err
 	}
-	parsed, err := time.Parse("2006-01-02", dateStr)
+	parsed, err := time.ParseInLocation("2006-01-02", dateStr, ShangHaiTimeLocation)
 	if err != nil {
 		return err
 	}
@@ -123,7 +123,7 @@ func (d *DateOnly) UnmarshalJSON(data []byte) error {
 }
 
 func (d DateOnly) FormatRelativeDate() string {
-	return FormatDateRelativeDate(d.Time())
+	return FormatDateRelativeDate(d.Time().In(ShangHaiTimeLocation))
 }
 
 type Slice[T any] []T
@@ -195,9 +195,9 @@ func (t *TimeOnly) Scan(v interface{}) error {
 		if len(timeStr) > 8 {
 			layout = "15:04"
 		}
-		parsedTime, err := time.Parse(layout, timeStr)
+		parsedTime, err := time.ParseInLocation(layout, timeStr, ShangHaiTimeLocation)
 		if err != nil {
-			parsedTime, err = time.Parse("2006-01-02 15:04:05", "1970-01-01 "+timeStr)
+			parsedTime, err = time.ParseInLocation("2006-01-02 15:04:05", "1970-01-01 "+timeStr, ShangHaiTimeLocation)
 			if err != nil {
 				return err
 			}
@@ -205,7 +205,7 @@ func (t *TimeOnly) Scan(v interface{}) error {
 		fixedTime := time.Date(
 			1970, 1, 1,
 			parsedTime.Hour(), parsedTime.Minute(), parsedTime.Second(), parsedTime.Nanosecond(),
-			time.UTC,
+			ShangHaiTimeLocation,
 		)
 
 		*t = TimeOnly(fixedTime)
@@ -218,9 +218,9 @@ func (t *TimeOnly) Scan(v interface{}) error {
 			layout = "15:04"
 		}
 
-		parsedTime, err := time.Parse(layout, timeStr)
+		parsedTime, err := time.ParseInLocation(layout, timeStr, ShangHaiTimeLocation)
 		if err != nil {
-			parsedTime, err = time.Parse("2006-01-02 15:04:05", "1970-01-01 "+timeStr)
+			parsedTime, err = time.ParseInLocation("2006-01-02 15:04:05", "1970-01-01 "+timeStr, ShangHaiTimeLocation)
 			if err != nil {
 				return err
 			}
@@ -229,7 +229,7 @@ func (t *TimeOnly) Scan(v interface{}) error {
 		fixedTime := time.Date(
 			1970, 1, 1,
 			parsedTime.Hour(), parsedTime.Minute(), parsedTime.Second(), parsedTime.Nanosecond(),
-			time.UTC,
+			ShangHaiTimeLocation,
 		)
 
 		*t = TimeOnly(fixedTime)
@@ -239,7 +239,7 @@ func (t *TimeOnly) Scan(v interface{}) error {
 		fixedTime := time.Date(
 			1970, 1, 1,
 			value.Hour(), value.Minute(), value.Second(), value.Nanosecond(),
-			time.UTC,
+			ShangHaiTimeLocation,
 		)
 		*t = TimeOnly(fixedTime)
 		return nil
@@ -253,22 +253,22 @@ func (t TimeOnly) Value() (driver.Value, error) {
 	if tm.IsZero() {
 		return nil, nil
 	}
-	return tm.Format("15:04:05"), nil
+	return tm.In(ShangHaiTimeLocation).Format("15:04:05"), nil
 }
 
 func (t TimeOnly) String() string {
-	return time.Time(t).Format("15:04:05")
+	return time.Time(t).In(ShangHaiTimeLocation).Format("15:04:05")
 }
 
 func (t TimeOnly) Format(layout string) string {
-	return time.Time(t).Format(layout)
+	return time.Time(t).In(ShangHaiTimeLocation).Format(layout)
 }
 
 func (t TimeOnly) Time() time.Time {
-	return time.Time(t)
+	return time.Time(t).In(ShangHaiTimeLocation)
 }
 func (t TimeOnly) MarshalJSON() ([]byte, error) {
-	formatted := time.Time(t).Format("15:04:05")
+	formatted := time.Time(t).In(ShangHaiTimeLocation).Format("15:04:05")
 	return json.Marshal(formatted)
 }
 
@@ -277,7 +277,7 @@ func (t *TimeOnly) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &timeStr); err != nil {
 		return err
 	}
-	parsed, err := time.Parse("15:04", timeStr)
+	parsed, err := time.ParseInLocation("15:04", timeStr, ShangHaiTimeLocation)
 	if err != nil {
 		return err
 	}
@@ -289,7 +289,7 @@ func (t TimeOnly) AddTime(hours, minutes, seconds int) TimeOnly {
 	tm := time.Time(t)
 
 	// 添加指定的时间
-	newTime := tm.Add(
+	newTime := tm.In(ShangHaiTimeLocation).Add(
 		time.Duration(hours)*time.Hour +
 			time.Duration(minutes)*time.Minute +
 			time.Duration(seconds)*time.Second,
@@ -299,7 +299,7 @@ func (t TimeOnly) AddTime(hours, minutes, seconds int) TimeOnly {
 	fixedTime := time.Date(
 		1970, 1, 1,
 		newTime.Hour(), newTime.Minute(), newTime.Second(), newTime.Nanosecond(),
-		time.UTC,
+		ShangHaiTimeLocation,
 	)
 
 	return TimeOnly(fixedTime)
@@ -307,26 +307,26 @@ func (t TimeOnly) AddTime(hours, minutes, seconds int) TimeOnly {
 
 // Before 方法 - 判断当前时间是否早于另一个时间
 func (t TimeOnly) Before(other TimeOnly) bool {
-	return t.Time().Before(other.Time())
+	return t.Time().In(ShangHaiTimeLocation).Before(other.Time().In(ShangHaiTimeLocation))
 }
 
 // After 方法 - 判断当前时间是否晚于另一个时间
 func (t TimeOnly) After(other TimeOnly) bool {
-	return t.Time().Before(other.Time())
+	return t.Time().In(ShangHaiTimeLocation).Before(other.Time().In(ShangHaiTimeLocation))
 }
 
 // Equal 方法 - 判断两个时间是否相等
 func (t TimeOnly) Equal(other TimeOnly) bool {
-	return t.Time().Equal(other.Time())
+	return t.Time().In(ShangHaiTimeLocation).Equal(other.Time().In(ShangHaiTimeLocation))
 }
 
 // Sub 方法 - 计算两个时间的差值，返回 Duration
 func (t TimeOnly) Sub(other TimeOnly) time.Duration {
-	return t.Time().Sub(other.Time())
+	return t.Time().In(ShangHaiTimeLocation).Sub(other.Time().In(ShangHaiTimeLocation))
 }
 
 func (t TimeOnly) FormatRelativeDate() string {
-	return FormatTimeRelativeDate(t.Time())
+	return FormatTimeRelativeDate(t.Time().In(ShangHaiTimeLocation))
 }
 
 type DateTime time.Time
@@ -337,7 +337,7 @@ func (t *DateTime) Scan(v interface{}) error {
 		return nil
 	}
 
-	*t = DateTime(cast.ToTime(v).In(cst))
+	*t = DateTime(cast.ToTime(v).In(ShangHaiTimeLocation))
 	return nil
 }
 
@@ -346,22 +346,22 @@ func (t DateTime) Value() (driver.Value, error) {
 	if tm.IsZero() {
 		return nil, nil
 	}
-	return tm.In(cst).Format(CSTLayout), nil
+	return tm.In(ShangHaiTimeLocation).Format(CSTLayout), nil
 }
 
 func (t DateTime) String() string {
-	return time.Time(t).In(cst).Format(CSTLayout)
+	return time.Time(t).In(ShangHaiTimeLocation).Format(CSTLayout)
 }
 
 func (t DateTime) Format(layout string) string {
-	return time.Time(t).In(cst).Format(layout)
+	return time.Time(t).In(ShangHaiTimeLocation).Format(layout)
 }
 
 func (t DateTime) Time() time.Time {
-	return time.Time(t).In(cst)
+	return time.Time(t).In(ShangHaiTimeLocation)
 }
 func (t DateTime) MarshalJSON() ([]byte, error) {
-	formatted := time.Time(t).In(cst).Format(CSTLayout)
+	formatted := time.Time(t).In(ShangHaiTimeLocation).Format(CSTLayout)
 	return json.Marshal(formatted)
 }
 
@@ -370,7 +370,7 @@ func (t *DateTime) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &timeStr); err != nil {
 		return err
 	}
-	parsed, err := time.ParseInLocation(CSTLayout, timeStr, cst)
+	parsed, err := time.ParseInLocation(CSTLayout, timeStr, ShangHaiTimeLocation)
 	if err != nil {
 		return err
 	}

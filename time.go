@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	cst *time.Location
+	ShangHaiTimeLocation *time.Location
 )
 
 // CSTLayout China Standard Time Layout
@@ -25,58 +25,58 @@ const (
 
 func init() {
 	var err error
-	if cst, err = time.LoadLocation("Asia/Shanghai"); err != nil {
+	if ShangHaiTimeLocation, err = time.LoadLocation("Asia/Shanghai"); err != nil {
 		panic(err)
 	}
 
 	// 默认设置为中国时区
-	time.Local = cst
+	time.Local = ShangHaiTimeLocation
 }
 
 // GetCurrentTime 获取当前时间
 func GetCurrentTime() time.Time {
-	return time.Now()
+	return time.Now().In(ShangHaiTimeLocation)
 }
 
 // GetCurrentTimePtr 获取当前时间指针
 func GetCurrentTimePtr() *time.Time {
-	now := time.Now()
+	now := time.Now().In(ShangHaiTimeLocation)
 	return &now
 }
 
 // FormatCurrentTime 格式化当前时间
 func FormatCurrentTime() string {
 	ts := time.Now()
-	return ts.In(cst).Format(CSTLayout)
+	return ts.In(ShangHaiTimeLocation).Format(CSTLayout)
 }
 
 // GetCurrentDate 获取当前日期
 func GetCurrentDate() string {
-	return time.Now().In(cst).Format(CSTLayoutDate)
+	return time.Now().In(ShangHaiTimeLocation).Format(CSTLayoutDate)
 }
 
 // StringToDateTime 时间字符串转为time.time
 func StringToDateTime(dateTime string) (time.Time, error) {
-	return time.ParseInLocation(CSTLayout, dateTime, cst)
+	return time.ParseInLocation(CSTLayout, dateTime, ShangHaiTimeLocation)
 }
 
 // StringToDateTimeNoErr 时间字符串转为time.time,不返回错误
 func StringToDateTimeNoErr(dateTime string) (time.Time, error) {
-	return time.ParseInLocation(CSTLayout, dateTime, cst)
+	return time.ParseInLocation(CSTLayout, dateTime, ShangHaiTimeLocation)
 }
 
 func StringToGbDateTime(dateTime string) DateTime {
-	location, _ := time.ParseInLocation(CSTLayout, dateTime, cst)
+	location, _ := time.ParseInLocation(CSTLayout, dateTime, ShangHaiTimeLocation)
 	return DateTime(location)
 }
 
 // StringToDate 日期字符串转为time Date
 func StringToDate(date string) (time.Time, error) {
-	return time.ParseInLocation(CSTLayoutDate, date, cst)
+	return time.ParseInLocation(CSTLayoutDate, date, ShangHaiTimeLocation)
 }
 func StringToDateNoErr(dateTime string) time.Time {
 	t, _ := StringToDate(dateTime)
-	return t
+	return t.In(ShangHaiTimeLocation)
 }
 
 func StringToDateOnly(dateTime string) (DateOnly, error) {
@@ -89,7 +89,7 @@ func StringToDateOnly(dateTime string) (DateOnly, error) {
 
 // StringToTime 日期字符串转为time Date
 func StringToTime(date string) (time.Time, error) {
-	return time.ParseInLocation(CSTLayoutDate, date, cst)
+	return time.ParseInLocation(CSTLayoutDate, date, ShangHaiTimeLocation)
 }
 
 func StringToTimeNoErr(date string) time.Time {
@@ -125,12 +125,12 @@ func StringDateToDateTimePtr(date string, hourMinuteSecond string) (parsed *time
 
 // DateTimeToString time.time类型转换为String类型
 func DateTimeToString(t time.Time) string {
-	return t.In(cst).Format(CSTLayout)
+	return t.In(ShangHaiTimeLocation).Format(CSTLayout)
 }
 
 // FuzzParseTimeString 模糊解析时间
 func FuzzParseTimeString(timeString string) (time.Time, error) {
-	return dateparse.ParseIn(timeString, cst)
+	return dateparse.ParseIn(timeString, ShangHaiTimeLocation)
 }
 
 // DateTimePtrToString *time.time类型转换为CSTLayout格式
@@ -138,7 +138,7 @@ func DateTimePtrToString(t *time.Time) string {
 	if t == nil {
 		return ""
 	}
-	return t.In(cst).Format(CSTLayout)
+	return t.In(ShangHaiTimeLocation).Format(CSTLayout)
 }
 
 // DatetimePtrToDateString *time.time类型转换为CSTLayoutDate格式
@@ -146,7 +146,7 @@ func DatetimePtrToDateString(t *time.Time) string {
 	if t == nil {
 		return ""
 	}
-	return t.In(cst).Format(CSTLayoutDate)
+	return t.In(ShangHaiTimeLocation).Format(CSTLayoutDate)
 }
 
 // StringToDateTimePtr 将 string转为datetimePtr
@@ -169,7 +169,7 @@ func Rfc3339StringToDateTimePtr(rfc3339 string) *time.Time {
 		return nil
 	}
 
-	t, err := time.ParseInLocation(time.RFC3339, rfc3339, cst)
+	t, err := time.ParseInLocation(time.RFC3339, rfc3339, ShangHaiTimeLocation)
 	if err != nil {
 		return nil
 	}
@@ -189,7 +189,7 @@ func TimeToUnix(t time.Time) int {
 
 // UnixToDateTimeString 将 Unix 时间戳转换为 CSTLayout 格式的时间字符串
 func UnixToDateTimeString(unix int64) string {
-	return time.Unix(unix, 0).In(cst).Format(CSTLayout)
+	return time.Unix(unix, 0).In(ShangHaiTimeLocation).Format(CSTLayout)
 }
 
 // GetCurrentTimeUnix 获取当前时间的 Unix 时间戳
