@@ -16,7 +16,7 @@ type Corn struct {
 	afterJobRuns          func(jobID uuid.UUID, jobName string)            // 运行后
 	afterJobRunsWithError func(jobID uuid.UUID, jobName string, err error) // 出错
 	options               []gocron.SchedulerOption
-	redisClient           *redis.Client
+	redisClient           redis.UniversalClient
 	Scheduler             gocron.Scheduler
 }
 
@@ -25,8 +25,8 @@ func (corn *Corn) RunJob(df gocron.JobDefinition, task gocron.Task, options ...g
 	return corn.Scheduler.NewJob(df, task, options...)
 }
 
-// RunJobEvery30Minutes 创建每duration时间执行一次的定时任务
-func (corn *Corn) RunJobEvery30Minutes(duration time.Duration, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
+// RunJobEveryDuration 创建每duration时间执行一次的定时任务
+func (corn *Corn) RunJobEveryDuration(duration time.Duration, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	return corn.Scheduler.NewJob(
 		gocron.DurationJob(duration),
 		task,
@@ -48,7 +48,7 @@ func (corn *Corn) RunJobiATimes(times []time.Time, task gocron.Task, options ...
 func (corn *Corn) RunJobEverDay(hours, minutes, seconds, interval uint, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	job, err := corn.Scheduler.NewJob(
 		gocron.DailyJob(interval, gocron.NewAtTimes(
-			gocron.NewAtTime(hours, minutes, seconds), // 5点0分0秒
+			gocron.NewAtTime(hours, minutes, seconds),
 		)),
 		task,
 		options...,
@@ -59,7 +59,7 @@ func (corn *Corn) RunJobEverDay(hours, minutes, seconds, interval uint, task goc
 // RunJobCrontab 使用 Cron 表达式,如果withSeconds设置为true，则可以在开始时使用可选的第6个字段
 func (corn *Corn) RunJobCrontab(crontab string, withSeconds bool, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	job, err := corn.Scheduler.NewJob(
-		gocron.CronJob(crontab, withSeconds), // 每天5点执行
+		gocron.CronJob(crontab, withSeconds),
 		task,
 		options...,
 	)
@@ -98,12 +98,14 @@ func WithCornJobs(options ...gocron.SchedulerOption) CornOptionFunc {
 	}
 }
 
-func WithCornRedisClient(client *redis.Client) CornOptionFunc {
+// WithCornRedisClient 启动redis分布式锁确保一个任务只会被一个示例执行
+func WithCornRedisClient(client redis.UniversalClient) CornOptionFunc {
 	return func(c *Corn) {
 		c.redisClient = client
 	}
 }
 
+// InitCornJob 初始化定时任务,默认时区使用ShangHaiTimeLocation
 func InitCornJob(options ...CornOptionFunc) error {
 	var corn = &Corn{
 		options: make([]gocron.SchedulerOption, 0),
@@ -151,10 +153,12 @@ func InitCornJob(options ...CornOptionFunc) error {
 	return nil
 }
 
+// Start 开启定时任务
 func (corn *Corn) Start() {
 	corn.Scheduler.Start()
 }
 
+// Stop 结束定时任务
 func (corn *Corn) Stop() error {
 	if err := corn.Scheduler.Shutdown(); err != nil {
 		return err
