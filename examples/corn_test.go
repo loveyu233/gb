@@ -18,7 +18,7 @@ func TestCorn(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		go func() {
 			_, err := gb.CornJob.RunJobEveryDurationTheOne(1, 2*time.Second, gocron.NewTask(func() {
-				t.Log(gb.FormatCurrentTime())
+				t.Log(gb.NowString())
 			}))
 			t.Log(err)
 		}()

@@ -8,7 +8,6 @@ import (
 	"github.com/rs/xid"
 	"math/big"
 	mrand "math/rand"
-	"time"
 )
 
 // GetUUID 长度为36的字符串
@@ -42,7 +41,7 @@ func RandomString(length int) (string, error) {
 
 func RandomStringNoErr() string {
 	var charset = RandomCharacterSetAllStr().String()
-	var seededRand = mrand.New(mrand.NewSource(time.Now().UnixNano()))
+	var seededRand = mrand.New(mrand.NewSource(Now().UnixNano()))
 	b := make([]byte, 6)
 	for i := range b {
 		b[i] = charset[seededRand.Intn(len(charset))]
@@ -120,7 +119,7 @@ func Random(strLen int64, characterSet ...RandomCharacterSet) string {
 			charset += characterSet[i].String()
 		}
 	}
-	var seededRand = mrand.New(mrand.NewSource(time.Now().UnixNano()))
+	var seededRand = mrand.New(mrand.NewSource(Now().UnixNano()))
 	b := make([]byte, strLen)
 	for i := range b {
 		b[i] = charset[seededRand.Intn(len(charset))]

@@ -87,7 +87,7 @@ func NewJWTTokenService[T any](secret string, options ...TokenServiceOption[T]) 
 
 // Generate 生成JWT令牌
 func (s *JWTTokenService[T]) Generate(user T, expiration time.Duration) (string, error) {
-	now := time.Now()
+	now := Now()
 	tokenID := GetUUID()
 
 	claims := Claims[T]{

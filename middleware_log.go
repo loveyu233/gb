@@ -51,7 +51,7 @@ func (rl *RequestLogger) AddEntry(level zerolog.Level, message string, fields ma
 		Level:   level,
 		Message: message,
 		Fields:  make(map[string]any),
-		Time:    time.Now(),
+		Time:    Now(),
 	}
 
 	// 复制字段避免并发问题
@@ -271,7 +271,7 @@ type FileInfo struct {
 func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 开始时间
-		startTime := GetCurrentTime()
+		startTime := Now()
 		// 创建请求日志器
 		requestLogger := NewRequestLogger(c.Request.Context(), zlog)
 		c.Set(string(RequestLoggerKey), requestLogger)

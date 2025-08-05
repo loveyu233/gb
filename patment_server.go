@@ -14,7 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-	"time"
 )
 
 func (wx *wxPay) RegisterHandlers(r *gin.RouterGroup) {
@@ -161,7 +160,7 @@ type RefundResp struct {
 
 // Refund 退款
 func (wx *wxPay) Refund(req *RefundRequest) (*RefundResp, error) {
-	outRefundNo := fmt.Sprintf("%s@%d", req.OrderId, time.Now().Unix())
+	outRefundNo := fmt.Sprintf("%s@%d", req.OrderId, Now().Unix())
 	options := &rRequest.RequestRefund{
 		OutTradeNo:   req.OrderId,
 		OutRefundNo:  outRefundNo,

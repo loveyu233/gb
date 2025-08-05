@@ -19,7 +19,7 @@ type ToS struct {
 }
 
 func TestCopy(t *testing.T) {
-	now := time.Now()
+	now := gb.Now()
 	f := &FromS{
 		ID:         1,
 		CreatedAt:  &now,

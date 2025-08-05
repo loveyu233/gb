@@ -30,7 +30,7 @@ func TestRedis(t *testing.T) {
 			defer lock.Unlock()
 
 			time.Sleep(2 * time.Second)
-			t.Log("加锁成功", index, time.Now().String())
+			t.Log("加锁成功", index, gb.Now().String())
 		}(i)
 	}
 	wg.Wait()

@@ -5,7 +5,6 @@ import (
 	"golang.org/x/net/context"
 	"sync"
 	"testing"
-	"time"
 )
 
 func init() {
@@ -40,7 +39,7 @@ func TestLock(t *testing.T) {
 				return
 			}
 			defer lock.Unlock(gb.Context())
-			t.Log("success", index, time.Now().String())
+			t.Log("success", index, gb.Now().String())
 		}(i)
 	}
 	wg.Wait()
