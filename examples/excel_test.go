@@ -93,7 +93,7 @@ func TestExcelExport(t *testing.T) {
 			Age:      25,
 			Salary:   8500.50,
 			IsActive: true,
-			Birthday: time.Date(1998, 5, 15, 0, 0, 0, 0, time.UTC),
+			Birthday: time.Date(1998, 5, 15, 0, 0, 0, 0, gb.ShangHaiTimeLocation),
 			Phone:    &phone1,
 		},
 		{
@@ -103,7 +103,7 @@ func TestExcelExport(t *testing.T) {
 			Age:      30,
 			Salary:   12000.00,
 			IsActive: false,
-			Birthday: time.Date(1993, 8, 20, 0, 0, 0, 0, time.UTC),
+			Birthday: time.Date(1993, 8, 20, 0, 0, 0, 0, gb.ShangHaiTimeLocation),
 			Phone:    nil, // 空值测试
 		},
 		{
@@ -113,7 +113,7 @@ func TestExcelExport(t *testing.T) {
 			Age:      28,
 			Salary:   9800.75,
 			IsActive: true,
-			Birthday: time.Date(1995, 12, 3, 0, 0, 0, 0, time.UTC),
+			Birthday: time.Date(1995, 12, 3, 0, 0, 0, 0, gb.ShangHaiTimeLocation),
 			Phone:    nil,
 		},
 	}

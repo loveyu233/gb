@@ -189,11 +189,11 @@ func (e *ExcelExporter) ExportToSheet(data interface{}, file *excelize.File, she
 	// 参数验证
 	dataValue := reflect.ValueOf(data)
 	if dataValue.Kind() != reflect.Slice && dataValue.Kind() != reflect.Array {
-		return fmt.Errorf("data must be slice or array")
+		return fmt.Errorf("数据必须是切片或数组")
 	}
 
 	if dataValue.Len() == 0 {
-		return fmt.Errorf("data is empty")
+		return fmt.Errorf("数据为空")
 	}
 
 	elemType := dataValue.Type().Elem()
@@ -211,7 +211,7 @@ func (e *ExcelExporter) ExportToSheet(data interface{}, file *excelize.File, she
 	if sheetName != "Sheet1" {
 		index, err := file.NewSheet(sheetName)
 		if err != nil {
-			return fmt.Errorf("failed to create sheet: %v", err)
+			return fmt.Errorf("创建工作表失败: %v", err)
 		}
 		file.SetActiveSheet(index)
 	}
@@ -260,7 +260,7 @@ func (e *ExcelExporter) getExportStructInfo(elemType reflect.Type) (*exportStruc
 	}
 
 	if elemType.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("element type must be struct")
+		return nil, fmt.Errorf("元素类型必须为struct")
 	}
 
 	info := &exportStructInfo{
@@ -356,14 +356,14 @@ func (e *ExcelExporter) writeHeaders(file *excelize.File, sheetName string,
 		// 设置单元格值
 		err = file.SetCellValue(sheetName, cellName, fieldInfo.columnTitle)
 		if err != nil {
-			return fmt.Errorf("failed to set header cell %s: %v", cellName, err)
+			return fmt.Errorf("设置标题单元格失败 %s: %v", cellName, err)
 		}
 
 		// 应用表头样式
 		if headerStyleID != 0 {
 			err = file.SetCellStyle(sheetName, cellName, cellName, headerStyleID)
 			if err != nil {
-				return fmt.Errorf("failed to set header style: %v", err)
+				return fmt.Errorf("设置页眉样式失败: %v", err)
 			}
 		}
 	}
@@ -432,14 +432,14 @@ func (e *ExcelExporter) writeBatch(file *excelize.File, sheetName string,
 			// 设置单元格值
 			err := file.SetCellValue(sheetName, cellName, value)
 			if err != nil {
-				return fmt.Errorf("failed to set cell %s: %v", cellName, err)
+				return fmt.Errorf("设置单元格失败 %s: %v", cellName, err)
 			}
 
 			// 应用数据样式
 			if styleID != 0 {
 				err = file.SetCellStyle(sheetName, cellName, cellName, styleID)
 				if err != nil {
-					return fmt.Errorf("failed to set data style: %v", err)
+					return fmt.Errorf("设置数据样式失败: %v", err)
 				}
 			}
 		}
@@ -622,7 +622,7 @@ func (f *timeFormat) Format(value interface{}) string {
 		if t.IsZero() {
 			return ""
 		}
-		return t.Format("2006-01-02 15:04:05")
+		return t.In(ShangHaiTimeLocation).Format("2006-01-02 15:04:05")
 	}
 	return fmt.Sprintf("%v", value)
 }

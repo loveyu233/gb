@@ -131,7 +131,7 @@ func (m *ExcelMapper) MapToStructs(filePath string, result interface{}) error {
 	// 参数验证
 	resultValue := reflect.ValueOf(result)
 	if resultValue.Kind() != reflect.Ptr || resultValue.Elem().Kind() != reflect.Slice {
-		return fmt.Errorf("result must be a pointer to slice")
+		return fmt.Errorf("结果必须是指向切片的指针")
 	}
 
 	sliceValue := resultValue.Elem()
@@ -146,7 +146,7 @@ func (m *ExcelMapper) MapToStructs(filePath string, result interface{}) error {
 	// 打开Excel文件
 	file, err := excelize.OpenFile(filePath)
 	if err != nil {
-		return fmt.Errorf("failed to open excel file: %v", err)
+		return fmt.Errorf("打开excel文件失败: %v", err)
 	}
 	defer file.Close()
 
@@ -155,10 +155,10 @@ func (m *ExcelMapper) MapToStructs(filePath string, result interface{}) error {
 	if sheetName == "" {
 		sheets := file.GetSheetList()
 		if len(sheets) == 0 {
-			return fmt.Errorf("no sheets found in excel file")
+			return fmt.Errorf("在excel文件中找不到工作表")
 		}
 		if m.SheetIndex >= len(sheets) {
-			return fmt.Errorf("sheet index %d out of range", m.SheetIndex)
+			return fmt.Errorf("工作表索引 %d 超出范围", m.SheetIndex)
 		}
 		sheetName = sheets[m.SheetIndex]
 	}
@@ -166,11 +166,11 @@ func (m *ExcelMapper) MapToStructs(filePath string, result interface{}) error {
 	// 获取数据范围
 	rows, err := file.GetRows(sheetName)
 	if err != nil {
-		return fmt.Errorf("failed to get rows: %v", err)
+		return fmt.Errorf("无法获取行: %v", err)
 	}
 
 	if len(rows) < m.DataStartRow {
-		return fmt.Errorf("insufficient rows in excel file")
+		return fmt.Errorf("excel文件中的行不足")
 	}
 
 	// 构建列映射
@@ -205,7 +205,7 @@ func (m *ExcelMapper) getStructInfo(elemType reflect.Type) (*structInfo, error) 
 	}
 
 	if elemType.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("target type must be struct")
+		return nil, fmt.Errorf("目标类型必须为struct")
 	}
 
 	info := &structInfo{
@@ -227,7 +227,7 @@ func (m *ExcelMapper) getStructInfo(elemType reflect.Type) (*structInfo, error) 
 
 		converter := m.getConverter(fieldType)
 		if converter == nil {
-			return nil, fmt.Errorf("unsupported field type: %v", fieldType)
+			return nil, fmt.Errorf("不支持的字段类型: %v", fieldType)
 		}
 
 		info.fields = append(info.fields, fieldInfo{
@@ -270,7 +270,7 @@ func (m *ExcelMapper) getConverter(fieldType reflect.Type) valueConverter {
 // buildColumnMap 构建列映射关系
 func (m *ExcelMapper) buildColumnMap(rows [][]string, structInfo *structInfo) (map[string]int, error) {
 	if len(rows) < m.HeaderRow {
-		return nil, fmt.Errorf("header row %d not found", m.HeaderRow)
+		return nil, fmt.Errorf("标题行 %d 未找到", m.HeaderRow)
 	}
 
 	headers := rows[m.HeaderRow-1]
@@ -280,7 +280,7 @@ func (m *ExcelMapper) buildColumnMap(rows [][]string, structInfo *structInfo) (m
 		columnIndex := m.findColumnIndex(headers, fieldInfo.tag)
 		if columnIndex == -1 {
 			if m.StrictMode {
-				return nil, fmt.Errorf("column not found for field %s with tag %s",
+				return nil, fmt.Errorf("未找到字段的列 %s 带标签 %s",
 					fieldInfo.name, fieldInfo.tag)
 			}
 			continue
@@ -515,9 +515,9 @@ func (c *timeConv) Convert(value string) (interface{}, error) {
 	// 尝试Excel数值日期
 	if f, err := strconv.ParseFloat(value, 64); err == nil {
 		// Excel日期起始点：1900年1月1日（但Excel错误地认为1900年是闰年）
-		excelEpoch := time.Date(1899, 12, 30, 0, 0, 0, 0, time.UTC)
+		excelEpoch := time.Date(1899, 12, 30, 0, 0, 0, 0, ShangHaiTimeLocation)
 		return excelEpoch.AddDate(0, 0, int(f)), nil
 	}
 
-	return nil, fmt.Errorf("unable to parse time: %s", value)
+	return nil, fmt.Errorf("无法解析时间: %s", value)
 }
