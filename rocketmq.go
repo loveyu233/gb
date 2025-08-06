@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	RocketMQ = new(RocketMQClient)
+	InsRocketMQ = new(RocketMQClient)
 )
 
-type RocketMQConf struct {
+type RocketMQConfig struct {
 	endpoint      string
 	consumerGroup string
 	accessKey     string
@@ -20,8 +20,8 @@ type RocketMQConf struct {
 }
 
 // InitRocketMQConfig 创建RocketMQ配置
-func InitRocketMQConfig(endpoint, consumerGroup, accessKey, accessSecret string, topics []string) *RocketMQConf {
-	return &RocketMQConf{
+func InitRocketMQConfig(endpoint, consumerGroup, accessKey, accessSecret string, topics []string) *RocketMQConfig {
+	return &RocketMQConfig{
 		endpoint:      endpoint,
 		consumerGroup: consumerGroup,
 		accessKey:     accessKey,
@@ -36,7 +36,7 @@ type RocketMQClient struct {
 }
 
 // GetProduct 获取生产者
-func (conf *RocketMQConf) GetProduct() error {
+func (conf *RocketMQConfig) GetProduct() error {
 	config := &golang.Config{
 		Endpoint:      conf.endpoint,
 		ConsumerGroup: conf.consumerGroup,
@@ -54,12 +54,12 @@ func (conf *RocketMQConf) GetProduct() error {
 	if err != nil {
 		return err
 	}
-	RocketMQ.Product = producer
+	InsRocketMQ.Product = producer
 	return nil
 }
 
 // GetConsumer 获取消费者
-func (conf *RocketMQConf) GetConsumer(topic string, tag string, withAwaitDuration time.Duration) error {
+func (conf *RocketMQConfig) GetConsumer(topic string, tag string, withAwaitDuration time.Duration) error {
 	simpleConsumer, err := golang.NewSimpleConsumer(&golang.Config{
 		Endpoint:      conf.endpoint,
 		ConsumerGroup: conf.consumerGroup,
@@ -80,7 +80,7 @@ func (conf *RocketMQConf) GetConsumer(topic string, tag string, withAwaitDuratio
 	if err != nil {
 		return err
 	}
-	RocketMQ.Consumer = simpleConsumer
+	InsRocketMQ.Consumer = simpleConsumer
 	return nil
 }
 

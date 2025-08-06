@@ -89,11 +89,11 @@ func InitWXMiniProgramService(config MiniProgramServiceConfig) error {
 		return err
 	}
 
-	WX.WXMini.IsSaveHandlerLog = config.MiniProgram.IsSaveHandlerLog
-	WX.WXMini.MiniProgramApp = app
-	WX.WXMini.isExistsUser = config.WXMiniImp.IsExistsUser
-	WX.WXMini.createUser = config.WXMiniImp.CreateUser
-	WX.WXMini.generateToken = config.WXMiniImp.GenerateToken
+	InsWX.WXMini.IsSaveHandlerLog = config.MiniProgram.IsSaveHandlerLog
+	InsWX.WXMini.MiniProgramApp = app
+	InsWX.WXMini.isExistsUser = config.WXMiniImp.IsExistsUser
+	InsWX.WXMini.createUser = config.WXMiniImp.CreateUser
+	InsWX.WXMini.generateToken = config.WXMiniImp.GenerateToken
 
 	return nil
 }

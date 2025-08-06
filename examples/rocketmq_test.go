@@ -22,7 +22,7 @@ func initRock() {
 }
 
 func TestProduct(t *testing.T) {
-	msg, err := gb.RocketMQ.SendMsg(gb.Context(), golang.Message{
+	msg, err := gb.InsRocketMQ.SendMsg(gb.Context(), golang.Message{
 		Topic: "test-1",
 		Body:  []byte("hello world2"),
 		Tag:   nil,
@@ -36,13 +36,13 @@ func TestProduct(t *testing.T) {
 
 func TestConsumer(t *testing.T) {
 	time.Sleep(time.Second * 1)
-	msg, err := gb.RocketMQ.CaptureMsg(context.Background(), 16, 20*time.Second)
+	msg, err := gb.InsRocketMQ.CaptureMsg(context.Background(), 16, 20*time.Second)
 	if err != nil {
 		t.Log(err.Error())
 		return
 	}
 	for _, item := range msg {
-		gb.RocketMQ.Consumer.Ack(context.TODO(), item)
+		gb.InsRocketMQ.Consumer.Ack(context.TODO(), item)
 		fmt.Printf("tga:%v key:%v body:%s \n", item.GetTag(), item.GetKeys(), string(item.GetBody()))
 	}
 }

@@ -74,11 +74,11 @@ func InitWXWXPaymentApp(paymentConfig WXPaymentAppConfig) error {
 	if err != nil {
 		return err
 	}
-	WX.WXPay.IsSaveHandlerLog = paymentConfig.Payment.IsSaveHandlerLog
-	WX.WXPay.PaymentApp = paymentApp
-	WX.WXPay.payNotifyHandler = paymentConfig.WXPayImp.PayNotify
-	WX.WXPay.refundNotifyHandler = paymentConfig.WXPayImp.RefundNotify
-	WX.WXPay.payHandler = paymentConfig.WXPayImp.Pay
-	WX.WXPay.refundHandler = paymentConfig.WXPayImp.Refund
+	InsWX.WXPay.IsSaveHandlerLog = paymentConfig.Payment.IsSaveHandlerLog
+	InsWX.WXPay.PaymentApp = paymentApp
+	InsWX.WXPay.payNotifyHandler = paymentConfig.WXPayImp.PayNotify
+	InsWX.WXPay.refundNotifyHandler = paymentConfig.WXPayImp.RefundNotify
+	InsWX.WXPay.payHandler = paymentConfig.WXPayImp.Pay
+	InsWX.WXPay.refundHandler = paymentConfig.WXPayImp.Refund
 	return nil
 }

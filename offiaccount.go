@@ -53,10 +53,10 @@ func InitWXOfficialAccountAppService(conf OfficialAccountAppServiceConfig) error
 	if err != nil {
 		return err
 	}
-	WX.WXOfficial.IsSaveHandlerLog = conf.OfficialAccount.IsSaveHandlerLog
-	WX.WXOfficial.OfficialAccountApp = app
-	WX.WXOfficial.subscribe = conf.WXOfficialImp.Subscribe
-	WX.WXOfficial.unSubscribe = conf.WXOfficialImp.UnSubscribe
-	WX.WXOfficial.pushHandler = conf.WXOfficialImp.PushHandler
+	InsWX.WXOfficial.IsSaveHandlerLog = conf.OfficialAccount.IsSaveHandlerLog
+	InsWX.WXOfficial.OfficialAccountApp = app
+	InsWX.WXOfficial.subscribe = conf.WXOfficialImp.Subscribe
+	InsWX.WXOfficial.unSubscribe = conf.WXOfficialImp.UnSubscribe
+	InsWX.WXOfficial.pushHandler = conf.WXOfficialImp.PushHandler
 	return nil
 }

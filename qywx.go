@@ -12,10 +12,10 @@ import (
 	"time"
 )
 
-var QWRobot *qwRobotClient
+var InsQWRobot *qwRobotConfig
 
-// qwRobotClient 企业微信机器人客户端
-type qwRobotClient struct {
+// qwRobotConfig 企业微信机器人客户端
+type qwRobotConfig struct {
 	webhookKey string
 	httpClient *http.Client
 	baseURL    string
@@ -23,7 +23,7 @@ type qwRobotClient struct {
 
 // InitQWRobotClient 创建新的企业微信机器人客户端,详细使用查看 examples/qywx_test.go
 func InitQWRobotClient(webhookKey string) {
-	QWRobot = &qwRobotClient{
+	InsQWRobot = &qwRobotConfig{
 		webhookKey: webhookKey,
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
@@ -33,12 +33,12 @@ func InitQWRobotClient(webhookKey string) {
 }
 
 // SetTimeout 设置HTTP客户端超时时间
-func (c *qwRobotClient) SetTimeout(timeout time.Duration) {
+func (c *qwRobotConfig) SetTimeout(timeout time.Duration) {
 	c.httpClient.Timeout = timeout
 }
 
 // SetHTTPClient 设置自定义HTTP客户端
-func (c *qwRobotClient) SetHTTPClient(client *http.Client) {
+func (c *qwRobotConfig) SetHTTPClient(client *http.Client) {
 	c.httpClient = client
 }
 
@@ -68,7 +68,7 @@ type QYWXSendResponse struct {
 }
 
 // UploadMedia 上传媒体文件,mediaType有file文件和voice语音
-func (c *qwRobotClient) UploadMedia(reader io.Reader, filename string, mediaType QYWXMediaType) (*QYWXUploadResponse, error) {
+func (c *qwRobotConfig) UploadMedia(reader io.Reader, filename string, mediaType QYWXMediaType) (*QYWXUploadResponse, error) {
 
 	// 读取所有数据到内存中，以便进行内容类型检测和获取大小
 	data, err := io.ReadAll(reader)
@@ -143,7 +143,7 @@ func (c *qwRobotClient) UploadMedia(reader io.Reader, filename string, mediaType
 }
 
 // UploadMediaFromFile 从文件路径上传媒体文件的便捷方法
-func (c *qwRobotClient) UploadMediaFromFile(mediaType QYWXMediaType, filePath string) (*QYWXUploadResponse, error) {
+func (c *qwRobotConfig) UploadMediaFromFile(mediaType QYWXMediaType, filePath string) (*QYWXUploadResponse, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("打开文件失败: %w", err)
@@ -277,7 +277,7 @@ func (n *QYWXNewsMessage) AddArticle(title, description, url, picURL string) *QY
 }
 
 // SendMessage 发送消息
-func (c *qwRobotClient) SendMessage(msg QYWXMessage) (*QYWXSendResponse, error) {
+func (c *qwRobotConfig) SendMessage(msg QYWXMessage) (*QYWXSendResponse, error) {
 	jsonData, err := json.Marshal(msg)
 	if err != nil {
 		return nil, fmt.Errorf("序列化消息失败: %w", err)
@@ -318,17 +318,17 @@ func (c *qwRobotClient) SendMessage(msg QYWXMessage) (*QYWXSendResponse, error) 
 }
 
 // SendText 发送文本消息的便捷方法
-func (c *qwRobotClient) SendText(content string) (*QYWXSendResponse, error) {
+func (c *qwRobotConfig) SendText(content string) (*QYWXSendResponse, error) {
 	return c.SendMessage(NewQYWXTextMessage(content))
 }
 
 // SendMarkdown 发送Markdown消息的便捷方法
-func (c *qwRobotClient) SendMarkdown(content string) (*QYWXSendResponse, error) {
+func (c *qwRobotConfig) SendMarkdown(content string) (*QYWXSendResponse, error) {
 	return c.SendMessage(NewQYWXMarkdownMessage(content))
 }
 
 // SendFile 发送文件消息的便捷方法
-func (c *qwRobotClient) SendFile(filePath string, mediaType QYWXMediaType) (*QYWXSendResponse, error) {
+func (c *qwRobotConfig) SendFile(filePath string, mediaType QYWXMediaType) (*QYWXSendResponse, error) {
 	// 上传文件
 	uploadResp, err := c.UploadMediaFromFile(mediaType, filePath)
 	if err != nil {
@@ -340,7 +340,7 @@ func (c *qwRobotClient) SendFile(filePath string, mediaType QYWXMediaType) (*QYW
 }
 
 // SendFileFromReader 从io.Reader发送文件消息
-func (c *qwRobotClient) SendFileFromReader(mediaType QYWXMediaType, reader io.Reader, filename string) (*QYWXSendResponse, error) {
+func (c *qwRobotConfig) SendFileFromReader(mediaType QYWXMediaType, reader io.Reader, filename string) (*QYWXSendResponse, error) {
 	// 上传文件
 	uploadResp, err := c.UploadMedia(reader, filename, mediaType)
 	if err != nil {
@@ -352,6 +352,6 @@ func (c *qwRobotClient) SendFileFromReader(mediaType QYWXMediaType, reader io.Re
 }
 
 // SendNews 发送图文消息的便捷方法
-func (c *qwRobotClient) SendNews(articles ...QYWXArticle) (*QYWXSendResponse, error) {
+func (c *qwRobotConfig) SendNews(articles ...QYWXArticle) (*QYWXSendResponse, error) {
 	return c.SendMessage(NewQYWXNewsMessage(articles...))
 }

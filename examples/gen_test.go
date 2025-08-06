@@ -16,7 +16,7 @@ func TestGenConfig(t *testing.T) {
 		panic(err)
 	}
 
-	gb.DB.Gen(gb.WithGenOutFilePath("../gen/query"),
+	gb.InsDB.Gen(gb.WithGenOutFilePath("../gen/query"),
 		gb.WithGenGlobalSimpleColumnTypeAddJsonType("arr", "gb.Slice[int]"),
 		gb.WithGenUseTablesName("simple_table"),
 	)
@@ -33,7 +33,7 @@ func TestUseGin(t *testing.T) {
 	//if err != nil {
 	//	panic(err)
 	//}
-	//query.SetDefault(gb.DB.DB)
+	//query.SetDefault(gb.InsDB.InsDB)
 	//table := query.SimpleTable
 	//affected, err := table.CustomDeletedFlag(111)
 	//t.Log(err)
@@ -47,7 +47,7 @@ func TestGen2(t *testing.T) {
 		Database: "demo2",
 	}, gb.GormDefaultLogger())
 
-	//query.SetDefault(gb.DB.DB)
+	//query.SetDefault(gb.InsDB.InsDB)
 	//find, _ := query.SimpleTable.Find()
 	//for _, item := range find {
 	//	fmt.Printf("%+v\n", item)

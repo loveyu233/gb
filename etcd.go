@@ -10,9 +10,9 @@ import (
 	"time"
 )
 
-var ETCDClient = new(Etcd)
+var InsEtcd = new(EtcdConfig)
 
-type Etcd struct {
+type EtcdConfig struct {
 	*clientv3.Client
 }
 
@@ -164,12 +164,12 @@ func InitEtcd(opts ...WithEtcdOpt) error {
 	if err != nil {
 		return err
 	}
-	ETCDClient.Client = client
+	InsEtcd.Client = client
 	return nil
 }
 
 // NewLock 初始化etcd分布式锁,详细用法查看 examples/etcd_test.go
-func (e *Etcd) NewLock(key string, opts ...concurrency.SessionOption) (*concurrency.Mutex, error) {
+func (e *EtcdConfig) NewLock(key string, opts ...concurrency.SessionOption) (*concurrency.Mutex, error) {
 	session, err := concurrency.NewSession(e.Client, opts...)
 	if err != nil {
 		return nil, err

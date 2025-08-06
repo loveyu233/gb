@@ -38,7 +38,7 @@ func TestWXPay(t *testing.T) {
 	})
 
 	// 支付
-	gb.WX.WXPay.Pay(&gb.PayRequest{
+	gb.InsWX.WXPay.Pay(&gb.PayRequest{
 		Price:       0,
 		Description: "",
 		Ip:          "",
@@ -49,10 +49,10 @@ func TestWXPay(t *testing.T) {
 	})
 
 	// 订单查询
-	gb.WX.WXPay.QueryOrder("")
+	gb.InsWX.WXPay.QueryOrder("")
 
 	// 退款
-	gb.WX.WXPay.Refund(&gb.RefundRequest{
+	gb.InsWX.WXPay.Refund(&gb.RefundRequest{
 		OrderId:    "",
 		TotalFee:   0,
 		RefundFee:  0,
@@ -61,12 +61,12 @@ func TestWXPay(t *testing.T) {
 	})
 
 	// 退款查询
-	gb.WX.WXPay.QueryRefundOrder("")
+	gb.InsWX.WXPay.QueryRefundOrder("")
 
 	engine := gin.Default()
 	group := engine.Group("/wx")
 	// 注册微信支付和微信退款回调api
-	gb.WX.WXPay.RegisterHandlers(group)
+	gb.InsWX.WXPay.RegisterHandlers(group)
 }
 
 type WXMiniImp struct {
@@ -96,7 +96,7 @@ func TestWXMini(t *testing.T) {
 	engine := gin.Default()
 	group := engine.Group("/wx")
 	// 注册微信小程序登录回调api
-	gb.WX.WXMini.RegisterHandlers(group)
+	gb.InsWX.WXMini.RegisterHandlers(group)
 }
 
 type WXOfficialImp struct {
@@ -124,5 +124,5 @@ func TestOffia(t *testing.T) {
 	})
 
 	// 发送消息
-	gb.WX.WXOfficial.PushTemplateMessage("", "", "")
+	gb.InsWX.WXOfficial.PushTemplateMessage("", "", "")
 }

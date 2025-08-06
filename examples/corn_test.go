@@ -17,13 +17,13 @@ func TestCorn(t *testing.T) {
 	}
 	for i := 0; i < 10; i++ {
 		go func() {
-			_, err := gb.CornJob.RunJobEveryDurationTheOne(1, 2*time.Second, gocron.NewTask(func() {
+			_, err := gb.InsCornJob.RunJobEveryDurationTheOne(1, 2*time.Second, gocron.NewTask(func() {
 				t.Log(gb.NowString())
 			}))
 			t.Log(err)
 		}()
 	}
 	time.Sleep(time.Second)
-	gb.CornJob.Start()
+	gb.InsCornJob.Start()
 	select {}
 }

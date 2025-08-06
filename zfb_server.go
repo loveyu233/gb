@@ -53,7 +53,7 @@ type ZFBClient struct {
 	IsSaveHandlerLog bool
 }
 
-var ZFB = new(ZFBClient)
+var InsZFB = new(ZFBClient)
 
 // InitAliClient 其中appid,appPrivateKey,aesKey是内容本身,appPublicKey, aliPublicKey, aliRootKey是证书路径,notifyUrl为支付成功和退款异步通知地址,isSaveHandlerLog 是否保存请求日志
 func InitAliClient(appid, appPrivateKey, aesKey, appPublicKeyFilePath, aliPublicKeyFilePath, aliRootKeyFilePath, notifyUrl string, isSaveHandlerLog bool, zfbMiniImp ZfbMiniImp) error {
@@ -70,15 +70,15 @@ func InitAliClient(appid, appPrivateKey, aesKey, appPublicKeyFilePath, aliPublic
 		return err
 	}
 
-	ZFB.appid = appid
-	ZFB.appPrivateKey = appPrivateKey
-	ZFB.aesKey = aesKey
-	ZFB.appPublicKey = appPublicKey
-	ZFB.aliPublicKey = aliPublicKey
-	ZFB.aliRootKey = aliRootKey
-	ZFB.notifyUrl = notifyUrl
-	ZFB.IsSaveHandlerLog = isSaveHandlerLog
-	ZFB.zfbMiniImp = zfbMiniImp
+	InsZFB.appid = appid
+	InsZFB.appPrivateKey = appPrivateKey
+	InsZFB.aesKey = aesKey
+	InsZFB.appPublicKey = appPublicKey
+	InsZFB.aliPublicKey = aliPublicKey
+	InsZFB.aliRootKey = aliRootKey
+	InsZFB.notifyUrl = notifyUrl
+	InsZFB.IsSaveHandlerLog = isSaveHandlerLog
+	InsZFB.zfbMiniImp = zfbMiniImp
 
 	clientV3, err := alipay.NewClientV3(appid, appPrivateKey, true)
 	if err != nil {
@@ -89,7 +89,7 @@ func InitAliClient(appid, appPrivateKey, aesKey, appPublicKeyFilePath, aliPublic
 		return err
 	}
 
-	ZFB.client = clientV3
+	InsZFB.client = clientV3
 	return nil
 }
 

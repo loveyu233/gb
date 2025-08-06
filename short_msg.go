@@ -9,10 +9,10 @@ import (
 )
 
 var (
-	ShortMsgClient = new(ShortMsg)
+	InsShortMsg = new(ShortMsgConfig)
 )
 
-type ShortMsg struct {
+type ShortMsgConfig struct {
 	client *dysmsapi20170525.Client
 }
 
@@ -31,7 +31,7 @@ func InitShortMsgClient(credentialConfig *credential.Config, endpoint string) er
 	if err != nil {
 		return err
 	}
-	ShortMsgClient = &ShortMsg{
+	InsShortMsg = &ShortMsgConfig{
 		client: result,
 	}
 	return nil
@@ -45,7 +45,7 @@ func InitShortMsgSimpleClient(accessKeyId, accessKeySecret string) error {
 		"dysmsapi.aliyuncs.com")
 }
 
-func (s *ShortMsg) SendMsg(sendSmsRequest *dysmsapi20170525.SendSmsRequest) error {
+func (s *ShortMsgConfig) SendMsg(sendSmsRequest *dysmsapi20170525.SendSmsRequest) error {
 	runtime := &util.RuntimeOptions{}
 	tryErr := func() (e error) {
 		defer func() {
@@ -66,7 +66,7 @@ func (s *ShortMsg) SendMsg(sendSmsRequest *dysmsapi20170525.SendSmsRequest) erro
 	return nil
 }
 
-func (s *ShortMsg) SendSimpleMsg(targetPhoneNumber, signName, templateCode, templateParam string) error {
+func (s *ShortMsgConfig) SendSimpleMsg(targetPhoneNumber, signName, templateCode, templateParam string) error {
 	return s.SendMsg(&dysmsapi20170525.SendSmsRequest{
 		PhoneNumbers:  tea.String(targetPhoneNumber),
 		SignName:      tea.String(signName),

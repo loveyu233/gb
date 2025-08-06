@@ -8,8 +8,8 @@ const (
 	TypeSlide  captcha.CaptchaType = "slide"
 )
 
-var CaptchaManager *captcha.Manager
+var InsCaptcha *captcha.Manager
 
 func InitCaptchaManager(cache captcha.CacheImpl) {
-	CaptchaManager = captcha.NewCaptchaManager(cache)
+	InsCaptcha = captcha.NewCaptchaManager(cache)
 }

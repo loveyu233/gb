@@ -15,7 +15,7 @@ func init() {
 }
 
 func TestEtcd(t *testing.T) {
-	put, err := gb.ETCDClient.Put(gb.Context(), "key", "value")
+	put, err := gb.InsEtcd.Put(gb.Context(), "key", "value")
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -29,7 +29,7 @@ func TestLock(t *testing.T) {
 		wg.Add(1)
 		go func(index int) {
 			defer wg.Done()
-			lock, err := gb.ETCDClient.NewLock("lock-event-d09777dfa1ab37c5")
+			lock, err := gb.InsEtcd.NewLock("lock-event-d09777dfa1ab37c5")
 			if err != nil {
 				panic(err)
 			}

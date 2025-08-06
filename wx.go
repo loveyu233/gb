@@ -1,6 +1,6 @@
 package gb
 
-var WX = &wxClient{
+var InsWX = &wxClient{
 	WXPay:      &wxPay{},
 	WXMini:     &wxMini{},
 	WXOfficial: &wxOfficial{},

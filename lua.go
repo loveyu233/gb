@@ -101,7 +101,7 @@ func LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue(zSetKey, ha
 		descendingStr = "true"
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{zSetKey, hashKey}, start, end, targetMember, descendingStr).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{zSetKey, hashKey}, start, end, targetMember, descendingStr).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +210,7 @@ func LuaRedisZSetGetTargetKeyAndStartToEndRankByScore(key string, start, end int
 		descendingStr = "true"
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, start, end, targetMember, descendingStr).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, start, end, targetMember, descendingStr).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -293,7 +293,7 @@ func LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, hashKey string, m
 		descendingStr = "true"
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{zSetKey, hashKey}, member, descendingStr).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{zSetKey, hashKey}, member, descendingStr).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -362,7 +362,7 @@ func LuaRedisZSetGetMemberScoreAndRank(key string, member string, descending boo
 		descendingStr = "true"
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, member, descendingStr).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, member, descendingStr).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -448,7 +448,7 @@ func LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues(zSetKey, hashKey st
 		args[i+1] = member
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{zSetKey, hashKey}, args...).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{zSetKey, hashKey}, args...).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -534,7 +534,7 @@ func LuaRedisZSetGetMultipleMembersScoreAndRank(key string, members []string, de
 		args[i+1] = member
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, args...).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, args...).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -570,7 +570,7 @@ func LuaRedisDistributedLock(key, value string, expireSeconds int64) (bool, erro
 				return 0
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, value, expireSeconds).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, value, expireSeconds).Result()
 	if err != nil {
 		return false, err
 	}
@@ -587,7 +587,7 @@ func LuaRedisDistributedUnlock(key, value string) (bool, error) {
 				return 0
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, value).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, value).Result()
 	if err != nil {
 		return false, err
 	}
@@ -620,7 +620,7 @@ func LuaRedisRateLimit(key string, window, limit int64) (int64, error) {
 				return -1
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, window, limit).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, window, limit).Result()
 	if err != nil {
 		return -1, err
 	}
@@ -663,7 +663,7 @@ func LuaRedisIncrWithLimit(key string, increment, maxValue, expireSeconds int64)
 				})
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, increment, maxValue, expireSeconds).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, increment, maxValue, expireSeconds).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -691,7 +691,7 @@ func LuaRedisQueuePushWithLimit(key, value string, maxLength int64) (int64, erro
 				return -1
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, value, maxLength).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, value, maxLength).Result()
 	if err != nil {
 		return -1, err
 	}
@@ -720,7 +720,7 @@ func LuaRedisSetWithVersion(key, value string, version, expireSeconds int64) (bo
 				return 0
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, value, version, expireSeconds).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, value, version, expireSeconds).Result()
 	if err != nil {
 		return false, err
 	}
@@ -762,7 +762,7 @@ func LuaRedisDecrStock(key string, quantity int64) (*StockResult, error) {
 				})
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, quantity).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, quantity).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -795,7 +795,7 @@ func LuaRedisHLLAddAndCount(key string, elements []string) (int64, error) {
 		args[i] = element
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, args...).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, args...).Result()
 	if err != nil {
 		return 0, err
 	}
@@ -826,7 +826,7 @@ func LuaRedisLeaderboardIncr(key, member string, increment float64) (*Leaderboar
 				rank = tonumber(rank)
 			})`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, member, increment).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, member, increment).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -881,7 +881,7 @@ func LuaRedisDelayQueuePop(key string, currentTime int64, limit int64) ([]*Delay
 			
 			return cjson.encode(results)`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, currentTime, limit).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, currentTime, limit).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -910,7 +910,7 @@ func LuaRedisBloomAdd(key, element string) error {
 			
 			return 'OK'`
 
-	_, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, element).Result()
+	_, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, element).Result()
 	return err
 }
 
@@ -935,7 +935,7 @@ func LuaRedisBloomExists(key, element string) (bool, error) {
 				return 0
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), RedisClient.UniversalClient, []string{key}, element).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, element).Result()
 	if err != nil {
 		return false, err
 	}

@@ -13,7 +13,7 @@ func init() {
 }
 
 func TestA1(t *testing.T) {
-	watch := gb.ETCDClient.Watch(context.Background(), "v/", clientv3.WithPrefix())
+	watch := gb.InsEtcd.Watch(context.Background(), "v/", clientv3.WithPrefix())
 	for {
 		select {
 		case resp := <-watch:

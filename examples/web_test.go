@@ -87,7 +87,7 @@ func TestZiDingYiToken(t *testing.T) {
 
 	authConfig = &gb.GinAuthConfig[TokenTestUser]{
 		DataPtr: new(TokenTestUser),
-		TokenService: gb.NewJWTTokenService[TokenTestUser]("adadasdasdasdasdasd", gb.WithRedisClient[TokenTestUser](gb.RedisClient), gb.WithRedisTokenCheck[TokenTestUser](func(token string) string {
+		TokenService: gb.NewJWTTokenService[TokenTestUser]("adadasdasdasdasdasd", gb.WithRedisClient[TokenTestUser](gb.InsRedis), gb.WithRedisTokenCheck[TokenTestUser](func(token string) string {
 			return fmt.Sprintf("zidingyikey:%s", token)
 		})),
 		GetTokenStrFunc: func(c *gin.Context) string {
