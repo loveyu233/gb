@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/loveyu233/gb"
 	"github.com/xuri/excelize/v2"
+	"io"
+	"os"
 	"testing"
 	"time"
 )
@@ -144,8 +146,8 @@ func TestExcelExport(t *testing.T) {
 
 	// 使用默认数据
 	exporter := gb.InitExcelExporter()
-	// 导出到文件
-	err := exporter.ExportToFile(users, "users_export.xlsx")
+	// 导出到文件,filePath如果没有.xlsx会自动加上.xlsx后缀
+	err := exporter.ExportToFile(users, "users_export")
 	if err != nil {
 		fmt.Printf("导出失败: %v\n", err)
 		return
@@ -170,4 +172,65 @@ func TestExcelExport(t *testing.T) {
 	}
 
 	fmt.Println("自定义导出也成功完成!")
+}
+
+func TestExcelExportBuffer(t *testing.T) {
+	// 定义数据结构
+	type User struct {
+		ID       int64     `excel:"ID,title:用户ID"`
+		Name     string    `excel:"姓名"`
+		Email    string    `excel:"邮箱"`
+		Age      int       `excel:"年龄"`
+		Salary   float64   `excel:"工资"`
+		IsActive bool      `excel:"状态"`
+		Birthday time.Time `excel:"生日"`
+		Phone    *string   `excel:"电话"`
+	}
+
+	// 准备测试数据
+	phone1 := "13800138001"
+	users := []User{
+		{
+			ID:       1,
+			Name:     "张三",
+			Email:    "zhangsan@example.com",
+			Age:      25,
+			Salary:   8500.50,
+			IsActive: true,
+			Birthday: time.Date(1998, 5, 15, 0, 0, 0, 0, gb.ShangHaiTimeLocation),
+			Phone:    &phone1,
+		},
+		{
+			ID:       2,
+			Name:     "李四",
+			Email:    "lisi@example.com",
+			Age:      30,
+			Salary:   12000.00,
+			IsActive: false,
+			Birthday: time.Date(1993, 8, 20, 0, 0, 0, 0, gb.ShangHaiTimeLocation),
+			Phone:    nil, // 空值测试
+		},
+		{
+			ID:       3,
+			Name:     "王五",
+			Email:    "wangwu@example.com",
+			Age:      28,
+			Salary:   9800.75,
+			IsActive: true,
+			Birthday: time.Date(1995, 12, 3, 0, 0, 0, 0, gb.ShangHaiTimeLocation),
+			Phone:    nil,
+		},
+	}
+
+	// 使用默认数据
+	exporter := gb.InitExcelExporter()
+	// 导出到文件
+	buff, err := exporter.ExportToBuffer(users)
+	if err != nil {
+		fmt.Printf("导出失败: %v\n", err)
+		return
+	}
+	all, _ := io.ReadAll(buff)
+	file, _ := os.Create("./ExportToBuffer.xlsx")
+	file.Write(all)
 }

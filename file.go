@@ -13,6 +13,14 @@ func GetFileContentType(file []byte) string {
 	return http.DetectContentType(file)
 }
 
+func GetFileNameType(fileName string) string {
+	split := strings.Split(fileName, ".")
+	if len(split) < 2 {
+		return ""
+	}
+	return split[len(split)-1]
+}
+
 // ReadFileContent 读取文件内容
 func ReadFileContent(filePath string) ([]byte, error) {
 	return os.ReadFile(filePath)
