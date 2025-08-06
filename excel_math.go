@@ -9,7 +9,7 @@ import (
 // row: 行索引（从0开始）
 // col: 列索引（从0开始）
 // 返回: Excel位置字符串，如 "A1", "B1", "AA10" 等
-func ExcelGetPosition(row, col int64) string {
+func ExcelGetPosition(row, col int) string {
 	if row < 0 || col < 0 {
 		return ""
 	}
@@ -30,7 +30,7 @@ func ExcelGetPosition(row, col int64) string {
 }
 
 // appendExcelColumn 高效地将列索引转换为Excel列字母并追加到缓冲区
-func appendExcelColumn(buf []byte, col int64) []byte {
+func appendExcelColumn(buf []byte, col int) []byte {
 	if col < 26 {
 		// 单字母情况，直接处理
 		return append(buf, byte('A'+col))
@@ -61,7 +61,7 @@ func appendExcelColumn(buf []byte, col int64) []byte {
 
 // appendInt64 高效地将int64追加到字节缓冲区
 // 使用自定义实现避免strconv.Itoa的额外分配
-func appendInt64(buf []byte, n int64) []byte {
+func appendInt64(buf []byte, n int) []byte {
 	if n == 0 {
 		return append(buf, '0')
 	}
@@ -95,7 +95,7 @@ func appendInt64(buf []byte, n int64) []byte {
 
 // ExcelGetPositionBatch 批量转换，适用于大量转换场景
 // 复用缓冲区，进一步提高性能
-func ExcelGetPositionBatch(positions []struct{ Row, Col int64 }) []string {
+func ExcelGetPositionBatch(positions []struct{ Row, Col int }) []string {
 	results := make([]string, len(positions))
 	buf := make([]byte, 0, 32) // 复用缓冲区
 

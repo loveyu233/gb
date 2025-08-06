@@ -12,7 +12,6 @@ require (
 	github.com/apache/rocketmq-clients/golang/v5 v5.1.2
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/gin-gonic/gin v1.10.1
-	github.com/go-co-op/gocron-redis-lock/v2 v2.1.0
 	github.com/go-co-op/gocron/v2 v2.16.2
 	github.com/go-pay/gopay v1.5.114
 	github.com/go-playground/locales v0.14.1
@@ -35,6 +34,7 @@ require (
 	github.com/tidwall/gjson v1.18.0
 	github.com/wenlng/go-captcha-assets v1.0.7
 	github.com/wenlng/go-captcha/v2 v2.0.4
+	github.com/xuri/excelize/v2 v2.9.1
 	go.etcd.io/etcd/client/v3 v3.6.2
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.40.0
@@ -97,13 +97,18 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/richardlehane/mscfb v1.0.4 // indirect
+	github.com/richardlehane/msoleps v1.0.4 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/tiendc/go-deepcopy v1.6.0 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	github.com/valyala/fastrand v1.1.0 // indirect
+	github.com/xuri/efp v0.0.1 // indirect
+	github.com/xuri/nfp v0.0.1 // indirect
 	go.etcd.io/etcd/api/v3 v3.6.2 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.6.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
