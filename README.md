@@ -1,4 +1,4 @@
-# GB - Go Web 开发框架
+# Go Web 开发工具包
 
 <div align="center">
 
@@ -8,9 +8,12 @@
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/coverage-85%25-yellow)
 
-**基于 Gin 的高性能 Go Web 开发框架**
+**Go Web 开发工具包简称: gb**
 
-一个专为快速开发而设计的全功能 Web 框架，提供丰富的工具和最佳实践
+> 所有的初始化均使用      `Init` 为前缀.
+> 所有初始化后调用均使用   `Ins` 为前缀.
+> 
+> 例如:gb.InitGormDB() 使用则: gb.InsDB 其他均如此
 
 </div>
 
@@ -18,7 +21,7 @@
 
 ### 核心功能
 
-- 🏗️ **基于 Gin** - 构建在高性能的 Gin 框架之上，提供极致的性能体验
+- 🏗️ **Gin快速中间件** - 提供快速启动gin服务包含各种中间件
 - 🔐 **JWT 认证** - 内置完整的 JWT 认证解决方案，支持 Token 刷新和黑名单机制
 - 📝 **Swagger 文档** - 自动生成 API 文档，支持在线调试和接口测试
 - 🎯 **智能路由** - 优雅的路由管理，支持路由分组、中间件链式调用
