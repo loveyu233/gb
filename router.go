@@ -83,8 +83,8 @@ func WithGinRouterLogSaveLog(f func(ReqLog)) GinRouterConfigOptionFunc {
 	}
 }
 
-// initRouter model默认为debug,prefix默认为/api,authMiddleware,globalMiddleware默认添加AddTraceID,MiddlewareRequestTime,ResponseLogger,MiddlewareRecovery
-func initRouter[T any](authConfig *GinAuthConfig[T], opts ...GinRouterConfigOptionFunc) {
+// initPrivateRouter model默认为debug,prefix默认为/api,authMiddleware,globalMiddleware默认添加AddTraceID,MiddlewareRequestTime,ResponseLogger,MiddlewareRecovery
+func initPrivateRouter[T any](authConfig *GinAuthConfig[T], opts ...GinRouterConfigOptionFunc) {
 	var config RouterConfig
 	for _, opt := range opts {
 		opt(&config)
@@ -119,6 +119,39 @@ func initRouter[T any](authConfig *GinAuthConfig[T], opts ...GinRouterConfigOpti
 	registerRoutes(engine, config.prefix, config.authMiddleware...)
 }
 
+func initPublicRouter(opts ...GinRouterConfigOptionFunc) {
+	var config RouterConfig
+	for _, opt := range opts {
+		opt(&config)
+	}
+	if config.model == "" {
+		config.model = "debug"
+	}
+	if config.prefix == "" {
+		config.prefix = "/api"
+	}
+
+	PublicRoutes = append(PublicRoutes, func(group *gin.RouterGroup) {
+		if config.skipHealthz {
+			group.Any("/healthz", GinLogSetSkipLogFlag(), func(c *gin.Context) {
+				c.Status(200)
+			})
+		} else {
+			group.Any("/healthz", func(c *gin.Context) {
+				c.Status(200)
+			})
+		}
+	})
+
+	config.globalMiddleware = append(config.globalMiddleware, MiddlewareTraceID(), MiddlewareRequestTime(), MiddlewareLogger(MiddlewareLogConfig{
+		HeaderKeys: config.recordHeaderKeys,
+		SaveLog:    config.saveLog,
+	}), MiddlewareRecovery())
+
+	engine = newGinRouter(config.model, config.globalMiddleware...)
+
+	registerRoutes(engine, config.prefix, config.authMiddleware...)
+}
 func newGinRouter(mode GinModel, globalMiddlewares ...gin.HandlerFunc) *gin.Engine {
 	gin.SetMode(mode.String())
 	engine := gin.New()

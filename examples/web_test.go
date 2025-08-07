@@ -104,3 +104,7 @@ func TestZiDingYiToken(t *testing.T) {
 		gb.WithGinRouterSkipHealthzLog(),
 	)
 }
+
+func TestPublicHttp(t *testing.T) {
+	gb.InitPublicHTTPServerAndStart("127.0.0.1:8888")
+}
