@@ -2,7 +2,6 @@ package gb
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cast"
@@ -86,28 +85,9 @@ func ParsePaginationParams(c *gin.Context, options ...PaginationParamsOption) (p
 	return page, size
 }
 
-func ParserString(s string) (string, error) {
-	return s, nil
-}
-
-func ParserInt(s string) (int, error) {
-	return strconv.Atoi(s)
-}
-
-func ParserInt64(s string) (int64, error) {
-	return strconv.ParseInt(s, 10, 64)
-}
-
-func ParserFloat64(s string) (float64, error) {
-	return strconv.ParseFloat(s, 64)
-}
-
-func ParserBool(s string) (bool, error) {
-	return strconv.ParseBool(s)
-}
-
-// ParseFromQuery 有默认值使用默认值而不是返回错误,errStr为空则会只用key不能为空作为错误返回
-func ParseFromQuery[T any](c *gin.Context, key, errStr string, parser func(string) (T, error), defaultValue ...T) (T, error) {
+// GetGinQuery 如果为空,有默认值返回默认值,没有默认值返回errStr错误,errStr为空则使用%s不能为空错误
+func GetGinQuery[T any](c *gin.Context, key, errStr string, defaultValue ...T) (T, error) {
+	var zero T
 	if errStr == "" {
 		errStr = fmt.Sprintf("%s不能为空", key)
 	}
@@ -116,35 +96,17 @@ func ParseFromQuery[T any](c *gin.Context, key, errStr string, parser func(strin
 		if len(defaultValue) > 0 {
 			return defaultValue[0], nil
 		}
-		var zero T
 		return zero, ErrInvalidParam.WithMessage(errStr)
 	}
-
-	val, err := parser(paramStr)
-	if err != nil {
-		if len(defaultValue) > 0 {
-			return defaultValue[0], nil
-		}
-		var zero T
-		return zero, ErrInvalidParam.WithMessage(fmt.Sprintf("%s类型错误", key))
-	}
-
-	return val, nil
+	return convertToType[T](paramStr)
 }
 
-// ParseFromPath 有默认值使用默认值而不是返回错误,errStr为空则会只用key不能为空作为错误返回
-func ParseFromPath[T any](c *gin.Context, key string, parser func(string) (T, error)) (T, error) {
+// GetGinPath 返回路径参数key的值
+func GetGinPath[T any](c *gin.Context, key string) (T, error) {
 	paramStr := c.Param(key)
 	if paramStr == "" {
 		var zero T
 		return zero, ErrInvalidParam.WithMessage(fmt.Sprintf("%s不存在", key))
 	}
-
-	val, err := parser(paramStr)
-	if err != nil {
-		var zero T
-		return zero, ErrInvalidParam.WithMessage(fmt.Sprintf("%s类型错误", key))
-	}
-
-	return val, nil
+	return convertToType[T](paramStr)
 }

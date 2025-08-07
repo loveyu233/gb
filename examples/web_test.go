@@ -38,7 +38,8 @@ func registerDemo1PrivateRoutes(r *gin.RouterGroup) {
 }
 
 func registerDemo1PublicRoutes(r *gin.RouterGroup) {
-	test2Routes := r.Group("/test2", gb.GinLogSetSkipLogFlag(), gb.GinLogSetModuleName("这是测试2模块"), func(c *gin.Context) {
+	//  gb.GinLogSetSkipLogFlag(), 不输出请求信息
+	test2Routes := r.Group("/test2", gb.GinLogSetModuleName("这是测试2模块"), func(c *gin.Context) {
 		c.Set("id", Ctx{
 			Username: "username-1",
 			Age:      11,
@@ -58,13 +59,21 @@ func registerDemo1PublicRoutes(r *gin.RouterGroup) {
 			page, size := gb.ParsePaginationParams(c)
 			gb.ResponseSuccess(c, fmt.Sprintf("hello %d %d", page, size))
 		})
-		test2Routes.GET("/page", func(c *gin.Context) {
-			id, err := gb.ParseFromQuery(c, "id", "", gb.ParserInt64)
+		test2Routes.GET("/page/:id", func(c *gin.Context) {
+			id, err := gb.GetGinQuery[int64](c, "id", "", 1)
 			if err != nil {
 				gb.ResponseParamError(c, err)
 				return
 			}
-			gb.ResponseSuccess(c, id)
+			pathID, err := gb.GetGinPath[int64](c, "id")
+			if err != nil {
+				gb.ResponseParamError(c, err)
+				return
+			}
+			gb.ResponseSuccess(c, map[string]any{
+				"query": id,
+				"path":  pathID,
+			})
 		})
 		test2Routes.GET("/path/:id", func(c *gin.Context) {
 			id, exists := gb.GetGinContextValue[Ctx](c, "id")
