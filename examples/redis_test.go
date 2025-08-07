@@ -100,3 +100,19 @@ func TestLua(t *testing.T) {
 		fmt.Printf("%+v\n", item)
 	}
 }
+
+func TestLuaID(t *testing.T) {
+	err := gb.InitRedis(gb.WithRedisAddressOption([]string{"127.0.0.1:6379"}), gb.WithRedisDBOption(0))
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	for i := 0; i < 100; i++ {
+		id, err := gb.LuaRedisID()
+		if err != nil {
+			t.Log(err)
+			return
+		}
+		t.Log(id)
+	}
+}

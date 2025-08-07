@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/spf13/cast"
 	"golang.org/x/net/context"
 )
 
@@ -941,4 +942,59 @@ func LuaRedisBloomExists(key, element string) (bool, error) {
 		return false, err
 	}
 	return result.(int64) == 1, nil
+}
+
+type luaRedisIDConfig struct {
+	key         string // 健名
+	startNumber int64  // 起始值
+	iNCRValue   int64  // 每次自增的值
+}
+
+type WithLuaRedisIDConfigOption func(*luaRedisIDConfig)
+
+// WithLuaRedisIDConfigKeyName 设置键名
+func WithLuaRedisIDConfigKeyName(key string) WithLuaRedisIDConfigOption {
+	return func(config *luaRedisIDConfig) {
+		config.key = key
+	}
+}
+
+// WithLuaRedisIDConfigStartNumber 设置起始值
+func WithLuaRedisIDConfigStartNumber(startNumber int64) WithLuaRedisIDConfigOption {
+	return func(config *luaRedisIDConfig) {
+		config.startNumber = startNumber
+	}
+}
+
+// WithLuaRedisIDConfigINCRValue 设置自增值
+func WithLuaRedisIDConfigINCRValue(INCRValue int64) WithLuaRedisIDConfigOption {
+	return func(config *luaRedisIDConfig) {
+		config.iNCRValue = INCRValue
+	}
+}
+
+// LuaRedisID 使用lua脚本获取自增ID
+func LuaRedisID(opts ...WithLuaRedisIDConfigOption) (int64, error) {
+	idConfig := &luaRedisIDConfig{
+		key:         "global-id",
+		startNumber: 10000,
+		iNCRValue:   1,
+	}
+	for i := range opts {
+		opts[i](idConfig)
+	}
+	var script = `
+		local current = tonumber(redis.call('GET', KEYS[1])) or 0
+		local target = tonumber(ARGV[1])
+		local iNCRValue = tonumber(ARGV[2])
+		if current < target then
+			redis.call('SET', KEYS[1], target)
+		end
+		return redis.call('incrby', KEYS[1], iNCRValue)
+	`
+	result, err := redis.NewScript(script).Run(context.Background(), InsRedis.UniversalClient, []string{idConfig.key}, idConfig.startNumber, idConfig.iNCRValue).Result()
+	if err != nil {
+		return 0, err
+	}
+	return cast.ToInt64(result), nil
 }
