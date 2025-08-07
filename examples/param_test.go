@@ -29,7 +29,7 @@ func TestParamA(t *testing.T) {
 			//c.Param("")
 			//c.Query("key")
 			//ageInt, err := gb.QueryRequired[int](c, "age")
-			ageInt, err := gb.ParamRequired[int](c, "id")
+			ageInt, err := gb.GetGinPathRequired[int](c, "id")
 			if err != nil {
 				gb.ResponseParamError(c, err)
 			}

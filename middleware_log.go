@@ -232,7 +232,10 @@ func (w ResponseWriter) WriteString(s string) (int, error) {
 var zlog zerolog.Logger
 
 func init() {
-	zerolog.TimeFieldFormat = CSTLayout
+	//zerolog.TimeFieldFormat = CSTLayout
+	zerolog.TimestampFunc = func() time.Time {
+		return Now()
+	}
 	zlog = zerolog.New(os.Stdout).With().
 		Timestamp().
 		Logger()

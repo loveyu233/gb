@@ -1,9 +1,6 @@
 package gb
 
 import (
-	"fmt"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cast"
 )
@@ -86,65 +83,61 @@ func ParsePaginationParams(c *gin.Context, options ...PaginationParamsOption) (p
 	return page, size
 }
 
-func ParserString(s string) (string, error) {
-	return s, nil
-}
+// GetGinQueryDefault 带默认值的可选参数方法
+func GetGinQueryDefault[T any](c *gin.Context, key string, defaultValue T) (T, error) {
+	value := c.Query(key)
 
-func ParserInt(s string) (int, error) {
-	return strconv.Atoi(s)
-}
-
-func ParserInt64(s string) (int64, error) {
-	return strconv.ParseInt(s, 10, 64)
-}
-
-func ParserFloat64(s string) (float64, error) {
-	return strconv.ParseFloat(s, 64)
-}
-
-func ParserBool(s string) (bool, error) {
-	return strconv.ParseBool(s)
-}
-
-// ParseFromQuery 有默认值使用默认值而不是返回错误,errStr为空则会只用key不能为空作为错误返回
-func ParseFromQuery[T any](c *gin.Context, key, errStr string, parser func(string) (T, error), defaultValue ...T) (T, error) {
-	if errStr == "" {
-		errStr = fmt.Sprintf("%s不能为空", key)
-	}
-	paramStr := c.Query(key)
-	if paramStr == "" {
-		if len(defaultValue) > 0 {
-			return defaultValue[0], nil
-		}
-		var zero T
-		return zero, ErrInvalidParam.WithMessage(errStr)
+	// 如果参数为空，返回默认值
+	if value == "" {
+		return defaultValue, nil
 	}
 
-	val, err := parser(paramStr)
+	// 转换为指定类型
+	result, err := convertToType[T](value)
 	if err != nil {
-		if len(defaultValue) > 0 {
-			return defaultValue[0], nil
-		}
-		var zero T
-		return zero, ErrInvalidParam.WithMessage(fmt.Sprintf("%s类型错误", key))
+		// 返回可翻译的类型错误
+		return defaultValue, CreateTypeError(key, value, err)
 	}
 
-	return val, nil
+	return result, nil
 }
 
-// ParseFromPath 有默认值使用默认值而不是返回错误,errStr为空则会只用key不能为空作为错误返回
-func ParseFromPath[T any](c *gin.Context, key string, parser func(string) (T, error)) (T, error) {
-	paramStr := c.Param(key)
-	if paramStr == "" {
-		var zero T
-		return zero, ErrInvalidParam.WithMessage(fmt.Sprintf("%s不存在", key))
+// GetGinQueryRequired 必需的查询参数，不能为空
+func GetGinQueryRequired[T any](c *gin.Context, key string) (T, error) {
+	var zero T
+	value := c.Query(key)
+
+	// 如果参数为空，返回 CreateRequiredError
+	if value == "" {
+		return zero, CreateRequiredError(key)
 	}
 
-	val, err := parser(paramStr)
+	// 转换为指定类型
+	result, err := convertToType[T](value)
 	if err != nil {
-		var zero T
-		return zero, ErrInvalidParam.WithMessage(fmt.Sprintf("%s类型错误", key))
+		// 返回可翻译的类型错误
+		return zero, CreateTypeError(key, value, err)
 	}
 
-	return val, nil
+	return result, nil
+}
+
+// GetGinPathRequired 必需的查询参数，不能为空
+func GetGinPathRequired[T any](c *gin.Context, key string) (T, error) {
+	var zero T
+	value := c.Param(key)
+
+	// 如果参数为空，返回 CreateRequiredError
+	if value == "" {
+		return zero, CreateRequiredError(key)
+	}
+
+	// 转换为指定类型
+	result, err := convertToType[T](value)
+	if err != nil {
+		// 返回可翻译的类型错误
+		return zero, CreateTypeError(key, value, err)
+	}
+
+	return result, nil
 }

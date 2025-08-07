@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
@@ -250,66 +249,6 @@ func (m *mockFieldError) Translate(trans ut.Translator) string {
 	}
 }
 
-// QueryOptional 可选的查询参数，可以为空
-func QueryOptional[T any](c *gin.Context, key string) (T, error) {
-	var zero T
-	value := c.Query(key)
-
-	// 如果参数为空，返回零值
-	if value == "" {
-		return zero, nil
-	}
-
-	// 转换为指定类型
-	result, err := convertToType[T](value)
-	if err != nil {
-		// 返回可翻译的类型错误
-		return zero, CreateTypeError(key, value, err)
-	}
-
-	return result, nil
-}
-
-// QueryRequired 必需的查询参数，不能为空
-func QueryRequired[T any](c *gin.Context, key string) (T, error) {
-	var zero T
-	value := c.Query(key)
-
-	// 如果参数为空，返回 CreateRequiredError
-	if value == "" {
-		return zero, CreateRequiredError(key)
-	}
-
-	// 转换为指定类型
-	result, err := convertToType[T](value)
-	if err != nil {
-		// 返回可翻译的类型错误
-		return zero, CreateTypeError(key, value, err)
-	}
-
-	return result, nil
-}
-
-// ParamRequired 必需的查询参数，不能为空
-func ParamRequired[T any](c *gin.Context, key string) (T, error) {
-	var zero T
-	value := c.Param(key)
-
-	// 如果参数为空，返回 CreateRequiredError
-	if value == "" {
-		return zero, CreateRequiredError(key)
-	}
-
-	// 转换为指定类型
-	result, err := convertToType[T](value)
-	if err != nil {
-		// 返回可翻译的类型错误
-		return zero, CreateTypeError(key, value, err)
-	}
-
-	return result, nil
-}
-
 // convertToType 将字符串转换为指定类型
 func convertToType[T any](value string) (T, error) {
 	var result any
@@ -398,23 +337,4 @@ func convertToType[T any](value string) (T, error) {
 	}
 
 	return result.(T), nil
-}
-
-// QueryOptionalWithDefault 带默认值的可选参数方法
-func QueryOptionalWithDefault[T any](c *gin.Context, key string, defaultValue T) (T, error) {
-	value := c.Query(key)
-
-	// 如果参数为空，返回默认值
-	if value == "" {
-		return defaultValue, nil
-	}
-
-	// 转换为指定类型
-	result, err := convertToType[T](value)
-	if err != nil {
-		// 返回可翻译的类型错误
-		return defaultValue, CreateTypeError(key, value, err)
-	}
-
-	return result, nil
 }
