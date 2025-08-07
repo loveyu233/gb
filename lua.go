@@ -21,7 +21,7 @@ type LuaRespData struct {
 }
 
 // LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue 在LuaRedisZSetGetTargetKeyAndStartToEndRankByScore的基础上添加了获取item的hash_value
-func LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue(zSetKey, hashKey string, start, end int64, targetMember string, descending bool) (*LuaRespData, error) {
+func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue(zSetKey, hashKey string, start, end int64, targetMember string, descending bool) (*LuaRespData, error) {
 	lua := `local key = KEYS[1]
 			local hash_key = KEYS[2]  -- New parameter for hash key
 			local start_pos = tonumber(ARGV[1])
@@ -103,7 +103,7 @@ func LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue(zSetKey, ha
 		descendingStr = "true"
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{zSetKey, hashKey}, start, end, targetMember, descendingStr).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{zSetKey, hashKey}, start, end, targetMember, descendingStr).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -120,12 +120,12 @@ func LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue(zSetKey, ha
 	return luaRespData, nil
 }
 
-func LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValueDesc(zSetKey, hashKey string, start, end int64, targetMember string) (*LuaRespData, error) {
-	return LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue(zSetKey, hashKey, start, end, targetMember, true)
+func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValueDesc(zSetKey, hashKey string, start, end int64, targetMember string) (*LuaRespData, error) {
+	return r.LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue(zSetKey, hashKey, start, end, targetMember, true)
 }
 
-func LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValueAsc(zSetKey, hashKey string, start, end int64, targetMember string) (*LuaRespData, error) {
-	return LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue(zSetKey, hashKey, start, end, targetMember, false)
+func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValueAsc(zSetKey, hashKey string, start, end int64, targetMember string) (*LuaRespData, error) {
+	return r.LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue(zSetKey, hashKey, start, end, targetMember, false)
 }
 
 // LuaRedisZSetGetTargetKeyAndStartToEndRankByScore 同时获取指定key的从start到end排名的数据和targetMember的排名和分数
@@ -134,7 +134,7 @@ func LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValueAsc(zSetKey,
 // end: 结束排名
 // targetMember: 目标成员
 // descending: true表示从大到小排序(ZREVRANGE/ZREVRANK), false表示从小到大排序(ZRANGE/ZRANK)
-func LuaRedisZSetGetTargetKeyAndStartToEndRankByScore(key string, start, end int64, targetMember string, descending bool) (*LuaRespData, error) {
+func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScore(key string, start, end int64, targetMember string, descending bool) (*LuaRespData, error) {
 	lua := `local key = KEYS[1]
 			local start_pos = tonumber(ARGV[1])
 			local end_pos = tonumber(ARGV[2])
@@ -212,7 +212,7 @@ func LuaRedisZSetGetTargetKeyAndStartToEndRankByScore(key string, start, end int
 		descendingStr = "true"
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, start, end, targetMember, descendingStr).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, start, end, targetMember, descendingStr).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -230,13 +230,13 @@ func LuaRedisZSetGetTargetKeyAndStartToEndRankByScore(key string, start, end int
 }
 
 // LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreDesc 新增一个降序排列的便捷函数
-func LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreDesc(key string, start, end int64, targetMember string) (*LuaRespData, error) {
-	return LuaRedisZSetGetTargetKeyAndStartToEndRankByScore(key, start, end, targetMember, true)
+func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreDesc(key string, start, end int64, targetMember string) (*LuaRespData, error) {
+	return r.LuaRedisZSetGetTargetKeyAndStartToEndRankByScore(key, start, end, targetMember, true)
 }
 
 // LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAsc 新增一个升序排列的便捷函数
-func LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAsc(key string, start, end int64, targetMember string) (*LuaRespData, error) {
-	return LuaRedisZSetGetTargetKeyAndStartToEndRankByScore(key, start, end, targetMember, false)
+func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAsc(key string, start, end int64, targetMember string) (*LuaRespData, error) {
+	return r.LuaRedisZSetGetTargetKeyAndStartToEndRankByScore(key, start, end, targetMember, false)
 }
 
 type MemberInfo struct {
@@ -251,7 +251,7 @@ type MemberInfo struct {
 // key: RedisConfig ZSet 的 key
 // member: 要查询的成员
 // descending: true 表示从大到小排序(ZREVRANK), false 表示从小到大排序(ZRANK)
-func LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, hashKey string, member string, descending bool) (*MemberInfo, error) {
+func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, hashKey string, member string, descending bool) (*MemberInfo, error) {
 	lua := `local key = KEYS[1]
 				local hash_key = KEYS[2]  -- New parameter for hash key
 				local member = ARGV[1]
@@ -295,7 +295,7 @@ func LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, hashKey string, m
 		descendingStr = "true"
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{zSetKey, hashKey}, member, descendingStr).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{zSetKey, hashKey}, member, descendingStr).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -310,20 +310,20 @@ func LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, hashKey string, m
 }
 
 // LuaRedisZSetGetMemberScoreAndRankAndGetHashValueDesc LuaRedisZSetGetMemberScoreAndRankAndGetHashValue的快捷降序
-func LuaRedisZSetGetMemberScoreAndRankAndGetHashValueDesc(zSetKey, hashKey string, member string) (*MemberInfo, error) {
-	return LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, hashKey, member, true)
+func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRankAndGetHashValueDesc(zSetKey, hashKey string, member string) (*MemberInfo, error) {
+	return r.LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, hashKey, member, true)
 }
 
 // LuaRedisZSetGetMemberScoreAndRankAndGetHashValueAsc 	LuaRedisZSetGetMemberScoreAndRankAndGetHashValue的快捷升序
-func LuaRedisZSetGetMemberScoreAndRankAndGetHashValueAsc(zSetKey, hashKey string, member string) (*MemberInfo, error) {
-	return LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, hashKey, member, false)
+func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRankAndGetHashValueAsc(zSetKey, hashKey string, member string) (*MemberInfo, error) {
+	return r.LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, hashKey, member, false)
 }
 
 // LuaRedisZSetGetMemberScoreAndRank 获取指定 member 的 score 和 rank
 // key: RedisConfig ZSet 的 key
 // member: 要查询的成员
 // descending: true 表示从大到小排序(ZREVRANK), false 表示从小到大排序(ZRANK)
-func LuaRedisZSetGetMemberScoreAndRank(key string, member string, descending bool) (*MemberInfo, error) {
+func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRank(key string, member string, descending bool) (*MemberInfo, error) {
 	lua := `local key = KEYS[1]
 				local member = ARGV[1]
 				local descending = ARGV[2] == "true"
@@ -364,7 +364,7 @@ func LuaRedisZSetGetMemberScoreAndRank(key string, member string, descending boo
 		descendingStr = "true"
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, member, descendingStr).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, member, descendingStr).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -379,17 +379,17 @@ func LuaRedisZSetGetMemberScoreAndRank(key string, member string, descending boo
 }
 
 // LuaRedisZSetGetMemberScoreAndRankDesc 获取指定 member 的 score 和 rank,快捷降序
-func LuaRedisZSetGetMemberScoreAndRankDesc(key string, member string) (*MemberInfo, error) {
-	return LuaRedisZSetGetMemberScoreAndRank(key, member, true)
+func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRankDesc(key string, member string) (*MemberInfo, error) {
+	return r.LuaRedisZSetGetMemberScoreAndRank(key, member, true)
 }
 
 // LuaRedisZSetGetMemberScoreAndRankAsc 获取指定 member 的 score 和 rank,快捷升序
-func LuaRedisZSetGetMemberScoreAndRankAsc(key string, member string) (*MemberInfo, error) {
-	return LuaRedisZSetGetMemberScoreAndRank(key, member, false)
+func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRankAsc(key string, member string) (*MemberInfo, error) {
+	return r.LuaRedisZSetGetMemberScoreAndRank(key, member, false)
 }
 
 // LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues 批量获取多个 member 的 score 和 rank 以及对应hashKey的value
-func LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues(zSetKey, hashKey string, members []string, descending bool) ([]*MemberInfo, error) {
+func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues(zSetKey, hashKey string, members []string, descending bool) ([]*MemberInfo, error) {
 	if len(members) == 0 {
 		return []*MemberInfo{}, nil
 	}
@@ -450,7 +450,7 @@ func LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues(zSetKey, hashKey st
 		args[i+1] = member
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{zSetKey, hashKey}, args...).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{zSetKey, hashKey}, args...).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -465,20 +465,20 @@ func LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues(zSetKey, hashKey st
 }
 
 // LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesDesc LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues的desc版本
-func LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesDesc(zSetKey, hashKey string, members []string) ([]*MemberInfo, error) {
-	return LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues(zSetKey, hashKey, members, true)
+func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesDesc(zSetKey, hashKey string, members []string) ([]*MemberInfo, error) {
+	return r.LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues(zSetKey, hashKey, members, true)
 }
 
 // LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesAsc LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues的asc版本
-func LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesAsc(zSetKey, hashKey string, members []string) ([]*MemberInfo, error) {
-	return LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues(zSetKey, hashKey, members, false)
+func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesAsc(zSetKey, hashKey string, members []string) ([]*MemberInfo, error) {
+	return r.LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues(zSetKey, hashKey, members, false)
 }
 
 // LuaRedisZSetGetMultipleMembersScoreAndRank 批量获取多个 member 的 score 和 rank
 // key: RedisConfig ZSet 的 key
 // members: 要查询的成员列表
 // descending: true 表示从大到小排序, false 表示从小到大排序
-func LuaRedisZSetGetMultipleMembersScoreAndRank(key string, members []string, descending bool) ([]*MemberInfo, error) {
+func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRank(key string, members []string, descending bool) ([]*MemberInfo, error) {
 	if len(members) == 0 {
 		return []*MemberInfo{}, nil
 	}
@@ -536,7 +536,7 @@ func LuaRedisZSetGetMultipleMembersScoreAndRank(key string, members []string, de
 		args[i+1] = member
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, args...).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, args...).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -551,13 +551,13 @@ func LuaRedisZSetGetMultipleMembersScoreAndRank(key string, members []string, de
 }
 
 // LuaRedisZSetGetMultipleMembersScoreAndRankDesc 批量获取多个 member 的 score 和 rank,快捷降序
-func LuaRedisZSetGetMultipleMembersScoreAndRankDesc(key string, members []string) ([]*MemberInfo, error) {
-	return LuaRedisZSetGetMultipleMembersScoreAndRank(key, members, true)
+func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRankDesc(key string, members []string) ([]*MemberInfo, error) {
+	return r.LuaRedisZSetGetMultipleMembersScoreAndRank(key, members, true)
 }
 
 // LuaRedisZSetGetMultipleMembersScoreAndRankAsc 批量获取多个 member 的 score 和 rank,快捷升序
-func LuaRedisZSetGetMultipleMembersScoreAndRankAsc(key string, members []string) ([]*MemberInfo, error) {
-	return LuaRedisZSetGetMultipleMembersScoreAndRank(key, members, false)
+func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRankAsc(key string, members []string) ([]*MemberInfo, error) {
+	return r.LuaRedisZSetGetMultipleMembersScoreAndRank(key, members, false)
 }
 
 // 1. 分布式锁相关
@@ -565,14 +565,14 @@ func LuaRedisZSetGetMultipleMembersScoreAndRankAsc(key string, members []string)
 // LuaRedisDistributedLock 获取分布式锁
 // key: 锁的键名, value: 锁的值(通常是唯一ID), expireSeconds: 过期时间(秒)
 // 返回: true表示获取锁成功, false表示获取锁失败
-func LuaRedisDistributedLock(key, value string, expireSeconds int64) (bool, error) {
+func (r *RedisConfig) LuaRedisDistributedLock(key, value string, expireSeconds int64) (bool, error) {
 	lua := `if redis.call('SET', KEYS[1], ARGV[1], 'NX', 'EX', ARGV[2]) then
 				return 1
 			else
 				return 0
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, value, expireSeconds).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, value, expireSeconds).Result()
 	if err != nil {
 		return false, err
 	}
@@ -582,14 +582,14 @@ func LuaRedisDistributedLock(key, value string, expireSeconds int64) (bool, erro
 // LuaRedisDistributedUnlock 释放分布式锁
 // key: 锁的键名, value: 锁的值
 // 返回: true表示释放成功, false表示释放失败(锁不存在或值不匹配)
-func LuaRedisDistributedUnlock(key, value string) (bool, error) {
+func (r *RedisConfig) LuaRedisDistributedUnlock(key, value string) (bool, error) {
 	lua := `if redis.call('GET', KEYS[1]) == ARGV[1] then
 				return redis.call('DEL', KEYS[1])
 			else
 				return 0
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, value).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, value).Result()
 	if err != nil {
 		return false, err
 	}
@@ -601,7 +601,7 @@ func LuaRedisDistributedUnlock(key, value string) (bool, error) {
 // LuaRedisRateLimit 滑动窗口限流
 // key: 限流键名, window: 时间窗口(秒), limit: 限制次数
 // 返回: 剩余可用次数, 如果返回-1表示超过限制
-func LuaRedisRateLimit(key string, window, limit int64) (int64, error) {
+func (r *RedisConfig) LuaRedisRateLimit(key string, window, limit int64) (int64, error) {
 	lua := `local key = KEYS[1]
 			local window = tonumber(ARGV[1])
 			local limit = tonumber(ARGV[2])
@@ -622,7 +622,7 @@ func LuaRedisRateLimit(key string, window, limit int64) (int64, error) {
 				return -1
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, window, limit).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, window, limit).Result()
 	if err != nil {
 		return -1, err
 	}
@@ -638,7 +638,7 @@ type CounterResult struct {
 
 // LuaRedisIncrWithLimit 带限制的计数器递增
 // key: 计数器键名, increment: 递增值, maxValue: 最大值, expireSeconds: 过期时间
-func LuaRedisIncrWithLimit(key string, increment, maxValue, expireSeconds int64) (*CounterResult, error) {
+func (r *RedisConfig) LuaRedisIncrWithLimit(key string, increment, maxValue, expireSeconds int64) (*CounterResult, error) {
 	lua := `local key = KEYS[1]
 			local increment = tonumber(ARGV[1])
 			local max_value = tonumber(ARGV[2])
@@ -665,7 +665,7 @@ func LuaRedisIncrWithLimit(key string, increment, maxValue, expireSeconds int64)
 				})
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, increment, maxValue, expireSeconds).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, increment, maxValue, expireSeconds).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -680,7 +680,7 @@ func LuaRedisIncrWithLimit(key string, increment, maxValue, expireSeconds int64)
 // LuaRedisQueuePushWithLimit 带限制的队列推送
 // key: 队列键名, value: 要推送的值, maxLength: 队列最大长度
 // 返回: 队列当前长度, 如果返回-1表示队列已满
-func LuaRedisQueuePushWithLimit(key, value string, maxLength int64) (int64, error) {
+func (r *RedisConfig) LuaRedisQueuePushWithLimit(key, value string, maxLength int64) (int64, error) {
 	lua := `local key = KEYS[1]
 			local value = ARGV[1]
 			local max_length = tonumber(ARGV[2])
@@ -693,7 +693,7 @@ func LuaRedisQueuePushWithLimit(key, value string, maxLength int64) (int64, erro
 				return -1
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, value, maxLength).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, value, maxLength).Result()
 	if err != nil {
 		return -1, err
 	}
@@ -705,7 +705,7 @@ func LuaRedisQueuePushWithLimit(key, value string, maxLength int64) (int64, erro
 // LuaRedisSetWithVersion 带版本控制的设置
 // key: 缓存键名, value: 值, version: 版本号, expireSeconds: 过期时间
 // 返回: true表示设置成功, false表示版本冲突
-func LuaRedisSetWithVersion(key, value string, version, expireSeconds int64) (bool, error) {
+func (r *RedisConfig) LuaRedisSetWithVersion(key, value string, version, expireSeconds int64) (bool, error) {
 	lua := `local key = KEYS[1]
 			local value = ARGV[1]
 			local version = tonumber(ARGV[2])
@@ -722,7 +722,7 @@ func LuaRedisSetWithVersion(key, value string, version, expireSeconds int64) (bo
 				return 0
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, value, version, expireSeconds).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, value, version, expireSeconds).Result()
 	if err != nil {
 		return false, err
 	}
@@ -738,7 +738,7 @@ type StockResult struct {
 
 // LuaRedisDecrStock 原子扣减库存
 // key: 库存键名, quantity: 扣减数量
-func LuaRedisDecrStock(key string, quantity int64) (*StockResult, error) {
+func (r *RedisConfig) LuaRedisDecrStock(key string, quantity int64) (*StockResult, error) {
 	lua := `local key = KEYS[1]
 			local quantity = tonumber(ARGV[1])
 			
@@ -764,7 +764,7 @@ func LuaRedisDecrStock(key string, quantity int64) (*StockResult, error) {
 				})
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, quantity).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, quantity).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -778,7 +778,7 @@ func LuaRedisDecrStock(key string, quantity int64) (*StockResult, error) {
 
 // LuaRedisHLLAddAndCount HyperLogLog 添加元素并返回估计数量
 // key: HLL键名, elements: 要添加的元素列表
-func LuaRedisHLLAddAndCount(key string, elements []string) (int64, error) {
+func (r *RedisConfig) LuaRedisHLLAddAndCount(key string, elements []string) (int64, error) {
 	lua := `local key = KEYS[1]
 			local elements = {}
 			
@@ -797,7 +797,7 @@ func LuaRedisHLLAddAndCount(key string, elements []string) (int64, error) {
 		args[i] = element
 	}
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, args...).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, args...).Result()
 	if err != nil {
 		return 0, err
 	}
@@ -814,7 +814,7 @@ type LeaderboardMember struct {
 
 // LuaRedisLeaderboardIncr 排行榜分数递增并返回排名信息
 // key: 排行榜键名, member: 成员名, increment: 递增分数
-func LuaRedisLeaderboardIncr(key, member string, increment float64) (*LeaderboardMember, error) {
+func (r *RedisConfig) LuaRedisLeaderboardIncr(key, member string, increment float64) (*LeaderboardMember, error) {
 	lua := `local key = KEYS[1]
 			local member = ARGV[1]
 			local increment = tonumber(ARGV[2])
@@ -828,7 +828,7 @@ func LuaRedisLeaderboardIncr(key, member string, increment float64) (*Leaderboar
 				rank = tonumber(rank)
 			})`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, member, increment).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, member, increment).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -848,7 +848,7 @@ type DelayedMessage struct {
 
 // LuaRedisDelayQueuePop 从延迟队列中弹出到期的消息
 // key: 延迟队列键名, currentTime: 当前时间戳, limit: 最多弹出数量
-func LuaRedisDelayQueuePop(key string, currentTime int64, limit int64) ([]*DelayedMessage, error) {
+func (r *RedisConfig) LuaRedisDelayQueuePop(key string, currentTime int64, limit int64) ([]*DelayedMessage, error) {
 	lua := `local key = KEYS[1]
 			local current_time = tonumber(ARGV[1])
 			local limit = tonumber(ARGV[2])
@@ -883,7 +883,7 @@ func LuaRedisDelayQueuePop(key string, currentTime int64, limit int64) ([]*Delay
 			
 			return cjson.encode(results)`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, currentTime, limit).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, currentTime, limit).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -897,7 +897,7 @@ func LuaRedisDelayQueuePop(key string, currentTime int64, limit int64) ([]*Delay
 
 // LuaRedisBloomAdd 布隆过滤器添加元素
 // key: 布隆过滤器键名, element: 要添加的元素
-func LuaRedisBloomAdd(key, element string) error {
+func (r *RedisConfig) LuaRedisBloomAdd(key, element string) error {
 	lua := `local key = KEYS[1]
 			local element = ARGV[1]
 			
@@ -912,13 +912,13 @@ func LuaRedisBloomAdd(key, element string) error {
 			
 			return 'OK'`
 
-	_, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, element).Result()
+	_, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, element).Result()
 	return err
 }
 
 // LuaRedisBloomExists 检查布隆过滤器中是否存在元素
 // key: 布隆过滤器键名, element: 要检查的元素
-func LuaRedisBloomExists(key, element string) (bool, error) {
+func (r *RedisConfig) LuaRedisBloomExists(key, element string) (bool, error) {
 	lua := `local key = KEYS[1]
 			local element = ARGV[1]
 			
@@ -937,7 +937,7 @@ func LuaRedisBloomExists(key, element string) (bool, error) {
 				return 0
 			end`
 
-	result, err := redis.NewScript(lua).Run(context.Background(), InsRedis.UniversalClient, []string{key}, element).Result()
+	result, err := redis.NewScript(lua).Run(context.Background(), r.UniversalClient, []string{key}, element).Result()
 	if err != nil {
 		return false, err
 	}
@@ -974,7 +974,7 @@ func WithLuaRedisIDConfigINCRValue(INCRValue int64) WithLuaRedisIDConfigOption {
 }
 
 // LuaRedisID 使用lua脚本获取自增ID
-func LuaRedisID(opts ...WithLuaRedisIDConfigOption) (int64, error) {
+func (r *RedisConfig) LuaRedisID(opts ...WithLuaRedisIDConfigOption) (int64, error) {
 	idConfig := &luaRedisIDConfig{
 		key:         "global-id",
 		startNumber: 10000,
@@ -992,7 +992,7 @@ func LuaRedisID(opts ...WithLuaRedisIDConfigOption) (int64, error) {
 		end
 		return redis.call('incrby', KEYS[1], iNCRValue)
 	`
-	result, err := redis.NewScript(script).Run(context.Background(), InsRedis.UniversalClient, []string{idConfig.key}, idConfig.startNumber, idConfig.iNCRValue).Result()
+	result, err := redis.NewScript(script).Run(context.Background(), r.UniversalClient, []string{idConfig.key}, idConfig.startNumber, idConfig.iNCRValue).Result()
 	if err != nil {
 		return 0, err
 	}

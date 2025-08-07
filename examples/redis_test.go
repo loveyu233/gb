@@ -91,7 +91,7 @@ func TestLua(t *testing.T) {
 	//}
 	//fmt.Printf("%+v\n", desc)
 
-	desc, err := gb.LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesDesc("rank_list", "user_info", []string{"100003", "100004", "100005"})
+	desc, err := gb.InsRedis.LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesDesc("rank_list", "user_info", []string{"100002", "100004", "100005"})
 	if err != nil {
 		t.Log(err)
 		return
@@ -107,8 +107,24 @@ func TestLuaID(t *testing.T) {
 		t.Fatal(err)
 		return
 	}
+	//for i := 0; i < 100; i++ {
+	//	/*
+	//		默认值:
+	//			idConfig := &luaRedisIDConfig{
+	//					key:         "global-id",
+	//					startNumber: 10000,
+	//					iNCRValue:   1,
+	//				}
+	//	*/
+	//	id, err := gb.InsRedis.LuaRedisID()
+	//	if err != nil {
+	//		t.Log(err)
+	//		return
+	//	}
+	//	t.Log(id)
+	//}
 	for i := 0; i < 100; i++ {
-		id, err := gb.LuaRedisID()
+		id, err := gb.InsRedis.LuaRedisID(gb.WithLuaRedisIDConfigKeyName("test-id"), gb.WithLuaRedisIDConfigStartNumber(100), gb.WithLuaRedisIDConfigINCRValue(100))
 		if err != nil {
 			t.Log(err)
 			return
