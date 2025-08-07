@@ -2,10 +2,11 @@ package gb
 
 import (
 	"fmt"
+	"strings"
+
 	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
-	"strings"
 )
 
 type GenFieldType struct {

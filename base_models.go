@@ -1,9 +1,10 @@
 package gb
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 	"gorm.io/plugin/soft_delete"
-	"time"
 )
 
 // BaseModel 基础模型，包含共同字段

@@ -1,8 +1,9 @@
 package gb
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"unicode"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // PasswordEncryption 密码加密,返回字符串长度固定为60个字符,password不能超过72字节

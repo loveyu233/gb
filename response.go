@@ -3,10 +3,11 @@ package gb
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 // AppError 自定义错误类型

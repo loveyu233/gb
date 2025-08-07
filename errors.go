@@ -2,6 +2,7 @@ package gb
 
 import (
 	"errors"
+
 	"gorm.io/gorm"
 )
 

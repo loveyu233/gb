@@ -1,11 +1,12 @@
 package examples
 
 import (
+	"testing"
+
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel/contract"
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/officialAccount/user/response"
 	"github.com/gin-gonic/gin"
 	"github.com/loveyu233/gb"
-	"testing"
 )
 
 type PayImp struct {

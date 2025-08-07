@@ -1,10 +1,11 @@
 package examples
 
 import (
-	"github.com/loveyu233/gb"
-	"golang.org/x/net/context"
 	"sync"
 	"testing"
+
+	"github.com/loveyu233/gb"
+	"golang.org/x/net/context"
 )
 
 func init() {

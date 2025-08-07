@@ -2,8 +2,9 @@ package examples
 
 import (
 	"fmt"
-	"github.com/loveyu233/gb"
 	"testing"
+
+	"github.com/loveyu233/gb"
 )
 
 func TestR(t *testing.T) {

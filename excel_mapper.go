@@ -2,12 +2,13 @@ package gb
 
 import (
 	"fmt"
-	"github.com/xuri/excelize/v2"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/xuri/excelize/v2"
 )
 
 // ExcelMapper Excel数据映射器

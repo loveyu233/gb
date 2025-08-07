@@ -1,9 +1,10 @@
 package examples
 
 import (
+	"testing"
+
 	"github.com/gin-gonic/gin"
 	"github.com/loveyu233/gb"
-	"testing"
 )
 
 func TestParamA(t *testing.T) {

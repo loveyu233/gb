@@ -1,9 +1,10 @@
 package gb
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"runtime/debug"
+
+	"github.com/gin-gonic/gin"
 )
 
 // MiddlewareRecovery recover掉项目可能出现的panic

@@ -2,11 +2,12 @@ package examples
 
 import (
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/apache/rocketmq-clients/golang/v5"
 	"github.com/loveyu233/gb"
 	"golang.org/x/net/context"
-	"testing"
-	"time"
 )
 
 func initRock() {

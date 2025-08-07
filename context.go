@@ -1,8 +1,9 @@
 package gb
 
 import (
-	"golang.org/x/net/context"
 	"time"
+
+	"golang.org/x/net/context"
 )
 
 func Context(ttl ...int64) context.Context {

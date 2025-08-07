@@ -2,6 +2,7 @@ package gb
 
 import (
 	"errors"
+
 	"github.com/tidwall/gjson"
 )
 

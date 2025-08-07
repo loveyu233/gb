@@ -2,12 +2,13 @@ package examples
 
 import (
 	"fmt"
-	"github.com/loveyu233/gb"
-	"github.com/xuri/excelize/v2"
 	"io"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/loveyu233/gb"
+	"github.com/xuri/excelize/v2"
 )
 
 func TestExcelMath(t *testing.T) {

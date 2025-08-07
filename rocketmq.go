@@ -1,10 +1,11 @@
 package gb
 
 import (
+	"time"
+
 	"github.com/apache/rocketmq-clients/golang/v5"
 	"github.com/apache/rocketmq-clients/golang/v5/credentials"
 	"golang.org/x/net/context"
-	"time"
 )
 
 var (

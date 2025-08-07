@@ -1,8 +1,9 @@
 package examples
 
 import (
-	"github.com/loveyu233/gb"
 	"testing"
+
+	"github.com/loveyu233/gb"
 )
 
 func TestD1(t *testing.T) {

@@ -2,9 +2,10 @@ package examples
 
 import (
 	"fmt"
-	"github.com/loveyu233/gb"
 	"testing"
 	"time"
+
+	"github.com/loveyu233/gb"
 )
 
 type FromS struct {

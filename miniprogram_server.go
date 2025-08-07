@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel/power"
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
-	"net/http"
 )
 
 func (w *wxMini) RegisterHandlers(r *gin.RouterGroup) {

@@ -3,9 +3,10 @@ package gb
 import (
 	"encoding/json"
 	"errors"
+	"reflect"
+
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cast"
-	"reflect"
 )
 
 // GetGinContextValue 从gin.Context中获取指定类型的值,可以是基础类型,也可以是结构体

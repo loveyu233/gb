@@ -2,12 +2,13 @@ package gb
 
 import (
 	"crypto/tls"
+	"time"
+
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/client/v3/concurrency"
 	"go.uber.org/zap"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"time"
 )
 
 var InsEtcd = new(EtcdConfig)

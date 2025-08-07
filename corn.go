@@ -2,9 +2,10 @@ package gb
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/go-co-op/gocron/v2"
 	"github.com/google/uuid"
-	"time"
 )
 
 var InsCornJob *CornConfig

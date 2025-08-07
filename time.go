@@ -2,8 +2,9 @@ package gb
 
 import (
 	"fmt"
-	"github.com/araddon/dateparse"
 	"time"
+
+	"github.com/araddon/dateparse"
 )
 
 var (

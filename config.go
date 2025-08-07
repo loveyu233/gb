@@ -3,9 +3,10 @@ package gb
 import (
 	"encoding/json"
 	"errors"
-	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
+
+	"gopkg.in/yaml.v3"
 )
 
 // InitConfig fp为配置文件路径,可以是json文件或者yml和yaml,cfg必须为指针

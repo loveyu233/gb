@@ -3,13 +3,14 @@ package gb
 import (
 	"bytes"
 	"fmt"
-	"github.com/xuri/excelize/v2"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 	"unsafe"
+
+	"github.com/xuri/excelize/v2"
 )
 
 // ExcelExporter Excel数据导出器

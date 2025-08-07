@@ -2,10 +2,11 @@ package examples
 
 import (
 	"fmt"
-	"github.com/loveyu233/gb"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/loveyu233/gb"
 )
 
 func TestRedis(t *testing.T) {

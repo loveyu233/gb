@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel/contract"
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/kernel/messages"
 	models2 "github.com/ArtisanCloud/PowerWeChat/v3/src/kernel/models"
@@ -13,8 +16,6 @@ import (
 	tRequest "github.com/ArtisanCloud/PowerWeChat/v3/src/officialAccount/templateMessage/request"
 	"github.com/ArtisanCloud/PowerWeChat/v3/src/officialAccount/templateMessage/response"
 	"github.com/gin-gonic/gin"
-	"io"
-	"net/http"
 )
 
 func (wx *wxOfficial) RegisterHandlers(r *gin.RouterGroup) {

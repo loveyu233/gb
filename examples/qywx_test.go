@@ -3,9 +3,10 @@ package examples
 import (
 	"bytes"
 	"fmt"
-	"github.com/loveyu233/gb"
 	"os"
 	"testing"
+
+	"github.com/loveyu233/gb"
 )
 
 func TestName(t *testing.T) {

@@ -1,8 +1,9 @@
 package examples
 
 import (
-	"github.com/loveyu233/gb"
 	"testing"
+
+	"github.com/loveyu233/gb"
 )
 
 func TestUUID(t *testing.T) {

@@ -2,8 +2,9 @@ package examples
 
 import (
 	"fmt"
-	"github.com/loveyu233/gb"
 	"testing"
+
+	"github.com/loveyu233/gb"
 )
 
 type Config struct {

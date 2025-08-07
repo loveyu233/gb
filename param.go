@@ -2,9 +2,10 @@ package gb
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cast"
-	"strconv"
 )
 
 type PaginationParams struct {

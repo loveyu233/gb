@@ -1,10 +1,11 @@
 package examples
 
 import (
-	"github.com/go-co-op/gocron/v2"
-	"github.com/loveyu233/gb"
 	"testing"
 	"time"
+
+	"github.com/go-co-op/gocron/v2"
+	"github.com/loveyu233/gb"
 )
 
 func TestCorn(t *testing.T) {

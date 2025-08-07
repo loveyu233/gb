@@ -3,11 +3,12 @@ package gb
 import (
 	"crypto/rand"
 	"errors"
+	"math/big"
+	mrand "math/rand"
+
 	"github.com/google/uuid"
 	"github.com/loveyu233/gb/snowflake"
 	"github.com/rs/xid"
-	"math/big"
-	mrand "math/rand"
 )
 
 // GetUUID 长度为36的字符串

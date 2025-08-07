@@ -2,10 +2,11 @@ package examples
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/loveyu233/gb"
 	"testing"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/loveyu233/gb"
 )
 
 func init() {
