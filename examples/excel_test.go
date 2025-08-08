@@ -23,7 +23,7 @@ func TestExcelMath(t *testing.T) {
 
 func TestExcelMapper(t *testing.T) {
 	/*
-		type User struct {
+		type Data struct {
 		    ID    int64  `excel:"ID"`        // 精确匹配列名
 		    Name  string `excel:"A"`         // Excel列名匹配
 		    Email string `excel:"2"`         // 列索引匹配
@@ -31,7 +31,7 @@ func TestExcelMapper(t *testing.T) {
 		}
 	*/
 	// 定义目标结构体
-	//type User struct {
+	//type Data struct {
 	//	ID       int64     `excel:"ID"`
 	//	Name     string    `excel:"姓名"`
 	//	Email    string    `excel:"邮箱"`

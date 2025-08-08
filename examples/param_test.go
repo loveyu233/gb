@@ -53,5 +53,5 @@ func TestParamA(t *testing.T) {
 			})
 		})
 	})
-	gb.InitHTTPServerAndStart(gb.DefaultGinTokenConfig, "127.0.0.1:9999")
+	gb.InitHTTPServerAndStart(gb.InitGinAuthConfig(gb.InitTokenService("adsa")), "127.0.0.1:9999")
 }

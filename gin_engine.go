@@ -11,7 +11,7 @@ var (
 )
 
 type RouterConfig struct {
-	skipHealthz      bool              // 是否跳过健康检查请求的日志输出
+	outputHealthz    bool              // 是否输出健康检查请求的日志输出
 	model            GinModel          // gin启动模式
 	prefix           string            // api前缀
 	authMiddleware   []gin.HandlerFunc // 认证api的中间件
@@ -41,10 +41,10 @@ func WithGinRouterModel(model GinModel) GinRouterConfigOptionFunc {
 	}
 }
 
-// WithGinRouterSkipHealthzLog 是否跳过健康检查请求的日志输出
-func WithGinRouterSkipHealthzLog() GinRouterConfigOptionFunc {
+// WithGinRouterOutputHealthzLog 是否跳过健康检查请求的日志输出
+func WithGinRouterOutputHealthzLog() GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
-		config.skipHealthz = true
+		config.outputHealthz = true
 	}
 }
 
@@ -84,7 +84,7 @@ func WithGinRouterLogSaveLog(f func(ReqLog)) GinRouterConfigOptionFunc {
 }
 
 // initPrivateRouter model默认为debug,prefix默认为/api,authMiddleware,globalMiddleware默认添加AddTraceID,MiddlewareRequestTime,ResponseLogger,MiddlewareRecovery
-func initPrivateRouter[T any](authConfig *GinAuthConfig[T], opts ...GinRouterConfigOptionFunc) {
+func initPrivateRouter(authConfig *GinAuthConfig, opts ...GinRouterConfigOptionFunc) {
 	var config RouterConfig
 	for _, opt := range opts {
 		opt(&config)
@@ -97,7 +97,7 @@ func initPrivateRouter[T any](authConfig *GinAuthConfig[T], opts ...GinRouterCon
 	}
 
 	PublicRoutes = append(PublicRoutes, func(group *gin.RouterGroup) {
-		if config.skipHealthz {
+		if !config.outputHealthz {
 			group.Any("/healthz", GinLogSetSkipLogFlag(), func(c *gin.Context) {
 				c.Status(200)
 			})
@@ -132,7 +132,7 @@ func initPublicRouter(opts ...GinRouterConfigOptionFunc) {
 	}
 
 	PublicRoutes = append(PublicRoutes, func(group *gin.RouterGroup) {
-		if config.skipHealthz {
+		if !config.outputHealthz {
 			group.Any("/healthz", GinLogSetSkipLogFlag(), func(c *gin.Context) {
 				c.Status(200)
 			})
