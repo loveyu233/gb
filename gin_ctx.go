@@ -23,14 +23,13 @@ func GetGinContextValue[T any](c *gin.Context, key string) (T, bool) {
 		return zero, true
 	}
 
-	// 尝试直接类型断言
-	if v, ok := value.(T); ok {
-		return v, true
-	}
+	return ConvertAnyType[T](value)
+}
 
+func ConvertAnyType[T any](value any) (T, bool) {
+	var zero T
 	// 获取目标类型
 	targetType := reflect.TypeOf(zero)
-
 	// 处理基础类型
 	switch any(zero).(type) {
 	case string:
@@ -222,18 +221,20 @@ func convertMap[T any](value interface{}, targetType reflect.Type) (T, bool) {
 // GetGinContextTokenLoadData 获取Gin上下文中的token的自定义数据
 func GetGinContextTokenLoadData[T any](c *gin.Context) (T, error) {
 	var zero T
-	value, exists := GetGinContextValue[T](c, "tokenLoadData")
+	tokenInfo, exists := c.Get("token_info")
 	if !exists {
-		return zero, errors.New("token负载数据不存在")
+		return zero, errors.New("token信息不存在")
+	}
+	claims, ok := tokenInfo.(*Claims)
+	if !ok {
+		return zero, errors.New("token信息类型错误")
+	}
+	value, exists := ConvertAnyType[T](claims.Data)
+	if !exists {
+		return zero, errors.New("token信息类型错误")
 	}
 	return value, nil
 }
-
-// GetGinContextTokenClaims 获取Gin上下文中的token全部负载数据
-func GetGinContextTokenClaims[T any](c *gin.Context) (*Claims[T], error) {
-	value, exists := GetGinContextValue[Claims[T]](c, "tokenClaims")
-	if !exists {
-		return nil, errors.New("token负载数据不存在")
-	}
-	return &value, nil
+func GetGinContextTokenString(c *gin.Context) string {
+	return c.GetString("token")
 }

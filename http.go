@@ -13,7 +13,7 @@ type HTTPServer struct {
 }
 
 // InitHTTPServerAndStart 默认自动添加/前缀/healthz的any请求用于存活和就绪检查,没有配置前缀则默认前缀为/api,如不需要认证则可以使用InitPublicHTTPServerAndStart更方便
-func InitHTTPServerAndStart[T any](authConfig *GinAuthConfig[T], listenAddr string, opts ...GinRouterConfigOptionFunc) *HTTPServer {
+func InitHTTPServerAndStart(authConfig *GinAuthConfig, listenAddr string, opts ...GinRouterConfigOptionFunc) *HTTPServer {
 	initPrivateRouter(authConfig, opts...)
 	server := &HTTPServer{server: &http.Server{
 		Addr:    listenAddr,

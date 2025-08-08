@@ -27,10 +27,10 @@ func registerDemo1PrivateRoutes(r *gin.RouterGroup) {
 			// 需要启动  TestToken 测试可以查看
 			//tu, ex := gb.GetGinContextValue[TokenTestUser](c, "data")
 			data, _ := gb.GetGinContextTokenLoadData[TokenTestUser](c)
-			claims, _ := gb.GetGinContextTokenClaims[TokenTestUser](c)
+			tokenString := gb.GetGinContextTokenString(c)
 			gb.ResponseSuccess(c, map[string]any{
-				"token":  data,
-				"claims": claims,
+				"data":  data,
+				"token": tokenString,
 			})
 		})
 	}
@@ -90,28 +90,20 @@ type TokenTestUser struct {
 	ID       int64  `json:"id"`
 }
 
-var authConfig *gb.GinAuthConfig[TokenTestUser]
+var authConfig *gb.GinAuthConfig
 
 func TestZiDingYiToken(t *testing.T) {
 	gb.InitRedis(gb.WithRedisAddressOption([]string{"127.0.0.1:6379"}))
 
-	authConfig = &gb.GinAuthConfig[TokenTestUser]{
-		DataPtr: new(TokenTestUser),
-		TokenService: gb.NewJWTTokenService[TokenTestUser]("adadasdasdasdasdasd", gb.WithRedisClient[TokenTestUser](gb.InsRedis), gb.WithRedisTokenCheck[TokenTestUser](func(token string) string {
+	authConfig = &gb.GinAuthConfig{
+		TokenService: gb.NewJWTTokenService("adadasdasdasdasdasd", gb.WithRedisTokenKey(func(token string) string {
 			return fmt.Sprintf("zidingyikey:%s", token)
 		})),
-		GetTokenStrFunc: func(c *gin.Context) string {
-			return c.GetHeader("jwt-token")
-		},
-		HandleError: gb.DefaultGInTokenErrHandler,
 	}
 
 	t.Log(authConfig.TokenService.Generate(TokenTestUser{ID: 1, Username: "hzyyy"}, 1000*time.Second))
 
-	gb.InitHTTPServerAndStart(authConfig, "127.0.0.1:8080",
-		gb.WithGinRouterModel(gb.GinModelDebug),
-		gb.WithGinRouterSkipHealthzLog(),
-	)
+	gb.InitHTTPServerAndStart(authConfig, "127.0.0.1:8080")
 }
 
 func TestPublicHttp(t *testing.T) {
