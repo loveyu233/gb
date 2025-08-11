@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
@@ -141,6 +142,39 @@ func ResponseParamError(c *gin.Context, err error) {
 }
 
 func ResponseSuccess(c *gin.Context, data interface{}) {
+	c.Set("resp-status", http.StatusOK)
+	c.Set("resp-msg", "请求成功")
+	c.JSON(http.StatusOK, &Response{
+		Code:    http.StatusOK,
+		Message: "请求成功",
+		Data:    data,
+		TraceID: c.GetString("trace_id"),
+	})
+}
+
+func HZResponseError(c *app.RequestContext, err error) {
+	appErr := ConvertToAppError(err)
+	c.Set("resp-status", appErr.Code)
+	c.Set("resp-msg", appErr.Message)
+	c.JSON(http.StatusOK, &Response{
+		Code:    appErr.Code,
+		Message: appErr.Message,
+		TraceID: c.GetString("trace_id"),
+	})
+}
+
+func HZResponseParamError(c *app.RequestContext, err error) {
+	te := TranslateError(err).Error()
+	c.Set("resp-status", ErrInvalidParam.Code)
+	c.Set("resp-msg", te)
+	c.JSON(http.StatusOK, &Response{
+		Code:    ErrInvalidParam.Code,
+		Message: fmt.Sprintf("%s: %s", ErrInvalidParam.Message, te),
+		TraceID: c.GetString("trace_id"),
+	})
+}
+
+func HZResponseSuccess(c *app.RequestContext, data interface{}) {
 	c.Set("resp-status", http.StatusOK)
 	c.Set("resp-msg", "请求成功")
 	c.JSON(http.StatusOK, &Response{
