@@ -8,6 +8,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
+	"github.com/hertz-contrib/requestid"
 	"gorm.io/gorm"
 )
 
@@ -159,7 +160,7 @@ func HZResponseError(c *app.RequestContext, err error) {
 	c.JSON(http.StatusOK, &Response{
 		Code:    appErr.Code,
 		Message: appErr.Message,
-		TraceID: c.GetString("trace_id"),
+		TraceID: requestid.Get(c),
 	})
 }
 
@@ -170,7 +171,7 @@ func HZResponseParamError(c *app.RequestContext, err error) {
 	c.JSON(http.StatusOK, &Response{
 		Code:    ErrInvalidParam.Code,
 		Message: fmt.Sprintf("%s: %s", ErrInvalidParam.Message, te),
-		TraceID: c.GetString("trace_id"),
+		TraceID: requestid.Get(c),
 	})
 }
 
@@ -181,6 +182,6 @@ func HZResponseSuccess(c *app.RequestContext, data interface{}) {
 		Code:    http.StatusOK,
 		Message: "请求成功",
 		Data:    data,
-		TraceID: c.GetString("trace_id"),
+		TraceID: requestid.Get(c),
 	})
 }
