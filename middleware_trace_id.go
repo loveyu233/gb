@@ -11,6 +11,7 @@ func MiddlewareTraceID() gin.HandlerFunc {
 		if traceID == "" {
 			traceID = uuid.NewString()
 		}
+		c.Header("TRACEID", traceID)
 		c.Set("trace_id", traceID)
 	}
 }

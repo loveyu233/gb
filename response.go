@@ -58,8 +58,8 @@ var (
 	ErrUnauthorized = NewAppError(401000, "用户未登录或token已失效")
 
 	// 403xxx 禁止操作
-	ErrForbidden    = NewAppError(403000, "权限不足")
-	ErrUserDisabled = NewAppError(403001, "用户不存在或已被禁用")
+	ErrForbiddenAuth = NewAppError(403000, "权限不足")
+	ErrUserDisabled  = NewAppError(403001, "用户不存在或已被禁用")
 
 	// 404xxx 数据不存在
 	ErrNotFound = NewAppError(404000, "数据不存在")

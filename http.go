@@ -12,21 +12,9 @@ type HTTPServer struct {
 	server *http.Server
 }
 
-// InitHTTPServerAndStart 默认自动添加/前缀/healthz的any请求用于存活和就绪检查,没有配置前缀则默认前缀为/api,如不需要认证则可以使用InitPublicHTTPServerAndStart更方便
-func InitHTTPServerAndStart(authConfig *GinAuthConfig, listenAddr string, opts ...GinRouterConfigOptionFunc) *HTTPServer {
-	initPrivateRouter(authConfig, opts...)
-	server := &HTTPServer{server: &http.Server{
-		Addr:    listenAddr,
-		Handler: engine,
-	}}
-	go server.startHTTPServer()
-	server.setupGracefulShutdown()
-	return server
-}
-
-// InitPublicHTTPServerAndStart InitHTTPServerAndStart的无token认证版本
-func InitPublicHTTPServerAndStart(listenAddr string, opts ...GinRouterConfigOptionFunc) *HTTPServer {
-	initPublicRouter(opts...)
+// InitHTTPServerAndStart 默认自动添加/前缀/healthz的any请求用于存活和就绪检查,没有配置前缀则默认前缀为/api
+func InitHTTPServerAndStart(listenAddr string, opts ...GinRouterConfigOptionFunc) *HTTPServer {
+	initPrivateRouter(opts...)
 	server := &HTTPServer{server: &http.Server{
 		Addr:    listenAddr,
 		Handler: engine,
