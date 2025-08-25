@@ -15,3 +15,7 @@ func LoSliceToMap[T any, K comparable, V any](collection []T, transform func(ite
 func LoTernary[T any](condition bool, ifOutput T, elseOutput T) T {
 	return lo.Ternary(condition, ifOutput, elseOutput)
 }
+
+func LoTernaryFunc[T any](condition bool, ifFunc func() T, elseFunc func() T) T {
+	return lo.TernaryF(condition, ifFunc, elseFunc)
+}
