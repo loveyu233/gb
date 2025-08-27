@@ -73,6 +73,7 @@ var (
 	ErrDatabase   = NewAppError(500001, "数据库错误")
 	ErrRedis      = NewAppError(500002, "redis错误")
 
+	EncryptErr = NewAppError(600000, "加密错误")
 	// ... 可以继续添加其他预定义错误
 )
 
@@ -151,6 +152,23 @@ func ResponseSuccess(c *gin.Context, data interface{}) {
 		Data:    data,
 	})
 }
+func ResponseSuccessEncryptData(c *gin.Context, data interface{}) {
+	c.Set("resp-status", http.StatusOK)
+	c.Set("resp-msg", "请求成功")
+	response, err := EncryptData(data)
+	if err != nil {
+		c.JSON(http.StatusOK, &Response{
+			Code:    EncryptErr.Code,
+			Message: EncryptErr.Message,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, &Response{
+		Code:    http.StatusOK,
+		Message: "请求成功",
+		Data:    response,
+	})
+}
 
 func HZResponseError(c *app.RequestContext, err error) {
 	appErr := ConvertToAppError(err)
@@ -179,5 +197,23 @@ func HZResponseSuccess(c *app.RequestContext, data interface{}) {
 		Code:    http.StatusOK,
 		Message: "请求成功",
 		Data:    data,
+	})
+}
+
+func HZResponseSuccessEncryptData(c *app.RequestContext, data interface{}) {
+	c.Set("resp-status", http.StatusOK)
+	c.Set("resp-msg", "请求成功")
+	response, err := EncryptData(data)
+	if err != nil {
+		c.JSON(http.StatusOK, &Response{
+			Code:    EncryptErr.Code,
+			Message: EncryptErr.Message,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, &Response{
+		Code:    http.StatusOK,
+		Message: "请求成功",
+		Data:    response,
 	})
 }
