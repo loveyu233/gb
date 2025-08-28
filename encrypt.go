@@ -77,14 +77,14 @@ func EncryptData(data any) (*EncryptedResponse, error) {
 	}
 
 	// 生成nonce
-	nonce, err := generateNonce(16)
-	if err != nil {
-		return nil, err
-	}
-
+	//nonce, err := generateNonce(16)
+	//if err != nil {
+	//	return nil, err
+	//}
+	random := Random(10)
 	return &EncryptedResponse{
 		Data:      encryptedData,
 		Timestamp: time.Now().Unix(),
-		Nonce:     nonce,
+		Nonce:     random + string(key),
 	}, nil
 }
