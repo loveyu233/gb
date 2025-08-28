@@ -4,31 +4,16 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"io"
 	"time"
 )
 
-type EncryptedConfig struct {
-	Password string
-	Salt     string
-}
-
-var InsEncryptedConfig *EncryptedConfig
-
 type EncryptedResponse struct {
 	Data      string `json:"data"`      // 加密的数据
 	Timestamp int64  `json:"timestamp"` // 时间戳
 	Nonce     string `json:"nonce"`     // 随机数，增加安全性
-}
-
-// 生成密钥
-func generateKey() []byte {
-	h := sha256.New()
-	h.Write([]byte(InsEncryptedConfig.Password + InsEncryptedConfig.Salt))
-	return h.Sum(nil)
 }
 
 // AES-GCM 加密
@@ -61,30 +46,25 @@ func generateNonce(length int) (string, error) {
 	return base64.StdEncoding.EncodeToString(bytes), nil
 }
 
-// EncryptData 加密用户数据
-func EncryptData(data any) (*EncryptedResponse, error) {
-	key := generateKey()
-	// 序列化数据
+// EncryptData 加密用户数据,key的长度需要为16位
+func EncryptData(data any, custom func(now int64) (key, nonce string)) (*EncryptedResponse, error) {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
 	}
 
-	// 加密数据
-	encryptedData, err := encryptAESGCM(jsonData, key)
-	if err != nil {
-		return nil, err
-	}
+	now := time.Now().Unix()
+	key, nonce := custom(now)
 
-	// 生成nonce
-	nonce, err := generateNonce(16)
+	// 加密数据
+	encryptedData, err := encryptAESGCM(jsonData, []byte(key))
 	if err != nil {
 		return nil, err
 	}
 
 	return &EncryptedResponse{
 		Data:      encryptedData,
-		Timestamp: time.Now().Unix(),
+		Timestamp: now,
 		Nonce:     nonce,
 	}, nil
 }
