@@ -152,10 +152,10 @@ func ResponseSuccess(c *gin.Context, data interface{}) {
 		Data:    data,
 	})
 }
-func ResponseSuccessEncryptData(c *gin.Context, data interface{}) {
+func ResponseSuccessEncryptData(c *gin.Context, data interface{}, custom func(now int64) (key, nonce string)) {
 	c.Set("resp-status", http.StatusOK)
 	c.Set("resp-msg", "请求成功")
-	response, err := EncryptData(data)
+	response, err := EncryptData(data, custom)
 	if err != nil {
 		c.JSON(http.StatusOK, &Response{
 			Code:    EncryptErr.Code,
@@ -200,10 +200,10 @@ func HZResponseSuccess(c *app.RequestContext, data interface{}) {
 	})
 }
 
-func HZResponseSuccessEncryptData(c *app.RequestContext, data interface{}) {
+func HZResponseSuccessEncryptData(c *app.RequestContext, data interface{}, custom func(now int64) (key, nonce string)) {
 	c.Set("resp-status", http.StatusOK)
 	c.Set("resp-msg", "请求成功")
-	response, err := EncryptData(data)
+	response, err := EncryptData(data, custom)
 	if err != nil {
 		c.JSON(http.StatusOK, &Response{
 			Code:    EncryptErr.Code,
