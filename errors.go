@@ -16,3 +16,11 @@ func IsErrRecordNotFound(err error) bool {
 func redisClientNilErr() error {
 	return errors.New("RedisClient为空,需要先使用gb.InitRedis()进行初始化")
 }
+
+// IsErrMysqlOne 是否是唯一键错误
+func IsErrMysqlOne(err error) bool {
+	if err.Error() == "duplicated key not allowed" {
+		return true
+	}
+	return false
+}
