@@ -354,3 +354,19 @@ func GetNextYearsInterval() (start DateTime, end DateTime) {
 	end = StringToGbDateTime(fmt.Sprintf("%s-01-01 00:00:00", Now().AddDate(2, 0, 0).Format("2006")))
 	return
 }
+
+// TimeChineseWeekday 获取日期的星期几（中文）
+func TimeChineseWeekday(t time.Time) string {
+	weekdays := []string{"日", "一", "二", "三", "四", "五", "六"}
+	return "星期" + weekdays[t.Weekday()]
+}
+
+// TimeEnglishWeekday 获取日期的星期几（英文）
+func TimeEnglishWeekday(t time.Time) string {
+	return t.Weekday().String()
+}
+
+// TimeIsWeekend 判断是否是周末
+func TimeIsWeekend(t time.Time) bool {
+	return t.Weekday() == time.Saturday || t.Weekday() == time.Sunday
+}

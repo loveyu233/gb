@@ -26,3 +26,7 @@ func TestTimeTo(t *testing.T) {
 	t.Log(gb.TimeToGBTimeOnly(gb.Now()))
 	t.Log(gb.TimeToGBTimeOnlyNoSec(gb.Now()))
 }
+
+func TestAAAA(t *testing.T) {
+	t.Log(gb.TimeChineseWeekday(gb.Now()))
+}
