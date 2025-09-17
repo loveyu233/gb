@@ -192,48 +192,19 @@ func (t *TimeOnly) Scan(v interface{}) error {
 	switch value := v.(type) {
 	case []byte:
 		timeStr := string(value)
-		layout := "15:04:05"
-		if len(timeStr) > 8 {
-			layout = "15:04"
-		}
-		parsedTime, err := time.ParseInLocation(layout, timeStr, ShangHaiTimeLocation)
+		parsedTime, err := t.parseTimeString(timeStr)
 		if err != nil {
-			parsedTime, err = time.ParseInLocation("2006-01-02 15:04:05", "1970-01-01 "+timeStr, ShangHaiTimeLocation)
-			if err != nil {
-				return err
-			}
+			return err
 		}
-		fixedTime := time.Date(
-			1970, 1, 1,
-			parsedTime.Hour(), parsedTime.Minute(), parsedTime.Second(), parsedTime.Nanosecond(),
-			ShangHaiTimeLocation,
-		)
-
-		*t = TimeOnly(fixedTime)
+		*t = TimeOnly(parsedTime)
 		return nil
 
 	case string:
-		timeStr := value
-		layout := "15:04:05"
-		if len(timeStr) > 8 {
-			layout = "15:04"
-		}
-
-		parsedTime, err := time.ParseInLocation(layout, timeStr, ShangHaiTimeLocation)
+		parsedTime, err := t.parseTimeString(value)
 		if err != nil {
-			parsedTime, err = time.ParseInLocation("2006-01-02 15:04:05", "1970-01-01 "+timeStr, ShangHaiTimeLocation)
-			if err != nil {
-				return err
-			}
+			return err
 		}
-
-		fixedTime := time.Date(
-			1970, 1, 1,
-			parsedTime.Hour(), parsedTime.Minute(), parsedTime.Second(), parsedTime.Nanosecond(),
-			ShangHaiTimeLocation,
-		)
-
-		*t = TimeOnly(fixedTime)
+		*t = TimeOnly(parsedTime)
 		return nil
 
 	case time.Time:
@@ -247,6 +218,40 @@ func (t *TimeOnly) Scan(v interface{}) error {
 	}
 
 	return errors.New("类型转换错误：不支持的时间格式")
+}
+
+// 提取时间字符串解析逻辑为单独方法
+func (t *TimeOnly) parseTimeString(timeStr string) (time.Time, error) {
+	// 尝试不同的时间格式
+	layouts := []string{
+		"15:04:05",            // HH:MM:SS
+		"15:04",               // HH:MM
+		"2006-01-02 15:04:05", // 完整日期时间格式
+	}
+
+	for _, layout := range layouts {
+		var parsedTime time.Time
+		var err error
+
+		if layout == "2006-01-02 15:04:05" {
+			// 对于完整格式，添加固定日期前缀
+			parsedTime, err = time.ParseInLocation(layout, "1970-01-01 "+timeStr, ShangHaiTimeLocation)
+		} else {
+			parsedTime, err = time.ParseInLocation(layout, timeStr, ShangHaiTimeLocation)
+		}
+
+		if err == nil {
+			// 统一转换为固定日期的时间
+			fixedTime := time.Date(
+				1970, 1, 1,
+				parsedTime.Hour(), parsedTime.Minute(), parsedTime.Second(), parsedTime.Nanosecond(),
+				ShangHaiTimeLocation,
+			)
+			return fixedTime, nil
+		}
+	}
+
+	return time.Time{}, fmt.Errorf("无法解析时间格式: %s", timeStr)
 }
 
 func (t TimeOnly) Value() (driver.Value, error) {
