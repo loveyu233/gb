@@ -1,6 +1,8 @@
 package gb
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +20,10 @@ type RouterConfig struct {
 	globalMiddleware []gin.HandlerFunc // 全局中间件
 	recordHeaderKeys []string          // 需要记录的请求头
 	saveLog          func(ReqLog)      // 保存请求日志
+	readTimeout      time.Duration
+	writeTimeout     time.Duration
+	idleTimeout      time.Duration
+	maxHeaderBytes   int
 }
 
 type GinModel string
@@ -33,6 +39,30 @@ var (
 )
 
 type GinRouterConfigOptionFunc func(*RouterConfig)
+
+func WithGinReadTimeout(d time.Duration) GinRouterConfigOptionFunc {
+	return func(routerConfig *RouterConfig) {
+		routerConfig.readTimeout = d
+	}
+}
+
+func WithGinWriteTimeout(d time.Duration) GinRouterConfigOptionFunc {
+	return func(routerConfig *RouterConfig) {
+		routerConfig.writeTimeout = d
+	}
+}
+
+func WithGinIdleTimeout(d time.Duration) GinRouterConfigOptionFunc {
+	return func(routerConfig *RouterConfig) {
+		routerConfig.idleTimeout = d
+	}
+}
+
+func WithGinMaxHeaderBytes(d int) GinRouterConfigOptionFunc {
+	return func(routerConfig *RouterConfig) {
+		routerConfig.maxHeaderBytes = d
+	}
+}
 
 // WithGinRouterModel 设置gin的工作模式,不设置默认为debug
 func WithGinRouterModel(model GinModel) GinRouterConfigOptionFunc {
@@ -84,18 +114,7 @@ func WithGinRouterLogSaveLog(f func(ReqLog)) GinRouterConfigOptionFunc {
 }
 
 // initPrivateRouter model默认为debug,prefix默认为/api,authMiddleware,globalMiddleware默认添加AddTraceID,MiddlewareRequestTime,ResponseLogger,MiddlewareRecovery
-func initPrivateRouter(opts ...GinRouterConfigOptionFunc) {
-	var config RouterConfig
-	for _, opt := range opts {
-		opt(&config)
-	}
-	if config.model == "" {
-		config.model = "debug"
-	}
-	if config.prefix == "" {
-		config.prefix = "/api"
-	}
-
+func initPrivateRouter(config RouterConfig) {
 	PublicRoutes = append(PublicRoutes, func(group *gin.RouterGroup) {
 		if !config.outputHealthz {
 			group.Any("/healthz", GinLogSetSkipLogFlag(), func(c *gin.Context) {

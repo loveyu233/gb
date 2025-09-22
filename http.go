@@ -14,11 +14,33 @@ type HTTPServer struct {
 
 // InitHTTPServerAndStart 默认自动添加/前缀/healthz的any请求用于存活和就绪检查,没有配置前缀则默认前缀为/api
 func InitHTTPServerAndStart(listenAddr string, opts ...GinRouterConfigOptionFunc) *HTTPServer {
-	initPrivateRouter(opts...)
+	var config RouterConfig
+	for _, opt := range opts {
+		opt(&config)
+	}
+	if config.model == "" {
+		config.model = "debug"
+	}
+	if config.prefix == "" {
+		config.prefix = "/api"
+	}
+	initPrivateRouter(config)
 	server := &HTTPServer{server: &http.Server{
 		Addr:    listenAddr,
 		Handler: engine,
 	}}
+	if config.readTimeout > 0 {
+		server.server.ReadTimeout = config.readTimeout
+	}
+	if config.writeTimeout > 0 {
+		server.server.WriteTimeout = config.writeTimeout
+	}
+	if config.idleTimeout > 0 {
+		server.server.IdleTimeout = config.idleTimeout
+	}
+	if config.maxHeaderBytes > 0 {
+		server.server.MaxHeaderBytes = config.maxHeaderBytes
+	}
 	go server.startHTTPServer()
 	server.setupGracefulShutdown()
 	return server
