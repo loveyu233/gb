@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math"
 	"reflect"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -36,6 +35,7 @@ func init() {
 	}
 	registerTagNameFunc(v)
 	registerPhoneValidator(v)
+	registerIDCarValidator(v)
 	registerDecimalPlacesValidator(v)
 }
 
@@ -74,7 +74,7 @@ func registerTagNameFunc(v *validator.Validate) {
 func registerPhoneValidator(v *validator.Validate) {
 	v.RegisterValidation("phone", func(fl validator.FieldLevel) bool {
 		phone := fl.Field().String()
-		return IsPhone(phone)
+		return ValidateChineseMobile(phone)
 	})
 
 	// 注册手机号翻译
@@ -91,18 +91,25 @@ func registerPhoneValidator(v *validator.Validate) {
 	)
 }
 
-const (
-	// 大陆手机号正则
-	PhoneRegex = "^1[3-9]\\d{9}$"
-)
+// registerIDCarValidator 注册身份证号验证器
+func registerIDCarValidator(v *validator.Validate) {
+	v.RegisterValidation("idcar", func(fl validator.FieldLevel) bool {
+		phone := fl.Field().String()
+		return ValidateChineseIDCard(phone)
+	})
 
-// IsPhone 判断是否为大陆手机号
-func IsPhone(phone string) bool {
-	reg, err := regexp.Compile(PhoneRegex)
-	if err != nil {
-		return false
-	}
-	return reg.MatchString(phone)
+	// 注册手机号翻译
+	v.RegisterTranslation("idcar", validatorTrans,
+		// 注册翻译器
+		func(ut ut.Translator) error {
+			return ut.Add("idcar", "身份证号格式不正确", true)
+		},
+		// 自定义翻译函数
+		func(ut ut.Translator, fe validator.FieldError) string {
+			t, _ := ut.T("idcar", fe.Field())
+			return t
+		},
+	)
 }
 
 // registerDecimalPlacesValidator 注册小数点位数验证器
