@@ -22,13 +22,12 @@ func (e *AppError) Error() string {
 }
 
 func (e *AppError) WithMessage(format string, args ...any) *AppError {
-	if e.Message != "" {
-		format = fmt.Sprintf("%s: %s", e.Message, format)
-	}
 	if len(args) > 0 {
 		format = fmt.Sprintf(format, args...)
 	}
-
+	if format == "" {
+		format = e.Message
+	}
 	newErr := NewAppError(e.Code, format)
 	return newErr
 }
@@ -136,9 +135,12 @@ func ResponseParamError(c *gin.Context, err error) {
 	c.Set("resp-status", ErrInvalidParam.Code)
 	c.Set("resp-msg", te)
 	c.Header("X-Request-Id", c.GetString("trace_id"))
+	if te == "" {
+		te = ErrInvalidParam.Message
+	}
 	c.JSON(http.StatusOK, &Response{
 		Code:    ErrInvalidParam.Code,
-		Message: fmt.Sprintf("%s: %s", ErrInvalidParam.Message, te),
+		Message: te,
 	})
 }
 
