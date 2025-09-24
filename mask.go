@@ -176,3 +176,7 @@ func ValidateCustomGUIDRegex(guid string) bool {
 	matched, _ := regexp.MatchString(pattern, guid)
 	return matched
 }
+
+func MaskUsername(username string) string {
+	return GetFirstNChars(username, 1) + "*"
+}

@@ -1,4 +1,4 @@
-package snowflake
+package gb
 
 import (
 	"errors"

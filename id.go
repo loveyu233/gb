@@ -5,9 +5,9 @@ import (
 	"errors"
 	"math/big"
 	mrand "math/rand"
+	"sync"
 
 	"github.com/google/uuid"
-	"github.com/loveyu233/gb/snowflake"
 	"github.com/rs/xid"
 )
 
@@ -21,9 +21,21 @@ func GetXID() string {
 	return xid.New().String()
 }
 
+var worker *Worker
+
+var once sync.Once
+
 // GetSnowflakeID 长度为18的数字
 func GetSnowflakeID() int64 {
-	return snowflake.GetId()
+	once.Do(func() {
+		w, err := NewWorker(1)
+		if err != nil {
+			panic(err)
+			return
+		}
+		worker = w
+	})
+	return worker.GetId()
 }
 
 // RandomString 获取指定长度的随机字符串

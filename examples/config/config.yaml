@@ -1,6 +1,0 @@
-username: yamlUsername
-password: yamlPassword
-user: {
-  age: 16,
-  address: yamlAddress
-}
