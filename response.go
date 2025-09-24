@@ -85,7 +85,7 @@ func ConvertToAppError(err error) *AppError {
 	var appErr *AppError
 	if errors.As(err, &appErr) {
 		if appErr.Code == ErrInvalidParam.Code {
-			appErr.Message = TranslateError(err).Error()
+			appErr.Message = TranslateError(errors.New(appErr.Message)).Error()
 			return appErr
 		}
 		return appErr
