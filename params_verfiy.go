@@ -36,7 +36,6 @@ func init() {
 	registerTagNameFunc(v)
 	registerPhoneValidator(v)
 	registerIDCarValidator(v)
-	registerGUIDValidator(v)
 	registerDecimalPlacesValidator(v)
 }
 
@@ -108,26 +107,6 @@ func registerIDCarValidator(v *validator.Validate) {
 		// 自定义翻译函数
 		func(ut ut.Translator, fe validator.FieldError) string {
 			t, _ := ut.T("idcar", fe.Field())
-			return t
-		},
-	)
-}
-
-func registerGUIDValidator(v *validator.Validate) {
-	v.RegisterValidation("guid", func(fl validator.FieldLevel) bool {
-		phone := fl.Field().String()
-		return ValidateCustomGUIDRegex(phone)
-	})
-
-	// 注册手机号翻译
-	v.RegisterTranslation("guid", validatorTrans,
-		// 注册翻译器
-		func(ut ut.Translator) error {
-			return ut.Add("guid", "guid格式不正确", true)
-		},
-		// 自定义翻译函数
-		func(ut ut.Translator, fe validator.FieldError) string {
-			t, _ := ut.T("guid", fe.Field())
 			return t
 		},
 	)

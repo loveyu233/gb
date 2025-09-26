@@ -164,19 +164,6 @@ func MaskIDCard(idCard string) string {
 	return idCard[:6] + "********" + idCard[14:]
 }
 
-// ValidateCustomGUIDRegex 使用正则表达式校验自定义GUID格式
-// 要求：长度必须为20位，只能包含数字和大小写字母
-func ValidateCustomGUIDRegex(guid string) bool {
-	// 去除空格
-	guid = strings.ReplaceAll(guid, " ", "")
-
-	// 正则表达式：^[a-zA-Z0-9]{20}$
-	// ^ 表示开始，$ 表示结束，[a-zA-Z0-9] 表示数字和大小写字母，{20} 表示恰好20位
-	pattern := `^[a-zA-Z0-9]{20}$`
-	matched, _ := regexp.MatchString(pattern, guid)
-	return matched
-}
-
 func MaskUsername(username string) string {
 	return GetFirstNChars(username, 1) + "*"
 }
