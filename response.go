@@ -93,11 +93,11 @@ func ConvertToAppError(err error) *AppError {
 	// 映射特定的错误到业务错误
 	switch {
 	case errors.Is(err, gorm.ErrRecordNotFound):
-		return ErrNotFound
+		return ErrNotFound.WithMessage("数据不存在")
 	case errors.Is(err, gorm.ErrDuplicatedKey):
-		return ErrDataExists
+		return ErrDataExists.WithMessage("数据冲突")
 	case errors.Is(err, gorm.ErrInvalidField):
-		return ErrDatabase.WithMessage(err.Error())
+		return ErrDatabase.WithMessage("字段无效")
 	case errors.Is(err, gorm.ErrInvalidTransaction):
 		return ErrDatabase.WithMessage("数据库事务错误")
 	}

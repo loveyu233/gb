@@ -40,6 +40,18 @@ func Now() time.Time {
 	return time.Now().In(ShangHaiTimeLocation)
 }
 
+func NowGBTimeOnly() TimeOnly {
+	return TimeOnly(Now())
+}
+
+func NowGBDateOnly() DateOnly {
+	return DateOnly(Now())
+}
+
+func NowGBDateTime() DateTime {
+	return DateTime(Now())
+}
+
 // NowPtr 获取当前时间指针
 func NowPtr() *time.Time {
 	now := Now()
