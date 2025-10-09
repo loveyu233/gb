@@ -76,3 +76,24 @@ func ConvertStringToUint32Simple(str string) uint32 {
 	}
 	return result
 }
+
+func GetGenderFormIDCard(idcard string) string {
+	if !ValidateChineseIDCard(idcard) {
+		return "未知"
+	}
+	// 获取第17位数字(索引为16)
+	// 中国身份证第17位数字表示性别：奇数为男性，偶数为女性
+	genderDigit := idcard[16:17]
+
+	// 将字符转换为数字
+	digit, err := strconv.Atoi(genderDigit)
+	if err != nil {
+		return "无效身份证号"
+	}
+
+	// 判断奇偶性
+	if digit%2 == 0 {
+		return "女"
+	}
+	return "男"
+}
