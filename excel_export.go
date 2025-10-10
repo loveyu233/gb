@@ -207,6 +207,22 @@ func (e *ExcelExporter) ExportToBuffer(data interface{}) (*bytes.Buffer, error) 
 	return file.WriteToBuffer()
 }
 
+func (e *ExcelExporter) ExportToExcelizeFile(data interface{}) (*excelize.File, error) {
+	// 创建Excel文件
+	file := excelize.NewFile()
+
+	// 导出到工作表
+	err := e.ExportToSheet(data, file, e.SheetName)
+	if err != nil {
+		return nil, err
+	}
+	if e.SheetName != "Sheet1" {
+		file.DeleteSheet("Sheet1")
+	}
+
+	return file, nil
+}
+
 // ExportToSheet 将结构体数组导出到指定工作表
 func (e *ExcelExporter) ExportToSheet(data interface{}, file *excelize.File, sheetName string) error {
 	// 参数验证
