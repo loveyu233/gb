@@ -22,21 +22,62 @@ type TimeOnly time.Time
 // TimeHourMinute 只有小时分钟的时间类型 (HH:MM)
 type TimeHourMinute time.Time
 
-// ========== DateTime 完整日期时间类型 ==========
+// ========== DateTime 转换方法 ==========
 
-// NewDateTime 创建新的 DateTime 实例
-func NewDateTime(t time.Time) DateTime {
-	return DateTime(t.In(ShangHaiTimeLocation))
+func (dt DateTime) ToDateOnly() DateOnly {
+	return DateOnly(dt)
 }
 
-// NewDateTimeString 根据字符串创建 DateTime 实例
-func NewDateTimeString(dateTimeString string) (*DateTime, error) {
-	dt, err := time.ParseInLocation(CSTLayout, dateTimeString, ShangHaiTimeLocation)
-	if err != nil {
-		return nil, err
-	}
-	result := DateTime(dt)
-	return &result, nil
+func (dt DateTime) ToTimeOnly() TimeOnly {
+	return TimeOnly(dt)
+}
+
+func (dt DateTime) ToTimeHourMinute() TimeHourMinute {
+	return TimeHourMinute(dt)
+}
+
+// ========== DateOnly 转换方法 ==========
+
+// ToDateTime 将 DateOnly 转换为 DateTime（时间部分设为 00:00:00）
+func (d DateOnly) ToDateTime() DateTime {
+	return DateTime(d)
+}
+
+func (d DateOnly) ToTimeOnly() TimeOnly {
+	return TimeOnly(d)
+}
+
+func (d DateOnly) ToTimeHourMinute() TimeHourMinute {
+	return TimeHourMinute(d)
+}
+
+// ========== TimeOnly 转换方法 ==========
+
+// ToTimeHourMinute 将 TimeOnly 转换为 TimeHourMinute（忽略秒部分）
+func (t TimeOnly) ToTimeHourMinute() TimeHourMinute {
+	return TimeHourMinute(t)
+}
+
+func (t TimeOnly) ToDateOnly() DateOnly {
+	return DateOnly(t)
+}
+
+func (t TimeOnly) ToDateTime() DateTime {
+	return DateTime(t)
+}
+
+// ========== TimeHourMinute 转换方法 ==========
+
+func (t TimeHourMinute) ToTimeOnly() TimeOnly {
+	return TimeOnly(t)
+}
+
+func (t TimeHourMinute) ToDateTime() DateTime {
+	return DateTime(t)
+}
+
+func (t TimeHourMinute) ToDateOnly() DateOnly {
+	return DateOnly(t)
 }
 
 func (dt *DateTime) Scan(v interface{}) error {
