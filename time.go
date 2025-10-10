@@ -41,15 +41,19 @@ func Now() time.Time {
 }
 
 func NowGBTimeOnly() TimeOnly {
-	return TimeOnly(Now())
+	return TimeOnly(time.Date(0, 0, 0, Now().Hour(), Now().Minute(), Now().Second(), 0, ShangHaiTimeLocation))
 }
 
 func NowGBDateOnly() DateOnly {
-	return DateOnly(Now())
+	return DateOnly(time.Date(Now().Year(), Now().Month(), Now().Day(), 0, 0, 0, 0, ShangHaiTimeLocation))
 }
 
 func NowGBDateTime() DateTime {
-	return DateTime(Now())
+	return DateTime(time.Date(Now().Year(), Now().Month(), Now().Day(), Now().Hour(), Now().Minute(), Now().Second(), 0, ShangHaiTimeLocation))
+}
+
+func NowGBTimeHourMinute() TimeHourMinute {
+	return TimeHourMinute(time.Date(0, 0, 0, Now().Hour(), Now().Minute(), 0, 0, ShangHaiTimeLocation))
 }
 
 // NowPtr 获取当前时间指针
