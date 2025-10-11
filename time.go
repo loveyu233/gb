@@ -386,3 +386,66 @@ func TimeEnglishWeekday(t time.Time) string {
 func TimeIsWeekend(t time.Time) bool {
 	return t.Weekday() == time.Saturday || t.Weekday() == time.Sunday
 }
+
+// TimeRange 表示一个时间段
+type TimeRange struct {
+	ID    uint64
+	Start time.Time
+	End   time.Time
+}
+
+// IsValid 检查时间段是否有效
+func (tr TimeRange) IsValid() bool {
+	return !tr.Start.After(tr.End)
+}
+
+// HasConflictWith 检查当前时间段是否与另一个时间段冲突
+func (tr TimeRange) HasConflictWith(other TimeRange) bool {
+	if !tr.IsValid() || !other.IsValid() {
+		return false
+	}
+	return tr.Start.Before(other.End) && tr.End.After(other.Start)
+}
+
+// HasTimeConflict 检查多个时间段之间是否有冲突
+// 参数: 可变数量的TimeRange，每个TimeRange包含开始时间和结束时间
+// 返回 true 表示存在冲突，false 表示无冲突
+func HasTimeConflict(timeRanges ...TimeRange) bool {
+	// 如果时间段数量少于2个，不可能有冲突
+	if len(timeRanges) < 2 {
+		return false
+	}
+
+	// 检查每一对时间段是否冲突
+	for i := 0; i < len(timeRanges); i++ {
+		for j := i + 1; j < len(timeRanges); j++ {
+			if timeRanges[i].HasConflictWith(timeRanges[j]) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func HasTimeConflictReturnIDS(ranges ...TimeRange) []uint64 {
+	overlappingIDs := make(map[uint64]bool)
+
+	for i := 0; i < len(ranges); i++ {
+		for j := i + 1; j < len(ranges); j++ {
+			// 检查时间重合条件
+			if ranges[i].Start.Before(ranges[j].End) && ranges[i].End.After(ranges[j].Start) {
+				overlappingIDs[ranges[i].ID] = true
+				overlappingIDs[ranges[j].ID] = true
+			}
+		}
+	}
+
+	// 转换为切片
+	var result []uint64
+	for id := range overlappingIDs {
+		result = append(result, id)
+	}
+
+	return result
+}
