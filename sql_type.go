@@ -25,15 +25,18 @@ type TimeHourMinute time.Time
 // ========== DateTime 转换方法 ==========
 
 func (dt DateTime) ToDateOnly() DateOnly {
-	return DateOnly(dt)
+	d := dt.Time()
+	return DateOnly(time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, ShangHaiTimeLocation))
 }
 
 func (dt DateTime) ToTimeOnly() TimeOnly {
-	return TimeOnly(dt)
+	d := dt.Time()
+	return TimeOnly(time.Date(d.Year(), d.Month(), d.Day(), d.Hour(), d.Minute(), d.Second(), 0, ShangHaiTimeLocation))
 }
 
 func (dt DateTime) ToTimeHourMinute() TimeHourMinute {
-	return TimeHourMinute(dt)
+	d := dt.Time()
+	return TimeHourMinute(time.Date(d.Year(), d.Month(), d.Day(), d.Hour(), d.Minute(), 0, 0, ShangHaiTimeLocation))
 }
 
 // ========== DateOnly 转换方法 ==========
