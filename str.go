@@ -97,3 +97,7 @@ func GetGenderFormIDCard(idcard string) string {
 	}
 	return "男"
 }
+
+func KeywordAssembly(keyword string) string {
+	return fmt.Sprintf("%%%s%%", keyword)
+}
