@@ -108,6 +108,15 @@ func StringToGbDateTime(dateTime string) DateTime {
 	return DateTime(location)
 }
 
+// StringToGbDateTimeErr 将日期字符串转为gb库的DateTime类型返回错误的
+func StringToGbDateTimeErr(dateTime string) (DateTime, error) {
+	location, err := time.ParseInLocation(CSTLayout, dateTime, ShangHaiTimeLocation)
+	if err != nil {
+		return DateTime{}, err
+	}
+	return DateTime(location), nil
+}
+
 // StringToDate 日期字符串转为time Date
 func StringToDate(date string) (time.Time, error) {
 	return time.ParseInLocation(CSTLayoutDate, date, ShangHaiTimeLocation)
