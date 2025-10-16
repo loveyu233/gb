@@ -11,7 +11,7 @@ func GenJSONArrayQuery(columnName string) *datatypes.JSONArrayExpression {
 }
 
 // GenNewTime field.NewTime(tableName, columnName)
-func GenNewTime(tableName string, columnName string) field.Expr {
+func GenNewTime(tableName string, columnName string) field.Time {
 	return field.NewTime(tableName, columnName)
 }
 
