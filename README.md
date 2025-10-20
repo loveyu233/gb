@@ -85,6 +85,8 @@ func main() {
   - [https://github.com/loveyu233/connection](https://github.com/loveyu233/connection)
 - **图形验证码快速生成 (Captcha)**: 滑块，旋转，点击 等。
     - [https://github.com/loveyu233/captcha](https://github.com/loveyu233/captcha)
+- **快速登录（login）**：集成了微信小程序的一键登录
+    - [https://github.com/loveyu233/login](https://github.com/loveyu233/login)
 ---
 
 **⭐ 如果这个项目对你有帮助，请给我们一个 Star！⭐**
