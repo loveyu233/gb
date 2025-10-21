@@ -24,6 +24,7 @@ type RouterConfig struct {
 	writeTimeout     time.Duration
 	idleTimeout      time.Duration
 	maxHeaderBytes   int
+	skipLog          bool
 }
 
 type GinModel string
@@ -39,6 +40,12 @@ var (
 )
 
 type GinRouterConfigOptionFunc func(*RouterConfig)
+
+func WithGinSkipLog(skipLog bool) GinRouterConfigOptionFunc {
+	return func(config *RouterConfig) {
+		config.skipLog = skipLog
+	}
+}
 
 func WithGinReadTimeout(d time.Duration) GinRouterConfigOptionFunc {
 	return func(routerConfig *RouterConfig) {
@@ -127,10 +134,13 @@ func initPrivateRouter(config RouterConfig) {
 		}
 	})
 
-	config.globalMiddleware = append(config.globalMiddleware, MiddlewareTraceID(), MiddlewareRequestTime(), MiddlewareLogger(MiddlewareLogConfig{
-		HeaderKeys: config.recordHeaderKeys,
-		SaveLog:    config.saveLog,
-	}), MiddlewareRecovery())
+	config.globalMiddleware = append(config.globalMiddleware, MiddlewareTraceID(), MiddlewareRequestTime(), MiddlewareRecovery())
+	if !config.skipLog {
+		config.globalMiddleware = append(config.globalMiddleware, MiddlewareLogger(MiddlewareLogConfig{
+			HeaderKeys: config.recordHeaderKeys,
+			SaveLog:    config.saveLog,
+		}))
+	}
 
 	engine = newGinRouter(config.model, config.globalMiddleware...)
 
