@@ -75,6 +75,16 @@ var (
 	// ... 可以继续添加其他预定义错误
 )
 
+func ReturnErrDatabase(err error, msg string, notfoundMsg ...string) *AppError {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		if len(notfoundMsg) == 0 {
+			notfoundMsg = append(notfoundMsg, ErrNotFound.Message)
+		}
+		return ErrNotFound.WithMessage(notfoundMsg[0])
+	}
+	return ErrDatabase.WithMessage(msg)
+}
+
 // ConvertToAppError 将各种错误转换为业务相关的AppError
 func ConvertToAppError(err error) *AppError {
 	if err == nil {
