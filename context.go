@@ -14,3 +14,7 @@ func Context(ttl ...int64) context.Context {
 	timeout, _ := context.WithTimeout(context.Background(), time.Second*time.Duration(sec))
 	return timeout
 }
+
+func DurationSecond(Second int) time.Duration {
+	return time.Duration(Second) * time.Second
+}
