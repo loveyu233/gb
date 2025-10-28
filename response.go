@@ -180,3 +180,10 @@ func ResponseSuccessEncryptData(c *gin.Context, data interface{}, custom func(no
 		Data:    response,
 	})
 }
+
+func ResponseThirdPartyHTTPBody(c *gin.Context, body any, code ...int) {
+	if len(code) == 0 {
+		code = append(code, 200)
+	}
+	c.JSON(code[0], body)
+}
