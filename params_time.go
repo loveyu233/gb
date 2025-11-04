@@ -1,5 +1,7 @@
 package gb
 
+import "encoding/json"
+
 type ReqDateTimeStartEnd struct {
 	StartDateTimeStr string `json:"start_date_time" form:"start_date_time"`
 	EndDateTimeStr   string `json:"end_date_time" form:"end_date_time"`
@@ -10,29 +12,28 @@ type ReqDateTimeStartEnd struct {
 	DateTimeFilter bool `json:"-"`
 }
 
-func (req ReqDateTimeStartEnd) Parse() (ReqDateTimeStartEnd, error) {
-	var data ReqDateTimeStartEnd
+func (req *ReqDateTimeStartEnd) Parse() error {
 	if req.StartDateTimeStr != "" {
 		s, err := StringToGbDateTimeErr(req.StartDateTimeStr)
 		if err != nil {
-			return data, err
+			return err
 		}
-		data.StartDateTime = s
+		req.StartDateTime = s
 	}
 
 	if req.EndDateTimeStr != "" {
 		e, err := StringToGbDateTimeErr(req.EndDateTimeStr)
 		if err != nil {
-			return data, err
+			return err
 		}
-		data.StartDateTime = e
+		req.StartDateTime = e
 	}
 
 	if req.StartDateTimeStr != "" && req.EndDateTimeStr != "" {
-		data.DateTimeFilter = true
+		req.DateTimeFilter = true
 	}
 
-	return data, nil
+	return nil
 }
 
 type ReqDateTime struct {
@@ -40,17 +41,16 @@ type ReqDateTime struct {
 	DateTime    DateTime `json:"-" form:"-"`
 }
 
-func (req ReqDateTime) Parse() (ReqDateTime, error) {
-	var data ReqDateTime
+func (req *ReqDateTime) Parse() error {
 	if req.DateTimeStr != "" {
 		s, err := StringToGbDateTimeErr(req.DateTimeStr)
 		if err != nil {
-			return data, err
+			return err
 		}
-		data.DateTime = s
+		req.DateTime = s
 	}
 
-	return data, nil
+	return nil
 }
 
 type ReqDateStartEnd struct {
@@ -63,29 +63,28 @@ type ReqDateStartEnd struct {
 	DateFilter bool `json:"-"`
 }
 
-func (req ReqDateStartEnd) Parse() (ReqDateStartEnd, error) {
-	var data ReqDateStartEnd
+func (req *ReqDateStartEnd) Parse() error {
 	if req.StartDateStr != "" {
 		s, err := StringToGBDateOnly(req.StartDateStr)
 		if err != nil {
-			return data, err
+			return err
 		}
-		data.StartDate = s
+		req.StartDate = s
 	}
 
 	if req.EndDateStr != "" {
 		e, err := StringToGBDateOnly(req.EndDateStr)
 		if err != nil {
-			return data, err
+			return err
 		}
-		data.EndDate = e
+		req.EndDate = e
 	}
 
 	if req.StartDateStr != "" && req.EndDateStr != "" {
-		data.DateFilter = true
+		req.DateFilter = true
 	}
 
-	return data, nil
+	return nil
 }
 
 type ReqDate struct {
@@ -93,16 +92,15 @@ type ReqDate struct {
 	Date    DateOnly `json:"-" form:"-"`
 }
 
-func (req ReqDate) Parse() (ReqDate, error) {
-	var data ReqDate
+func (req *ReqDate) Parse() error {
 	if req.DateStr != "" {
 		s, err := StringToGBDateOnly(req.DateStr)
 		if err != nil {
-			return data, err
+			return err
 		}
-		data.Date = s
+		req.Date = s
 	}
-	return data, nil
+	return nil
 }
 
 type ReqTimeStartEnd struct {
@@ -115,29 +113,28 @@ type ReqTimeStartEnd struct {
 	TimeFilter bool `json:"-"`
 }
 
-func (req ReqTimeStartEnd) Parse() (ReqTimeStartEnd, error) {
-	var data ReqTimeStartEnd
+func (req *ReqTimeStartEnd) Parse() error {
 	if req.StartTimeStr != "" {
 		s, err := StringToGBTimeOnly(req.StartTimeStr)
 		if err != nil {
-			return data, err
+			return err
 		}
-		data.StartTime = s
+		req.StartTime = s
 	}
 
 	if req.EndTimeStr != "" {
 		e, err := StringToGBTimeOnly(req.EndTimeStr)
 		if err != nil {
-			return data, err
+			return err
 		}
-		data.EndTime = e
+		req.EndTime = e
 	}
 
 	if req.StartTimeStr != "" && req.EndTimeStr != "" {
-		data.TimeFilter = true
+		req.TimeFilter = true
 	}
 
-	return data, nil
+	return nil
 }
 
 type ReqTime struct {
@@ -145,16 +142,15 @@ type ReqTime struct {
 	Time    TimeOnly `json:"-" form:"-"`
 }
 
-func (req ReqTime) Parse() (ReqTime, error) {
-	var data ReqTime
+func (req *ReqTime) Parse() error {
 	if req.TimeStr != "" {
 		s, err := StringToGBTimeOnly(req.TimeStr)
 		if err != nil {
-			return data, err
+			return err
 		}
-		data.Time = s
+		req.Time = s
 	}
-	return data, nil
+	return nil
 }
 
 type ReqTimeHourMinuteStartEnd struct {
@@ -167,29 +163,28 @@ type ReqTimeHourMinuteStartEnd struct {
 	TimeHourMinuteFilter bool `json:"-"`
 }
 
-func (req ReqTimeHourMinuteStartEnd) Parse() (ReqTimeHourMinuteStartEnd, error) {
-	var data ReqTimeHourMinuteStartEnd
+func (req *ReqTimeHourMinuteStartEnd) Parse() error {
 	if req.StartTimeHourMinuteStr != "" {
 		s, err := StringToGBTimeHourMinute(req.StartTimeHourMinuteStr)
 		if err != nil {
-			return data, err
+			return err
 		}
-		data.StartTimeHourMinute = s
+		req.StartTimeHourMinute = s
 	}
 
 	if req.EndTimeHourMinuteStr != "" {
 		e, err := StringToGBTimeHourMinute(req.EndTimeHourMinuteStr)
 		if err != nil {
-			return data, err
+			return err
 		}
-		data.EndTimeHourMinute = e
+		req.EndTimeHourMinute = e
 	}
 
 	if req.StartTimeHourMinuteStr != "" && req.EndTimeHourMinuteStr != "" {
-		data.TimeHourMinuteFilter = true
+		req.TimeHourMinuteFilter = true
 	}
 
-	return data, nil
+	return nil
 }
 
 type ReqTimeHourMinute struct {
@@ -197,15 +192,159 @@ type ReqTimeHourMinute struct {
 	TimeHourMinute    TimeHourMinute `json:"-" form:"-"`
 }
 
-func (req ReqTimeHourMinute) Parse() (ReqTimeHourMinute, error) {
-	var data ReqTimeHourMinute
+func (req *ReqTimeHourMinute) Parse() error {
 	if req.TimeHourMinuteStr != "" {
 		s, err := StringToGBTimeHourMinute(req.TimeHourMinuteStr)
 		if err != nil {
-			return data, err
+			return err
 		}
-		data.TimeHourMinute = s
+		req.TimeHourMinute = s
 	}
 
-	return data, nil
+	return nil
+}
+
+func (req *ReqDateTimeStartEnd) UnmarshalJSON(data []byte) error {
+	type Alias ReqDateTimeStartEnd
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(req),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	// 自动解析
+	err := req.Parse()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (req *ReqDateTime) UnmarshalJSON(data []byte) error {
+	type Alias ReqDateTime
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(req),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	err := req.Parse()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (req *ReqDateStartEnd) UnmarshalJSON(data []byte) error {
+	type Alias ReqDateStartEnd
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(req),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	err := req.Parse()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (req *ReqDate) UnmarshalJSON(data []byte) error {
+	type Alias ReqDate
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(req),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	err := req.Parse()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (req *ReqTimeStartEnd) UnmarshalJSON(data []byte) error {
+	type Alias ReqTimeStartEnd
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(req),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	err := req.Parse()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (req *ReqTime) UnmarshalJSON(data []byte) error {
+	type Alias ReqTime
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(req),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	err := req.Parse()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (req *ReqTimeHourMinuteStartEnd) UnmarshalJSON(data []byte) error {
+	type Alias ReqTimeHourMinuteStartEnd
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(req),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	err := req.Parse()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (req *ReqTimeHourMinute) UnmarshalJSON(data []byte) error {
+	type Alias ReqTimeHourMinute
+	aux := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(req),
+	}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	err := req.Parse()
+	if err != nil {
+		return err
+	}
+	return nil
 }
