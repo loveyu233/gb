@@ -1,7 +1,5 @@
 package gb
 
-import "encoding/json"
-
 type ReqDateTimeStartEnd struct {
 	StartDateTimeStr string `json:"start_date_time" form:"start_date_time"`
 	EndDateTimeStr   string `json:"end_date_time" form:"end_date_time"`
@@ -26,7 +24,7 @@ func (req *ReqDateTimeStartEnd) Parse() error {
 		if err != nil {
 			return err
 		}
-		req.StartDateTime = e
+		req.EndDateTime = e
 	}
 
 	if req.StartDateTimeStr != "" && req.EndDateTimeStr != "" {
@@ -201,150 +199,5 @@ func (req *ReqTimeHourMinute) Parse() error {
 		req.TimeHourMinute = s
 	}
 
-	return nil
-}
-
-func (req *ReqDateTimeStartEnd) UnmarshalJSON(data []byte) error {
-	type Alias ReqDateTimeStartEnd
-	aux := &struct {
-		*Alias
-	}{
-		Alias: (*Alias)(req),
-	}
-	if err := json.Unmarshal(data, aux); err != nil {
-		return err
-	}
-
-	// 自动解析
-	err := req.Parse()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (req *ReqDateTime) UnmarshalJSON(data []byte) error {
-	type Alias ReqDateTime
-	aux := &struct {
-		*Alias
-	}{
-		Alias: (*Alias)(req),
-	}
-	if err := json.Unmarshal(data, aux); err != nil {
-		return err
-	}
-
-	err := req.Parse()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (req *ReqDateStartEnd) UnmarshalJSON(data []byte) error {
-	type Alias ReqDateStartEnd
-	aux := &struct {
-		*Alias
-	}{
-		Alias: (*Alias)(req),
-	}
-	if err := json.Unmarshal(data, aux); err != nil {
-		return err
-	}
-
-	err := req.Parse()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (req *ReqDate) UnmarshalJSON(data []byte) error {
-	type Alias ReqDate
-	aux := &struct {
-		*Alias
-	}{
-		Alias: (*Alias)(req),
-	}
-	if err := json.Unmarshal(data, aux); err != nil {
-		return err
-	}
-
-	err := req.Parse()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (req *ReqTimeStartEnd) UnmarshalJSON(data []byte) error {
-	type Alias ReqTimeStartEnd
-	aux := &struct {
-		*Alias
-	}{
-		Alias: (*Alias)(req),
-	}
-	if err := json.Unmarshal(data, aux); err != nil {
-		return err
-	}
-
-	err := req.Parse()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (req *ReqTime) UnmarshalJSON(data []byte) error {
-	type Alias ReqTime
-	aux := &struct {
-		*Alias
-	}{
-		Alias: (*Alias)(req),
-	}
-	if err := json.Unmarshal(data, aux); err != nil {
-		return err
-	}
-
-	err := req.Parse()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (req *ReqTimeHourMinuteStartEnd) UnmarshalJSON(data []byte) error {
-	type Alias ReqTimeHourMinuteStartEnd
-	aux := &struct {
-		*Alias
-	}{
-		Alias: (*Alias)(req),
-	}
-	if err := json.Unmarshal(data, aux); err != nil {
-		return err
-	}
-
-	err := req.Parse()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (req *ReqTimeHourMinute) UnmarshalJSON(data []byte) error {
-	type Alias ReqTimeHourMinute
-	aux := &struct {
-		*Alias
-	}{
-		Alias: (*Alias)(req),
-	}
-	if err := json.Unmarshal(data, aux); err != nil {
-		return err
-	}
-
-	err := req.Parse()
-	if err != nil {
-		return err
-	}
 	return nil
 }
