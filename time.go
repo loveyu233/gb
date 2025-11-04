@@ -13,13 +13,17 @@ var (
 
 // CSTLayout China Standard Time Layout
 const (
-	CSTLayout                = "2006-01-02 15:04:05"
-	CSTLayoutDate            = "2006-01-02"
-	CSTLayoutTime            = "15:04:05"
-	CSTLayoutDateHourMinutes = "2006-01-02 15:04"
-	CSTLayoutYearMonth       = "2006-01"
-	CSTLayoutSecond          = "20060102150405"
-	DateDirLayout            = "2006/0101"
+	CSTLayout                       = "2006-01-02 15:04:05"
+	CSTLayoutChinese                = "2006年01月02日 15:04:05"
+	CSTLayoutDate                   = "2006-01-02"
+	CSTLayoutDateChinese            = "2006年01月02日"
+	CSTLayoutTime                   = "15:04:05"
+	CSTLayoutDateHourMinutes        = "2006-01-02 15:04"
+	CSTLayoutDateHourMinutesChinese = "2006年01月02日 15:04"
+	CSTLayoutYearMonth              = "2006-01"
+	CSTLayoutYearMonthChinese       = "2006年01月"
+	CSTLayoutSecond                 = "20060102150405"
+	DateDirLayout                   = "2006/0101"
 
 	DayStartTimeStr = "00:00:00"
 	DayEndTimeStr   = "23:59:59"
@@ -155,13 +159,13 @@ func StringToGBTimeOnly(time string) (TimeOnly, error) {
 	return TimeOnly(toTime), nil
 }
 
-func StringToGBTimeOnlyNoSec(t string) (TimeOnly, error) {
+func StringToGBTimeHourMinute(t string) (TimeHourMinute, error) {
 	toTime, err := StringToTime(t)
 	if err != nil {
-		return TimeOnly{}, err
+		return TimeHourMinute{}, err
 	}
 
-	return TimeOnly(time.Date(toTime.Year(), toTime.Month(), toTime.Day(), toTime.Hour(), toTime.Minute(), 0, 0, ShangHaiTimeLocation)), nil
+	return TimeHourMinute(time.Date(toTime.Year(), toTime.Month(), toTime.Day(), toTime.Hour(), toTime.Minute(), 0, 0, ShangHaiTimeLocation)), nil
 }
 
 // StringDateToDateTimePtr 日期字符串转为time.time
