@@ -3,16 +3,17 @@ package gb
 import (
 	"gorm.io/datatypes"
 	"gorm.io/gen/field"
+	"gorm.io/gorm/schema"
 )
 
 // GenJSONArrayQuery datatypes.JSONArrayQuery(columnName)
-func GenJSONArrayQuery(columnName string) *datatypes.JSONArrayExpression {
-	return datatypes.JSONArrayQuery(columnName)
+func GenJSONArrayQuery(column field.IColumnName) *datatypes.JSONArrayExpression {
+	return datatypes.JSONArrayQuery(column.ColumnName().String())
 }
 
 // GenNewTime field.NewTime(tableName, columnName)
-func GenNewTime(tableName string, columnName string) field.Time {
-	return field.NewTime(tableName, columnName)
+func GenNewTime(table schema.Tabler, column field.IColumnName) field.Time {
+	return field.NewTime(table.TableName(), column.ColumnName().String())
 }
 
 // GenNewUnsafeFieldRaw field.NewUnsafeFieldRaw(rawSQL, vars...)
