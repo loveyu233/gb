@@ -85,6 +85,14 @@ func ReturnErrDatabase(err error, msg string, notfoundMsg ...string) *AppError {
 	return ErrDatabase.WithMessage(msg)
 }
 
+func ReturnErrSimpleDatabase(err error) *AppError {
+	return ErrDatabase.WithMessage(err.Error())
+}
+
+func ReturnErrInvalidParam(msg string) *AppError {
+	return ErrInvalidParam.WithMessage(msg)
+}
+
 // ConvertToAppError 将各种错误转换为业务相关的AppError
 func ConvertToAppError(err error) *AppError {
 	if err == nil {
