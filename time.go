@@ -15,13 +15,17 @@ var (
 const (
 	CSTLayout                       = "2006-01-02 15:04:05"
 	CSTLayoutChinese                = "2006年01月02日 15:04:05"
+	CSTLayoutPoint                  = "2006.01.02 15:04:05"
 	CSTLayoutDate                   = "2006-01-02"
 	CSTLayoutDateChinese            = "2006年01月02日"
+	CSTLayoutDatePoint              = "2006.01.02"
 	CSTLayoutTime                   = "15:04:05"
 	CSTLayoutDateHourMinutes        = "2006-01-02 15:04"
 	CSTLayoutDateHourMinutesChinese = "2006年01月02日 15:04"
+	CSTLayoutDateHourMinutesPoint   = "2006.01.02 15:04"
 	CSTLayoutYearMonth              = "2006-01"
 	CSTLayoutYearMonthChinese       = "2006年01月"
+	CSTLayoutYearMonthPoint         = "2006.01.02"
 	CSTLayoutSecond                 = "20060102150405"
 	DateDirLayout                   = "2006/0101"
 
