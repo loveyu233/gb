@@ -195,3 +195,10 @@ func ResponseThirdPartyHTTPBody(c *gin.Context, body any, code ...int) {
 	}
 	c.JSON(code[0], body)
 }
+
+func FuncErr(fun func() error) error {
+	if err := fun(); err != nil {
+		return ReturnErrSimpleDatabase(err)
+	}
+	return nil
+}
