@@ -10,7 +10,7 @@ func DiffMain(text1, text2 string, checklines ...bool) []diffmatchpatch.Diff {
 
 func DiffPrettyHtml(text1, text2 string, checklines ...bool) string {
 	if len(checklines) == 0 {
-		checklines[0] = false
+		checklines = []bool{false}
 	}
 	dmp := diffmatchpatch.New()
 	return dmp.DiffPrettyHtml(dmp.DiffMain(text1, text2, checklines[0]))
@@ -18,7 +18,7 @@ func DiffPrettyHtml(text1, text2 string, checklines ...bool) string {
 
 func DiffPrettyText(text1, text2 string, checklines ...bool) string {
 	if len(checklines) == 0 {
-		checklines[0] = false
+		checklines = []bool{false}
 	}
 	dmp := diffmatchpatch.New()
 	return dmp.DiffPrettyText(dmp.DiffMain(text1, text2, checklines[0]))
