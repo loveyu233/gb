@@ -3,22 +3,25 @@ package gb
 import (
 	"encoding/json"
 	"errors"
-	"flag"
 	"os"
 	"path/filepath"
 
 	"gopkg.in/yaml.v3"
 )
 
-// InitConfig fp为配置文件路径,可以是json文件或者yml和yaml,cfg必须为指针
+// InitConfig 函数用于处理InitConfig相关逻辑。
 func InitConfig(fp string, cfg any) (string, error) {
 	if fp == "" || !IsPtr(cfg) {
 		return "", errors.New("fp为空或cfg非指针")
 	}
 
-	var env string
-	flag.StringVar(&env, "e", "dev", "运行环境 (local|test|prod)")
-	flag.Parse()
+	env := os.Getenv("GB_ENV")
+	if env == "" {
+		env = os.Getenv("GO_ENV")
+	}
+	if env == "" {
+		env = "dev"
+	}
 
 	file, err := os.ReadFile(fp)
 	if err != nil {

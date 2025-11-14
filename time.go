@@ -11,7 +11,6 @@ var (
 	ShangHaiTimeLocation *time.Location
 )
 
-// CSTLayout China Standard Time Layout
 const (
 	CSTLayout                       = "2006-01-02 15:04:05"
 	CSTLayoutChinese                = "2006年01月02日 15:04:05"
@@ -33,288 +32,294 @@ const (
 	DayEndTimeStr   = "23:59:59"
 )
 
+// init 初始化默认的上海时区配置。
 func init() {
 	var err error
 	if ShangHaiTimeLocation, err = time.LoadLocation("Asia/Shanghai"); err != nil {
 		panic(err)
 	}
-
-	// 默认设置为中国时区
 	time.Local = ShangHaiTimeLocation
 }
 
-// Now 获取当前时间
+// Now 返回当前上海时区的时间。
 func Now() time.Time {
 	return time.Now().In(ShangHaiTimeLocation)
 }
 
-func NowGBTimeOnly() TimeOnly {
-	return TimeOnly(time.Date(0, 0, 0, Now().Hour(), Now().Minute(), Now().Second(), 0, ShangHaiTimeLocation))
-}
-
-func NowGBDateOnly() DateOnly {
-	return DateOnly(time.Date(Now().Year(), Now().Month(), Now().Day(), 0, 0, 0, 0, ShangHaiTimeLocation))
-}
-
-func NowGBDateTime() DateTime {
-	return DateTime(time.Date(Now().Year(), Now().Month(), Now().Day(), Now().Hour(), Now().Minute(), Now().Second(), 0, ShangHaiTimeLocation))
-}
-
-func NowGBTimeHourMinute() TimeHourMinute {
-	return TimeHourMinute(time.Date(0, 0, 0, Now().Hour(), Now().Minute(), 0, 0, ShangHaiTimeLocation))
-}
-
-// NowPtr 获取当前时间指针
-func NowPtr() *time.Time {
+// NowPointer 返回当前时间的指针副本，便于与可选参数兼容。
+func NowPointer() *time.Time {
 	now := Now()
 	return &now
 }
 
-// NowString 格式化当前时间
-func NowString() string {
-	return Now().Format(CSTLayout)
+// NowDateTimeString 以标准格式返回当前日期时间字符串。
+func NowDateTimeString() string {
+	return FormatDateTime(Now())
 }
 
-// NowDateString 获取当前日期字符串
+// NowDateString 返回当前日期字符串（YYYY-MM-DD）。
 func NowDateString() string {
 	return Now().Format(CSTLayoutDate)
 }
 
-// NowTimeString 获取当前时间字符串
+// NowTimeString 返回当前时间字符串（HH:MM:SS）。
 func NowTimeString() string {
 	return Now().Format(CSTLayoutTime)
 }
 
-// TimeToGBDateTime 把时间类型转为gb库的DateTime类型
-func TimeToGBDateTime(t time.Time) DateTime {
+// NowAsDateTime 返回当前时间的 DateTime 封装类型。
+func NowAsDateTime() DateTime {
+	return DateTime(Now())
+}
+
+// NowAsDateOnly 返回当天零点的 DateOnly 封装类型。
+func NowAsDateOnly() DateOnly {
+	now := Now()
+	return DateOnly(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, ShangHaiTimeLocation))
+}
+
+// NowAsTimeOnly 返回当前时间的 TimeOnly 封装类型。
+func NowAsTimeOnly() TimeOnly {
+	now := Now()
+	return TimeOnly(time.Date(0, 0, 0, now.Hour(), now.Minute(), now.Second(), 0, ShangHaiTimeLocation))
+}
+
+// NowAsHourMinute 返回当前时间的时分部分。
+func NowAsHourMinute() TimeHourMinute {
+	now := Now()
+	return TimeHourMinute(time.Date(0, 0, 0, now.Hour(), now.Minute(), 0, 0, ShangHaiTimeLocation))
+}
+
+// ToDateTime 将标准 time.Time 转为 DateTime 类型。
+func ToDateTime(t time.Time) DateTime {
 	return DateTime(t)
 }
 
-// TimeToGBDateOnly 把时间类型转为gb库的DateOnly类型
-func TimeToGBDateOnly(t time.Time) DateOnly {
+// ToDateOnly 将 time.Time 转为 DateOnly，只保留日期部分。
+func ToDateOnly(t time.Time) DateOnly {
 	return DateOnly(t)
 }
 
-// TimeToGBTimeOnly 把时间类型转为gb库的TimeOnly类型
-func TimeToGBTimeOnly(t time.Time) TimeOnly {
+// ToTimeOnly 将 time.Time 转为 TimeOnly，只保留时间部分。
+func ToTimeOnly(t time.Time) TimeOnly {
 	return TimeOnly(t)
 }
 
-// TimeToGBTimeOnlyNoSec 把时间类型转为gb库的TimeOnly类型秒设置为00
-func TimeToGBTimeOnlyNoSec(t time.Time) TimeOnly {
+// ToTimeOnlyTrimSeconds 将 time.Time 转为无秒的 TimeOnly。
+func ToTimeOnlyTrimSeconds(t time.Time) TimeOnly {
 	return TimeOnly(time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), 0, 0, ShangHaiTimeLocation))
 }
 
-// StringToDateTime 时间字符串转为time.time
-func StringToDateTime(dateTime string) (time.Time, error) {
-	return time.ParseInLocation(CSTLayout, dateTime, ShangHaiTimeLocation)
+// ParseDateTime 解析标准日期时间字符串为 time.Time。
+func ParseDateTime(value string) (time.Time, error) {
+	return time.ParseInLocation(CSTLayout, value, ShangHaiTimeLocation)
 }
 
-// StringToGbDateTime 将日期字符串转为gb库的DateTime类型
-func StringToGbDateTime(dateTime string) DateTime {
-	location, _ := time.ParseInLocation(CSTLayout, dateTime, ShangHaiTimeLocation)
-	return DateTime(location)
-}
-
-// StringToGbDateTimeErr 将日期字符串转为gb库的DateTime类型返回错误的
-func StringToGbDateTimeErr(dateTime string) (DateTime, error) {
-	location, err := time.ParseInLocation(CSTLayout, dateTime, ShangHaiTimeLocation)
+// ParseDateTimeValue 解析字符串并返回 DateTime 类型。
+func ParseDateTimeValue(value string) (DateTime, error) {
+	parsed, err := ParseDateTime(value)
 	if err != nil {
 		return DateTime{}, err
 	}
-	return DateTime(location), nil
+	return DateTime(parsed), nil
 }
 
-// StringToDate 日期字符串转为time Date
-func StringToDate(date string) (time.Time, error) {
-	return time.ParseInLocation(CSTLayoutDate, date, ShangHaiTimeLocation)
+// MustParseDateTimeValue 解析字符串为 DateTime，失败返回零值。
+func MustParseDateTimeValue(value string) DateTime {
+	parsed, err := ParseDateTime(value)
+	if err != nil {
+		return DateTime{}
+	}
+	return DateTime(parsed)
 }
 
-// StringToDateNoErr 将日期字符串转为time无错误返回的
-func StringToDateNoErr(dateTime string) time.Time {
-	t, _ := StringToDate(dateTime)
-	return t.In(ShangHaiTimeLocation)
+// ParseDate 解析日期字符串为 time.Time。
+func ParseDate(value string) (time.Time, error) {
+	return time.ParseInLocation(CSTLayoutDate, value, ShangHaiTimeLocation)
 }
 
-// StringToGBDateOnly 将时间转为gb库的DateOnly
-func StringToGBDateOnly(dateTime string) (DateOnly, error) {
-	t, err := StringToDate(dateTime)
+// MustParseDate 解析日期字符串，失败返回零值。
+func MustParseDate(value string) time.Time {
+	parsed, err := ParseDate(value)
+	if err != nil {
+		return time.Time{}
+	}
+	return parsed
+}
+
+// ParseDateOnly 解析日期字符串为 DateOnly。
+func ParseDateOnly(value string) (DateOnly, error) {
+	parsed, err := ParseDate(value)
 	if err != nil {
 		return DateOnly{}, err
 	}
-	return DateOnly(t), nil
+	return DateOnly(parsed), nil
 }
 
-// StringToTime 日期字符串转为time Date
-func StringToTime(date string) (time.Time, error) {
-	return time.ParseInLocation(CSTLayoutTime, date, ShangHaiTimeLocation)
+// ParseClock 解析时间字符串为 time.Time。
+func ParseClock(value string) (time.Time, error) {
+	return time.ParseInLocation(CSTLayoutTime, value, ShangHaiTimeLocation)
 }
 
-func StringToTimeNoErr(date string) time.Time {
-	toTime, _ := StringToTime(date)
-	return toTime
+// MustParseClock 解析时间字符串，失败返回零值。
+func MustParseClock(value string) time.Time {
+	parsed, err := ParseClock(value)
+	if err != nil {
+		return time.Time{}
+	}
+	return parsed
 }
 
-func StringToGBTimeOnly(time string) (TimeOnly, error) {
-	toTime, err := StringToTime(time)
+// ParseTimeOnly 解析时间字符串为 TimeOnly。
+func ParseTimeOnly(value string) (TimeOnly, error) {
+	parsed, err := ParseClock(value)
 	if err != nil {
 		return TimeOnly{}, err
 	}
-	return TimeOnly(toTime), nil
+	return TimeOnly(parsed), nil
 }
 
-func StringToGBTimeHourMinute(t string) (TimeHourMinute, error) {
-	toTime, err := StringToTime(t)
+// ParseHourMinute 解析时间字符串并返回时分结构。
+func ParseHourMinute(value string) (TimeHourMinute, error) {
+	parsed, err := ParseClock(value)
 	if err != nil {
 		return TimeHourMinute{}, err
 	}
-
-	return TimeHourMinute(time.Date(toTime.Year(), toTime.Month(), toTime.Day(), toTime.Hour(), toTime.Minute(), 0, 0, ShangHaiTimeLocation)), nil
+	return TimeHourMinute(time.Date(parsed.Year(), parsed.Month(), parsed.Day(), parsed.Hour(), parsed.Minute(), 0, 0, ShangHaiTimeLocation)), nil
 }
 
-// StringDateToDateTimePtr 日期字符串转为time.time
-func StringDateToDateTimePtr(date string, hourMinuteSecond string) (parsed *time.Time, err error) {
+// ParseDateAndTimePointer 将日期与时间字符串组合为可选的 time.Time 指针。
+func ParseDateAndTimePointer(date string, hourMinuteSecond string) (*time.Time, error) {
 	if date == "" {
-		return
+		return nil, nil
 	}
-
 	if hourMinuteSecond != "" {
 		date = fmt.Sprintf("%s %s", date, hourMinuteSecond)
 	}
-
-	_parsed, err := StringToDateTime(date)
+	parsed, err := ParseDateTime(date)
 	if err != nil {
 		return nil, err
 	}
-
-	return &_parsed, nil
+	return &parsed, nil
 }
 
-// DateTimeToString time.time类型转换为String类型
-func DateTimeToString(t time.Time) string {
+// FormatDateTime 以标准格式输出 time.Time。
+func FormatDateTime(t time.Time) string {
 	return t.In(ShangHaiTimeLocation).Format(CSTLayout)
 }
 
-// FuzzParseTimeString 模糊解析时间
-func FuzzParseTimeString(timeString string) (time.Time, error) {
-	return dateparse.ParseIn(timeString, ShangHaiTimeLocation)
+// ParseFuzzyTime 使用 dateparse 模糊解析时间。
+func ParseFuzzyTime(value string) (time.Time, error) {
+	return dateparse.ParseIn(value, ShangHaiTimeLocation)
 }
 
-// DateTimePtrToString *time.time类型转换为CSTLayout格式
-func DateTimePtrToString(t *time.Time) string {
+// FormatDateTimePointer 安全地格式化 time.Time 指针。
+func FormatDateTimePointer(t *time.Time) string {
 	if t == nil {
 		return ""
 	}
-	return t.In(ShangHaiTimeLocation).Format(CSTLayout)
+	return FormatDateTime(*t)
 }
 
-// DatetimePtrToDateString *time.time类型转换为CSTLayoutDate格式
-func DatetimePtrToDateString(t *time.Time) string {
+// FormatDatePointer 将 time.Time 指针格式化为日期字符串。
+func FormatDatePointer(t *time.Time) string {
 	if t == nil {
 		return ""
 	}
 	return t.In(ShangHaiTimeLocation).Format(CSTLayoutDate)
 }
 
-// StringToDateTimePtr 将 string转为datetimePtr
-func StringToDateTimePtr(dateTime string) *time.Time {
-	if dateTime == "" {
+// ParseDateTimePointer 解析日期时间字符串并返回指针。
+func ParseDateTimePointer(value string) *time.Time {
+	if value == "" {
 		return nil
 	}
-
-	t, err := StringToDateTime(dateTime)
+	parsed, err := ParseDateTime(value)
 	if err != nil {
 		return nil
 	}
-
-	return &t
+	return &parsed
 }
 
-// Rfc3339StringToDateTimePtr 将rfc3339时间字符串转为time.time Ptr
-func Rfc3339StringToDateTimePtr(rfc3339 string) *time.Time {
-	if rfc3339 == "" {
+// ParseRFC3339Pointer 解析 RFC3339 时间并返回指针。
+func ParseRFC3339Pointer(value string) *time.Time {
+	if value == "" {
 		return nil
 	}
-
-	t, err := time.ParseInLocation(time.RFC3339, rfc3339, ShangHaiTimeLocation)
+	parsed, err := time.ParseInLocation(time.RFC3339, value, ShangHaiTimeLocation)
 	if err != nil {
 		return nil
 	}
-
-	return &t
+	return &parsed
 }
 
-// DurationFromSeconds 将秒数转换为 time.Duration
-func DurationFromSeconds(seconds int) time.Duration {
+// SecondsToDuration 将秒数转换为 duration。
+func SecondsToDuration(seconds int) time.Duration {
 	return time.Duration(seconds) * time.Second
 }
 
-// TimeToUnix 将时间转换为 Unix 时间戳
-func TimeToUnix(t time.Time) int {
+// UnixFromTime 返回时间的 Unix 秒。
+func UnixFromTime(t time.Time) int {
 	return int(t.Unix())
 }
 
-// UnixToDateTimeString 将 Unix 时间戳转换为 CSTLayout 格式的时间字符串
-func UnixToDateTimeString(unix int64) string {
+// FormatUnixDateTime 将 Unix 秒格式化为日期字符串。
+func FormatUnixDateTime(unix int64) string {
 	return time.Unix(unix, 0).In(ShangHaiTimeLocation).Format(CSTLayout)
 }
 
-// GetCurrentTimeUnix 获取当前时间的 Unix 时间戳
-func GetCurrentTimeUnix() int {
-	return TimeToUnix(Now())
+// NowUnix 返回当前时间的 Unix 秒。
+func NowUnix() int {
+	return UnixFromTime(Now())
 }
 
-// MakeDirNameByCurrentTime 根据当前时间生成诸如2024/01/01的目录名
-func MakeDirNameByCurrentTime() string {
+// NowDateDirectory 生成按日期分层的目录名。
+func NowDateDirectory() string {
 	return Now().Format(DateDirLayout)
 }
 
-// GetCurrentTimeAddMinutes 获取当前时间加某分钟后的时间
-func GetCurrentTimeAddMinutes(minutes int) time.Time {
+// NowAddMinutes 返回当前时间增加指定分钟后的时间。
+func NowAddMinutes(minutes int) time.Time {
 	return Now().Add(time.Duration(minutes) * time.Minute)
 }
 
-// GetCurrentTimeSubMinutes 获取当前时间减某分钟后的时间
-func GetCurrentTimeSubMinutes(minutes int) time.Time {
+// NowSubMinutes 返回当前时间减少指定分钟后的时间。
+func NowSubMinutes(minutes int) time.Time {
 	return Now().Add(-time.Duration(minutes) * time.Minute)
 }
 
-// AfterMinutes 判断时间是否在某个时间之后
-func AfterMinutes(t time.Time, minutes int) bool {
+// IsAfterMinutesAgo 判断时间是否晚于若干分钟前。
+func IsAfterMinutesAgo(t time.Time, minutes int) bool {
 	return t.After(Now().Add(-time.Duration(minutes) * time.Minute))
 }
 
-// GetCurrentTimeSubHours 获取当前时间减去指定小时数后的时间
-func GetCurrentTimeSubHours(hours int) time.Time {
+// NowSubHours 返回当前时间减少指定小时后的时间。
+func NowSubHours(hours int) time.Time {
 	return Now().Add(-time.Duration(hours) * time.Hour)
 }
 
-// FormatDateRelativeDate 根据输入时间返回相对日期描述,otherTimeStr空则返回2006-01-02格式时间
-func FormatDateRelativeDate(inputTime time.Time) string {
+// DescribeRelativeDate 返回日期相对于今天的中文描述。
+func DescribeRelativeDate(input time.Time) string {
 	now := Now()
-
-	year, month, day := inputTime.Date()
-	if year == now.Year() && month == now.Month() && day == now.Day() {
+	y, m, d := input.Date()
+	switch {
+	case y == now.Year() && m == now.Month() && d == now.Day():
 		return "今天"
-	}
-	if year == now.Year() && month == now.Month() && day == now.AddDate(0, 0, 1).Day() {
+	case y == now.Year() && m == now.Month() && d == now.AddDate(0, 0, 1).Day():
 		return "明天"
-	}
-	if year == now.Year() && month == now.Month() && day == now.AddDate(0, 0, -1).Day() {
+	case y == now.Year() && m == now.Month() && d == now.AddDate(0, 0, -1).Day():
 		return "昨天"
-	}
-	if year == now.Year() && month == now.Month() {
+	case y == now.Year() && m == now.Month():
 		return "本月"
-	}
-	if year == now.Year() && month == now.AddDate(0, -1, 0).Month() {
+	case y == now.Year() && m == now.AddDate(0, -1, 0).Month():
 		return "上月"
+	default:
+		return ""
 	}
-
-	// 不符合任何条件，返回空字符串
-	return ""
 }
 
-func FormatTimeRelativeDate(t time.Time) string {
+// DescribeRelativeTimeOfDay 根据小时返回一天中的描述。
+func DescribeRelativeTimeOfDay(t time.Time) string {
 	hour := t.Hour()
 	switch {
 	case hour >= 0 && hour < 6:
@@ -332,137 +337,144 @@ func FormatTimeRelativeDate(t time.Time) string {
 	}
 }
 
-// GetTodayInterval 获取今天从开始到结束的时间区间
-func GetTodayInterval() (start DateTime, end DateTime) {
-	start = StringToGbDateTime(fmt.Sprintf("%s 00:00:00", NowDateString()))
-	end = StringToGbDateTime(fmt.Sprintf("%s 00:00:00", Now().AddDate(0, 0, 1).Format("2006-01-02")))
-	return
+// TodayRange 返回今天的起止时间范围。
+func TodayRange() (DateTime, DateTime) {
+	start := beginningOfDay(Now())
+	end := start.AddDate(0, 0, 1)
+	return buildRange(start, end)
 }
 
-// GetYesterdayInterval 获取昨天从开始到结束的时间区间
-func GetYesterdayInterval() (start DateTime, end DateTime) {
-	start = StringToGbDateTime(fmt.Sprintf("%s 00:00:00", Now().AddDate(0, 0, -1).Format("2006-01-02")))
-	end = StringToGbDateTime(fmt.Sprintf("%s 00:00:00", NowDateString()))
-	return
+// YesterdayRange 返回昨天的起止时间范围。
+func YesterdayRange() (DateTime, DateTime) {
+	start := beginningOfDay(Now().AddDate(0, 0, -1))
+	end := start.AddDate(0, 0, 1)
+	return buildRange(start, end)
 }
 
-// GetLastMonthInterval 获取上个月从开始到结束的时间区间
-func GetLastMonthInterval() (start DateTime, end DateTime) {
-	start = StringToGbDateTime(fmt.Sprintf("%s-01 00:00:00", Now().AddDate(0, -1, 0).Format("2006-01")))
-	end = StringToGbDateTime(fmt.Sprintf("%s-01 00:00:00", Now().AddDate(0, 0, 0).Format("2006-01")))
-	return
+// LastMonthRange 返回上个月的时间范围。
+func LastMonthRange() (DateTime, DateTime) {
+	start := beginningOfMonth(Now().AddDate(0, -1, 0))
+	end := beginningOfMonth(Now())
+	return buildRange(start, end)
 }
 
-// GetCurrentMonthInterval 获取当前月从开始到结束的时间区间
-func GetCurrentMonthInterval() (start DateTime, end DateTime) {
-	start = StringToGbDateTime(fmt.Sprintf("%s-01 00:00:00", Now().AddDate(0, 0, 0).Format("2006-01")))
-	end = StringToGbDateTime(fmt.Sprintf("%s-01 00:00:00", Now().AddDate(0, 1, 0).Format("2006-01")))
-	return
+// CurrentMonthRange 返回本月的时间范围。
+func CurrentMonthRange() (DateTime, DateTime) {
+	start := beginningOfMonth(Now())
+	end := beginningOfMonth(Now().AddDate(0, 1, 0))
+	return buildRange(start, end)
 }
 
-// GetNextMonthInterval 获取下个月从开始到结束的时间区间
-func GetNextMonthInterval() (start DateTime, end DateTime) {
-	start = StringToGbDateTime(fmt.Sprintf("%s-01 00:00:00", Now().AddDate(0, 1, 0).Format("2006-01")))
-	end = StringToGbDateTime(fmt.Sprintf("%s-01 00:00:00", Now().AddDate(0, 2, 0).Format("2006-01")))
-	return
+// NextMonthRange 返回下个月的时间范围。
+func NextMonthRange() (DateTime, DateTime) {
+	start := beginningOfMonth(Now().AddDate(0, 1, 0))
+	end := beginningOfMonth(Now().AddDate(0, 2, 0))
+	return buildRange(start, end)
 }
 
-// GetLastYearsInterval 获取去年从开始到结束的时间区间
-func GetLastYearsInterval() (start DateTime, end DateTime) {
-	start = StringToGbDateTime(fmt.Sprintf("%s-01-01 00:00:00", Now().AddDate(-1, 0, 0).Format("2006")))
-	end = StringToGbDateTime(fmt.Sprintf("%s-01-01 00:00:00", Now().AddDate(0, 0, 0).Format("2006")))
-	return
+// LastYearRange 返回上一年的时间范围。
+func LastYearRange() (DateTime, DateTime) {
+	start := beginningOfYear(Now().AddDate(-1, 0, 0))
+	end := beginningOfYear(Now())
+	return buildRange(start, end)
 }
 
-// GetCurrentYearsInterval 获取今年从开始到结束的时间区间
-func GetCurrentYearsInterval() (start DateTime, end DateTime) {
-	start = StringToGbDateTime(fmt.Sprintf("%s-01-01 00:00:00", Now().AddDate(0, 0, 0).Format("2006")))
-	end = StringToGbDateTime(fmt.Sprintf("%s-01-01 00:00:00", Now().AddDate(1, 0, 0).Format("2006")))
-	return
+// CurrentYearRange 返回今年的时间范围。
+func CurrentYearRange() (DateTime, DateTime) {
+	start := beginningOfYear(Now())
+	end := beginningOfYear(Now().AddDate(1, 0, 0))
+	return buildRange(start, end)
 }
 
-// GetNextYearsInterval 获取明年从开始到结束的时间区间
-func GetNextYearsInterval() (start DateTime, end DateTime) {
-	start = StringToGbDateTime(fmt.Sprintf("%s-01-01 00:00:00", Now().AddDate(1, 0, 0).Format("2006")))
-	end = StringToGbDateTime(fmt.Sprintf("%s-01-01 00:00:00", Now().AddDate(2, 0, 0).Format("2006")))
-	return
+// NextYearRange 返回明年的时间范围。
+func NextYearRange() (DateTime, DateTime) {
+	start := beginningOfYear(Now().AddDate(1, 0, 0))
+	end := beginningOfYear(Now().AddDate(2, 0, 0))
+	return buildRange(start, end)
 }
 
-// TimeChineseWeekday 获取日期的星期几（中文）
-func TimeChineseWeekday(t time.Time) string {
+// ChineseWeekday 返回中文星期表示。
+func ChineseWeekday(t time.Time) string {
 	weekdays := []string{"日", "一", "二", "三", "四", "五", "六"}
 	return "星期" + weekdays[t.Weekday()]
 }
 
-// TimeEnglishWeekday 获取日期的星期几（英文）
-func TimeEnglishWeekday(t time.Time) string {
+// EnglishWeekday 返回英文星期字符串。
+func EnglishWeekday(t time.Time) string {
 	return t.Weekday().String()
 }
 
-// TimeIsWeekend 判断是否是周末
-func TimeIsWeekend(t time.Time) bool {
-	return t.Weekday() == time.Saturday || t.Weekday() == time.Sunday
+// IsWeekend 判断是否为周末。
+func IsWeekend(t time.Time) bool {
+	weekday := t.Weekday()
+	return weekday == time.Saturday || weekday == time.Sunday
 }
 
-// TimeRange 表示一个时间段
+// TimeRange 表示一个具备唯一 ID 的时间段。
 type TimeRange struct {
 	ID    uint64
 	Start time.Time
 	End   time.Time
 }
 
-// IsValid 检查时间段是否有效
+// IsValid 判断时间段的开始是否早于结束。
 func (tr TimeRange) IsValid() bool {
 	return !tr.Start.After(tr.End)
 }
 
-// HasConflictWith 检查当前时间段是否与另一个时间段冲突
-func (tr TimeRange) HasConflictWith(other TimeRange) bool {
+// Overlaps 判断两个时间段是否交叉。
+func (tr TimeRange) Overlaps(other TimeRange) bool {
 	if !tr.IsValid() || !other.IsValid() {
 		return false
 	}
 	return tr.Start.Before(other.End) && tr.End.After(other.Start)
 }
 
-// HasTimeConflict 检查多个时间段之间是否有冲突
-// 参数: 可变数量的TimeRange，每个TimeRange包含开始时间和结束时间
-// 返回 true 表示存在冲突，false 表示无冲突
-func HasTimeConflict(timeRanges ...TimeRange) bool {
-	// 如果时间段数量少于2个，不可能有冲突
-	if len(timeRanges) < 2 {
+// TimeRangesConflict 检查多个时间段是否存在冲突。
+func TimeRangesConflict(ranges ...TimeRange) bool {
+	if len(ranges) < 2 {
 		return false
 	}
-
-	// 检查每一对时间段是否冲突
-	for i := 0; i < len(timeRanges); i++ {
-		for j := i + 1; j < len(timeRanges); j++ {
-			if timeRanges[i].HasConflictWith(timeRanges[j]) {
+	for i := 0; i < len(ranges); i++ {
+		for j := i + 1; j < len(ranges); j++ {
+			if ranges[i].Overlaps(ranges[j]) {
 				return true
 			}
 		}
 	}
-
 	return false
 }
 
-func HasTimeConflictReturnIDS(ranges ...TimeRange) []uint64 {
-	overlappingIDs := make(map[uint64]bool)
-
+// ConflictTimeRangeIDs 返回存在冲突的时间段 ID 集合。
+func ConflictTimeRangeIDs(ranges ...TimeRange) []uint64 {
+	overlapping := make(map[uint64]struct{})
 	for i := 0; i < len(ranges); i++ {
 		for j := i + 1; j < len(ranges); j++ {
-			// 检查时间重合条件
-			if ranges[i].Start.Before(ranges[j].End) && ranges[i].End.After(ranges[j].Start) {
-				overlappingIDs[ranges[i].ID] = true
-				overlappingIDs[ranges[j].ID] = true
+			if ranges[i].Overlaps(ranges[j]) {
+				overlapping[ranges[i].ID] = struct{}{}
+				overlapping[ranges[j].ID] = struct{}{}
 			}
 		}
 	}
-
-	// 转换为切片
-	var result []uint64
-	for id := range overlappingIDs {
-		result = append(result, id)
+	var ids []uint64
+	for id := range overlapping {
+		ids = append(ids, id)
 	}
+	return ids
+}
 
-	return result
+func beginningOfDay(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, ShangHaiTimeLocation)
+}
+
+func beginningOfMonth(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, ShangHaiTimeLocation)
+}
+
+func beginningOfYear(t time.Time) time.Time {
+	return time.Date(t.Year(), 1, 1, 0, 0, 0, 0, ShangHaiTimeLocation)
+}
+
+func buildRange(start, end time.Time) (DateTime, DateTime) {
+	return DateTime(start), DateTime(end)
 }

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// ValidateChineseMobile 校验中国手机号格式是否正确
+// ValidateChineseMobile 函数用于处理ValidateChineseMobile相关逻辑。
 func ValidateChineseMobile(mobile string) bool {
 	// 去除空格和特殊字符
 	mobile = strings.ReplaceAll(mobile, " ", "")
@@ -19,10 +19,7 @@ func ValidateChineseMobile(mobile string) bool {
 	return matched
 }
 
-// MaskMobileCustom 自定义脱敏格式的手机号处理
-// prefixLen: 前面保留的位数
-// suffixLen: 后面保留的位数
-// maskChar: 用于遮蔽的字符
+// MaskMobileCustom 函数用于处理MaskMobileCustom相关逻辑。
 func MaskMobileCustom(mobile string, prefixLen, suffixLen int, maskChar rune) string {
 	// 去除空格和特殊字符
 	mobile = strings.ReplaceAll(mobile, " ", "")
@@ -48,7 +45,7 @@ func MaskMobileCustom(mobile string, prefixLen, suffixLen int, maskChar rune) st
 	return mobile[:prefixLen] + maskStr + mobile[len(mobile)-suffixLen:]
 }
 
-// ValidateChineseIDCard 校验中国身份证号格式是否正确
+// ValidateChineseIDCard 函数用于处理ValidateChineseIDCard相关逻辑。
 func ValidateChineseIDCard(idCard string) bool {
 	// 去除空格
 	idCard = strings.ReplaceAll(idCard, " ", "")
@@ -86,8 +83,7 @@ func ValidateChineseIDCard(idCard string) bool {
 	return byte(lastChar) == expectedCheckCode
 }
 
-// MaskMobile 对手机号进行脱敏处理
-// 显示前3位和后3位，中间5位用*号替换
+// MaskMobile 函数用于处理MaskMobile相关逻辑。
 func MaskMobile(mobile string) string {
 	// 去除空格和特殊字符
 	mobile = strings.ReplaceAll(mobile, " ", "")
@@ -102,10 +98,7 @@ func MaskMobile(mobile string) string {
 	return mobile[:3] + "*****" + mobile[8:]
 }
 
-// MaskIDCardCustom 自定义脱敏格式的身份证号处理
-// prefixLen: 前面保留的位数
-// suffixLen: 后面保留的位数
-// maskChar: 用于遮蔽的字符
+// MaskIDCardCustom 函数用于处理MaskIDCardCustom相关逻辑。
 func MaskIDCardCustom(idCard string, prefixLen, suffixLen int, maskChar rune) string {
 	// 去除空格
 	idCard = strings.ReplaceAll(idCard, " ", "")
@@ -131,8 +124,7 @@ func MaskIDCardCustom(idCard string, prefixLen, suffixLen int, maskChar rune) st
 	return idCard[:prefixLen] + maskStr + idCard[len(idCard)-suffixLen:]
 }
 
-// MaskIDCardBirthday 专门隐藏生日信息的身份证脱敏
-// 保留地区码（前6位）和校验码（最后1位），隐藏生日和顺序码
+// MaskIDCardBirthday 函数用于处理MaskIDCardBirthday相关逻辑。
 func MaskIDCardBirthday(idCard string) string {
 	// 去除空格
 	idCard = strings.ReplaceAll(idCard, " ", "")
@@ -148,8 +140,7 @@ func MaskIDCardBirthday(idCard string) string {
 	return idCard[:6] + "***********" + idCard[17:]
 }
 
-// MaskIDCard 对身份证号进行脱敏处理
-// 显示前6位（地区码）和后4位（出生年份），中间8位用*号替换
+// MaskIDCard 函数用于处理MaskIDCard相关逻辑。
 func MaskIDCard(idCard string) string {
 	// 去除空格
 	idCard = strings.ReplaceAll(idCard, " ", "")
@@ -164,6 +155,7 @@ func MaskIDCard(idCard string) string {
 	return idCard[:6] + "********" + idCard[14:]
 }
 
+// MaskUsername 函数用于处理MaskUsername相关逻辑。
 func MaskUsername(username string) string {
 	return GetFirstNChars(username, 1) + "*"
 }

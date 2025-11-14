@@ -5,10 +5,7 @@ import (
 	"unsafe"
 )
 
-// ExcelGetPosition 根据行列索引计算Excel位置
-// row: 行索引（从0开始）
-// col: 列索引（从0开始）
-// 返回: Excel位置字符串，如 "A1", "B1", "AA10" 等
+// ExcelGetPosition 函数用于处理ExcelGetPosition相关逻辑。
 func ExcelGetPosition(row, col int) string {
 	if row < 0 || col < 0 {
 		return ""
@@ -29,7 +26,7 @@ func ExcelGetPosition(row, col int) string {
 	return *(*string)(unsafe.Pointer(&buf))
 }
 
-// appendExcelColumn 高效地将列索引转换为Excel列字母并追加到缓冲区
+// appendExcelColumn 函数用于处理appendExcelColumn相关逻辑。
 func appendExcelColumn(buf []byte, col int) []byte {
 	if col < 26 {
 		// 单字母情况，直接处理
@@ -59,8 +56,7 @@ func appendExcelColumn(buf []byte, col int) []byte {
 	return buf
 }
 
-// appendInt64 高效地将int64追加到字节缓冲区
-// 使用自定义实现避免strconv.Itoa的额外分配
+// appendInt64 函数用于处理appendInt64相关逻辑。
 func appendInt64(buf []byte, n int) []byte {
 	if n == 0 {
 		return append(buf, '0')
@@ -93,8 +89,7 @@ func appendInt64(buf []byte, n int) []byte {
 	return buf
 }
 
-// ExcelGetPositionBatch 批量转换，适用于大量转换场景
-// 复用缓冲区，进一步提高性能
+// ExcelGetPositionBatch 函数用于处理ExcelGetPositionBatch相关逻辑。
 func ExcelGetPositionBatch(positions []struct{ Row, Col int }) []string {
 	results := make([]string, len(positions))
 	buf := make([]byte, 0, 32) // 复用缓冲区
@@ -117,7 +112,7 @@ func ExcelGetPositionBatch(positions []struct{ Row, Col int }) []string {
 	return results
 }
 
-// ExcelColumnToIndex 将Excel列字母转换为索引（反向转换）
+// ExcelColumnToIndex 函数用于处理ExcelColumnToIndex相关逻辑。
 func ExcelColumnToIndex(col string) int64 {
 	var result int64
 	for _, char := range col {
@@ -129,9 +124,7 @@ func ExcelColumnToIndex(col string) int64 {
 	return result - 1
 }
 
-// ExcelParsePosition 将Excel位置字符串解析为行列索引
-// 例如: "A1" -> (0, 0), "B10" -> (9, 1), "AA1" -> (0, 26)
-// 返回: row, col, error
+// ExcelParsePosition 函数用于处理ExcelParsePosition相关逻辑。
 func ExcelParsePosition(position string) (row, col int64, err error) {
 	if len(position) == 0 {
 		return 0, 0, fmt.Errorf("空位置字符串")
@@ -200,8 +193,7 @@ func ExcelParsePosition(position string) (row, col int64, err error) {
 	return row, col, nil
 }
 
-// ExcelParsePositionUnsafe 高性能版本，不进行错误检查
-// 仅在确保输入格式正确时使用
+// ExcelParsePositionUnsafe 函数用于处理ExcelParsePositionUnsafe相关逻辑。
 func ExcelParsePositionUnsafe(position string) (row, col int64) {
 	if len(position) == 0 {
 		return 0, 0

@@ -20,7 +20,7 @@ var (
 	validatorTrans ut.Translator
 )
 
-// InitValidator 初始化验证器
+// init 函数用于处理init相关逻辑。
 func init() {
 	v, ok := binding.Validator.Engine().(*validator.Validate)
 	if !ok {
@@ -39,7 +39,7 @@ func init() {
 	registerDecimalPlacesValidator(v)
 }
 
-// TranslateError 翻译错误信息，只返回第一个错误
+// TranslateError 函数用于处理TranslateError相关逻辑。
 func TranslateError(err error) error {
 	switch typedErr := err.(type) {
 	case *json.SyntaxError:
@@ -60,6 +60,7 @@ func TranslateError(err error) error {
 	return err
 }
 
+// registerTagNameFunc 函数用于处理registerTagNameFunc相关逻辑。
 func registerTagNameFunc(v *validator.Validate) {
 	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
@@ -70,7 +71,7 @@ func registerTagNameFunc(v *validator.Validate) {
 	})
 }
 
-// registerPhoneValidator 注册手机号验证器
+// registerPhoneValidator 函数用于处理registerPhoneValidator相关逻辑。
 func registerPhoneValidator(v *validator.Validate) {
 	v.RegisterValidation("phone", func(fl validator.FieldLevel) bool {
 		phone := fl.Field().String()
@@ -91,7 +92,7 @@ func registerPhoneValidator(v *validator.Validate) {
 	)
 }
 
-// registerIDCarValidator 注册身份证号验证器
+// registerIDCarValidator 函数用于处理registerIDCarValidator相关逻辑。
 func registerIDCarValidator(v *validator.Validate) {
 	v.RegisterValidation("idcar", func(fl validator.FieldLevel) bool {
 		phone := fl.Field().String()
@@ -112,7 +113,7 @@ func registerIDCarValidator(v *validator.Validate) {
 	)
 }
 
-// registerDecimalPlacesValidator 注册小数点位数验证器
+// registerDecimalPlacesValidator 函数用于处理registerDecimalPlacesValidator相关逻辑。
 func registerDecimalPlacesValidator(v *validator.Validate) {
 	v.RegisterValidation("decimal_places", func(fl validator.FieldLevel) bool {
 		param := fl.Param() // 获取参数值，如 "2"
@@ -140,7 +141,7 @@ func registerDecimalPlacesValidator(v *validator.Validate) {
 	)
 }
 
-// 注册翻译
+// registerTranslator 函数用于处理registerTranslator相关逻辑。
 func registerTranslator(v *validator.Validate) (trans ut.Translator, err error) {
 	// 初始化中文翻译器
 	zhTrans := zh.New()
@@ -168,7 +169,7 @@ func registerTranslator(v *validator.Validate) (trans ut.Translator, err error) 
 	return trans, nil
 }
 
-// CreateRequiredError 创建一个key不能为空的验证错误
+// CreateRequiredError 函数用于处理CreateRequiredError相关逻辑。
 func CreateRequiredError(key string) error {
 	fieldError := &mockFieldError{
 		tag:   "required",
@@ -180,7 +181,7 @@ func CreateRequiredError(key string) error {
 	return validationErrors
 }
 
-// CreateTypeError 创建一个参数类型错误
+// CreateTypeError 函数用于处理CreateTypeError相关逻辑。
 func CreateTypeError(key, value string, originalErr error) error {
 	fieldError := &mockFieldError{
 		tag:   "type",
@@ -201,16 +202,37 @@ type mockFieldError struct {
 	err   error // 添加原始错误
 }
 
-func (m *mockFieldError) Tag() string             { return m.tag }
-func (m *mockFieldError) ActualTag() string       { return m.tag }
-func (m *mockFieldError) Namespace() string       { return m.field }
+// Tag 方法用于处理Tag相关逻辑。
+func (m *mockFieldError) Tag() string { return m.tag }
+
+// ActualTag 方法用于处理ActualTag相关逻辑。
+func (m *mockFieldError) ActualTag() string { return m.tag }
+
+// Namespace 方法用于处理Namespace相关逻辑。
+func (m *mockFieldError) Namespace() string { return m.field }
+
+// StructNamespace 方法用于处理StructNamespace相关逻辑。
 func (m *mockFieldError) StructNamespace() string { return m.field }
-func (m *mockFieldError) Field() string           { return m.field }
-func (m *mockFieldError) StructField() string     { return m.field }
-func (m *mockFieldError) Value() interface{}      { return m.param }
-func (m *mockFieldError) Param() string           { return m.param }
-func (m *mockFieldError) Kind() reflect.Kind      { return reflect.String }
-func (m *mockFieldError) Type() reflect.Type      { return reflect.TypeOf("") }
+
+// Field 方法用于处理Field相关逻辑。
+func (m *mockFieldError) Field() string { return m.field }
+
+// StructField 方法用于处理StructField相关逻辑。
+func (m *mockFieldError) StructField() string { return m.field }
+
+// Value 方法用于处理Value相关逻辑。
+func (m *mockFieldError) Value() interface{} { return m.param }
+
+// Param 方法用于处理Param相关逻辑。
+func (m *mockFieldError) Param() string { return m.param }
+
+// Kind 方法用于处理Kind相关逻辑。
+func (m *mockFieldError) Kind() reflect.Kind { return reflect.String }
+
+// Type 方法用于处理Type相关逻辑。
+func (m *mockFieldError) Type() reflect.Type { return reflect.TypeOf("") }
+
+// Error 方法用于处理Error相关逻辑。
 func (m *mockFieldError) Error() string {
 	if m.tag == "type" {
 		return fmt.Sprintf("%s type conversion failed", m.field)
@@ -218,7 +240,7 @@ func (m *mockFieldError) Error() string {
 	return fmt.Sprintf("%s is %s", m.field, m.tag)
 }
 
-// Translate 实现翻译方法，兼容现有的翻译器
+// Translate 方法用于处理Translate相关逻辑。
 func (m *mockFieldError) Translate(trans ut.Translator) string {
 	switch m.tag {
 	case "required":
@@ -256,7 +278,7 @@ func (m *mockFieldError) Translate(trans ut.Translator) string {
 	}
 }
 
-// convertToType 将字符串转换为指定类型
+// convertToType 函数用于处理convertToType相关逻辑。
 func convertToType[T any](value string) (T, error) {
 	var result any
 	var err error

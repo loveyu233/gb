@@ -5,7 +5,7 @@ import (
 	"html/template"
 )
 
-// TemplateReplace tmp中被替换的格式为 {{.key}}, replace最好为map,map[key]=value
+// TemplateReplace 函数用于处理TemplateReplace相关逻辑。
 func TemplateReplace(tmp string, replace any) (string, error) {
 	tpl, err := template.New("fee").Parse(tmp)
 	if err != nil {

@@ -249,7 +249,7 @@ var (
 	IdentityKey = "identity"
 )
 
-// InitGinJWTMiddleware 用于检查 GinJWTMiddleware 的错误
+// InitGinJWTMiddleware 函数用于处理InitGinJWTMiddleware相关逻辑。
 func InitGinJWTMiddleware(m *GinJWTMiddleware) (*GinJWTMiddleware, error) {
 	if err := m.MiddlewareInit(); err != nil {
 		return nil, err
@@ -258,6 +258,7 @@ func InitGinJWTMiddleware(m *GinJWTMiddleware) (*GinJWTMiddleware, error) {
 	return m, nil
 }
 
+// readKeys 方法用于处理readKeys相关逻辑。
 func (mw *GinJWTMiddleware) readKeys() error {
 	err := mw.privateKey()
 	if err != nil {
@@ -270,6 +271,7 @@ func (mw *GinJWTMiddleware) readKeys() error {
 	return nil
 }
 
+// privateKey 方法用于处理privateKey相关逻辑。
 func (mw *GinJWTMiddleware) privateKey() error {
 	var keyData []byte
 	if mw.PrivKeyFile == "" {
@@ -290,6 +292,7 @@ func (mw *GinJWTMiddleware) privateKey() error {
 	return nil
 }
 
+// publicKey 方法用于处理publicKey相关逻辑。
 func (mw *GinJWTMiddleware) publicKey() error {
 	var keyData []byte
 	if mw.PubKeyFile == "" {
@@ -310,6 +313,7 @@ func (mw *GinJWTMiddleware) publicKey() error {
 	return nil
 }
 
+// usingPublicKeyAlgo 方法用于处理usingPublicKeyAlgo相关逻辑。
 func (mw *GinJWTMiddleware) usingPublicKeyAlgo() bool {
 	switch mw.SigningAlgorithm {
 	case "RS256", "RS512", "RS384":
@@ -318,7 +322,7 @@ func (mw *GinJWTMiddleware) usingPublicKeyAlgo() bool {
 	return false
 }
 
-// MiddlewareInit 初始化 jwt 配置。
+// MiddlewareInit 方法用于处理MiddlewareInit相关逻辑。
 func (mw *GinJWTMiddleware) MiddlewareInit() error {
 	if mw.TokenLookup == "" {
 		mw.TokenLookup = "header:Authorization"
@@ -434,13 +438,14 @@ func (mw *GinJWTMiddleware) MiddlewareInit() error {
 	return nil
 }
 
-// MiddlewareFunc 使 GinJWTMiddleware 实现中间件接口。
+// MiddlewareFunc 方法用于处理MiddlewareFunc相关逻辑。
 func (mw *GinJWTMiddleware) MiddlewareFunc() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		mw.middlewareImpl(c)
 	}
 }
 
+// middlewareImpl 方法用于处理middlewareImpl相关逻辑。
 func (mw *GinJWTMiddleware) middlewareImpl(c *gin.Context) {
 	claims, err := mw.GetClaimsFromJWT(c)
 	if err != nil {
@@ -487,7 +492,7 @@ func (mw *GinJWTMiddleware) middlewareImpl(c *gin.Context) {
 	c.Next()
 }
 
-// GetClaimsFromJWT 从 JWT 令牌获取声明
+// GetClaimsFromJWT 方法用于处理GetClaimsFromJWT相关逻辑。
 func (mw *GinJWTMiddleware) GetClaimsFromJWT(c *gin.Context) (MapClaims, error) {
 	token, err := mw.ParseToken(c)
 	if err != nil {
@@ -508,9 +513,7 @@ func (mw *GinJWTMiddleware) GetClaimsFromJWT(c *gin.Context) (MapClaims, error) 
 	return claims, nil
 }
 
-// LoginHandler 可被客户端用来获取 jwt 令牌。
-// 有效负载需要是 {"username": "USERNAME", "password": "PASSWORD"} 形式的 json。
-// 回复将是 {"token": "TOKEN"} 的形式。
+// LoginHandler 方法用于处理LoginHandler相关逻辑。
 func (mw *GinJWTMiddleware) LoginHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if mw.Authenticator == nil {
@@ -561,7 +564,7 @@ func (mw *GinJWTMiddleware) LoginHandler() gin.HandlerFunc {
 	}
 }
 
-// LogoutHandler 可被客户端用来删除 jwt cookie（如果设置）
+// LogoutHandler 方法用于处理LogoutHandler相关逻辑。
 func (mw *GinJWTMiddleware) LogoutHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 删除认证 cookie
@@ -574,6 +577,7 @@ func (mw *GinJWTMiddleware) LogoutHandler() gin.HandlerFunc {
 	}
 }
 
+// signedString 方法用于处理signedString相关逻辑。
 func (mw *GinJWTMiddleware) signedString(token *jwt.Token) (string, error) {
 	var tokenString string
 	var err error
@@ -585,9 +589,7 @@ func (mw *GinJWTMiddleware) signedString(token *jwt.Token) (string, error) {
 	return tokenString, err
 }
 
-// RefreshHandler 可用于刷新令牌。令牌在刷新时仍需要有效。
-// 应放在使用 GinJWTMiddleware 的端点下。
-// 回复将是 {"token": "TOKEN"} 的形式。
+// RefreshHandler 方法用于处理RefreshHandler相关逻辑。
 func (mw *GinJWTMiddleware) RefreshHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString, expire, err := mw.RefreshToken(c)
@@ -600,7 +602,7 @@ func (mw *GinJWTMiddleware) RefreshHandler() gin.HandlerFunc {
 	}
 }
 
-// RefreshToken 刷新令牌并检查令牌是否过期
+// RefreshToken 方法用于处理RefreshToken相关逻辑。
 func (mw *GinJWTMiddleware) RefreshToken(c *gin.Context) (string, time.Time, error) {
 	claims, err := mw.CheckIfTokenExpire(c)
 	if err != nil {
@@ -636,7 +638,7 @@ func (mw *GinJWTMiddleware) RefreshToken(c *gin.Context) (string, time.Time, err
 	return tokenString, expire, nil
 }
 
-// CheckIfTokenExpire 检查令牌是否过期
+// CheckIfTokenExpire 方法用于处理CheckIfTokenExpire相关逻辑。
 func (mw *GinJWTMiddleware) CheckIfTokenExpire(c *gin.Context) (jwt.MapClaims, error) {
 	token, err := mw.ParseToken(c)
 	if err != nil {
@@ -657,7 +659,7 @@ func (mw *GinJWTMiddleware) CheckIfTokenExpire(c *gin.Context) (jwt.MapClaims, e
 	return claims, nil
 }
 
-// TokenGenerator 客户端可以使用的方法来获取 jwt 令牌。
+// TokenGenerator 方法用于处理TokenGenerator相关逻辑。
 func (mw *GinJWTMiddleware) TokenGenerator(data interface{}) (string, time.Time, error) {
 	token := jwt.New(jwt.GetSigningMethod(mw.SigningAlgorithm))
 	claims := token.Claims.(jwt.MapClaims)
@@ -684,6 +686,7 @@ func (mw *GinJWTMiddleware) TokenGenerator(data interface{}) (string, time.Time,
 	return tokenString, expire, nil
 }
 
+// jwtFromHeader 方法用于处理jwtFromHeader相关逻辑。
 func (mw *GinJWTMiddleware) jwtFromHeader(c *gin.Context, key string) (string, error) {
 	authHeader := c.GetHeader(key)
 
@@ -700,6 +703,7 @@ func (mw *GinJWTMiddleware) jwtFromHeader(c *gin.Context, key string) (string, e
 	return parts[len(parts)-1], nil
 }
 
+// jwtFromQuery 方法用于处理jwtFromQuery相关逻辑。
 func (mw *GinJWTMiddleware) jwtFromQuery(c *gin.Context, key string) (string, error) {
 	token := c.Query(key)
 
@@ -710,6 +714,7 @@ func (mw *GinJWTMiddleware) jwtFromQuery(c *gin.Context, key string) (string, er
 	return token, nil
 }
 
+// jwtFromCookie 方法用于处理jwtFromCookie相关逻辑。
 func (mw *GinJWTMiddleware) jwtFromCookie(c *gin.Context, key string) (string, error) {
 	cookie, err := c.Cookie(key)
 	if err != nil {
@@ -723,6 +728,7 @@ func (mw *GinJWTMiddleware) jwtFromCookie(c *gin.Context, key string) (string, e
 	return cookie, nil
 }
 
+// jwtFromParam 方法用于处理jwtFromParam相关逻辑。
 func (mw *GinJWTMiddleware) jwtFromParam(c *gin.Context, key string) (string, error) {
 	token := c.Param(key)
 
@@ -733,6 +739,7 @@ func (mw *GinJWTMiddleware) jwtFromParam(c *gin.Context, key string) (string, er
 	return token, nil
 }
 
+// jwtFromForm 方法用于处理jwtFromForm相关逻辑。
 func (mw *GinJWTMiddleware) jwtFromForm(c *gin.Context, key string) (string, error) {
 	token := c.PostForm(key)
 
@@ -743,7 +750,7 @@ func (mw *GinJWTMiddleware) jwtFromForm(c *gin.Context, key string) (string, err
 	return token, nil
 }
 
-// ParseToken 从 gin 上下文解析 jwt 令牌
+// ParseToken 方法用于处理ParseToken相关逻辑。
 func (mw *GinJWTMiddleware) ParseToken(c *gin.Context) (*jwt.Token, error) {
 	var token string
 	var err error
@@ -793,7 +800,7 @@ func (mw *GinJWTMiddleware) ParseToken(c *gin.Context) (*jwt.Token, error) {
 	}, mw.ParseOptions...)
 }
 
-// ParseTokenString 解析 jwt 令牌字符串
+// ParseTokenString 方法用于处理ParseTokenString相关逻辑。
 func (mw *GinJWTMiddleware) ParseTokenString(token string) (*jwt.Token, error) {
 	if mw.KeyFunc != nil {
 		return jwt.Parse(token, mw.KeyFunc, mw.ParseOptions...)
@@ -811,6 +818,7 @@ func (mw *GinJWTMiddleware) ParseTokenString(token string) (*jwt.Token, error) {
 	}, mw.ParseOptions...)
 }
 
+// unauthorized 方法用于处理unauthorized相关逻辑。
 func (mw *GinJWTMiddleware) unauthorized(c *gin.Context, code int, message string) {
 	c.Header("WWW-Authenticate", "JWT realm="+mw.Realm)
 	if !mw.DisabledAbort {
@@ -820,7 +828,7 @@ func (mw *GinJWTMiddleware) unauthorized(c *gin.Context, code int, message strin
 	mw.Unauthorized(c, code, message)
 }
 
-// ExtractClaims 帮助提取 JWT 声明
+// ExtractClaims 函数用于处理ExtractClaims相关逻辑。
 func ExtractClaims(c *gin.Context) MapClaims {
 	claims, exists := c.Get("JWT_PAYLOAD")
 	if !exists {
@@ -830,7 +838,7 @@ func ExtractClaims(c *gin.Context) MapClaims {
 	return claims.(MapClaims)
 }
 
-// ExtractClaimsFromToken 帮助从令牌中提取 JWT 声明
+// ExtractClaimsFromToken 函数用于处理ExtractClaimsFromToken相关逻辑。
 func ExtractClaimsFromToken(token *jwt.Token) MapClaims {
 	if token == nil {
 		return make(MapClaims)
@@ -844,7 +852,7 @@ func ExtractClaimsFromToken(token *jwt.Token) MapClaims {
 	return claims
 }
 
-// GetToken 帮助获取 JWT 令牌字符串
+// GetToken 函数用于处理GetToken相关逻辑。
 func GetToken(c *gin.Context) string {
 	token, exists := c.Get("JWT_TOKEN")
 	if !exists {

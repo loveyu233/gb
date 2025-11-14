@@ -16,7 +16,7 @@ type EncryptedResponse struct {
 	Nonce     string `json:"nonce"`     // 随机数，增加安全性
 }
 
-// AES-GCM 加密
+// encryptAESGCM 函数用于处理encryptAESGCM相关逻辑。
 func encryptAESGCM(plaintext []byte, key []byte) (string, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -37,7 +37,7 @@ func encryptAESGCM(plaintext []byte, key []byte) (string, error) {
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
-// 生成随机nonce
+// generateNonce 函数用于处理generateNonce相关逻辑。
 func generateNonce(length int) (string, error) {
 	bytes := make([]byte, length)
 	if _, err := rand.Read(bytes); err != nil {
@@ -46,7 +46,7 @@ func generateNonce(length int) (string, error) {
 	return base64.StdEncoding.EncodeToString(bytes), nil
 }
 
-// EncryptData 加密用户数据,key的长度需要为16位
+// EncryptData 函数用于处理EncryptData相关逻辑。
 func EncryptData(data any, custom func(now int64) (key, nonce string)) (*EncryptedResponse, error) {
 	jsonData, err := json.Marshal(data)
 	if err != nil {

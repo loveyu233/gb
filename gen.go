@@ -28,43 +28,49 @@ type GenConfig struct {
 
 type WithGenConfig func(*GenConfig)
 
+// WithGenOutFilePath 函数用于处理WithGenOutFilePath相关逻辑。
 func WithGenOutFilePath(outFilePath string) WithGenConfig {
 	return func(gc *GenConfig) {
 		gc.outFilePath = outFilePath
 	}
 }
 
+// WithGenDeletedFieldIsShow 函数用于处理WithGenDeletedFieldIsShow相关逻辑。
 func WithGenDeletedFieldIsShow(deletedJsonIsNull bool) WithGenConfig {
 	return func(gc *GenConfig) {
 		gc.deletedFieldIsShow = deletedJsonIsNull
 	}
 }
+
+// WithGenGlobalCustomJsonTag 函数用于处理WithGenGlobalCustomJsonTag相关逻辑。
 func WithGenGlobalCustomJsonTag(tags map[string]string) WithGenConfig {
 	return func(gc *GenConfig) {
 		gc.customGlobalJsonTag = tags
 	}
 }
 
-// WithGenTableColumnType 只有使用了WithGenTableColumnType该方法才有效,map的key为表名称,value为自定义数据类型,方式和全局定义一样
+// WithGenTableColumnType 函数用于处理WithGenTableColumnType相关逻辑。
 func WithGenTableColumnType(value map[string][]GenFieldType) WithGenConfig {
 	return func(gc *GenConfig) {
 		gc.tableColumnType = value
 	}
 }
 
+// WithGenUseTablesName 函数用于处理WithGenUseTablesName相关逻辑。
 func WithGenUseTablesName(tablesName ...string) WithGenConfig {
 	return func(gc *GenConfig) {
 		gc.useTablesName = tablesName
 	}
 }
 
+// WithGenGlobalSimpleColumnType 函数用于处理WithGenGlobalSimpleColumnType相关逻辑。
 func WithGenGlobalSimpleColumnType(fields []GenFieldType) WithGenConfig {
 	return func(gc *GenConfig) {
 		gc.globalSimpleColumnType = append(gc.globalSimpleColumnType, fields...)
 	}
 }
 
-// WithGenGlobalSimpleColumnTypeAddJsonSliceType 简化的使用方式,例如:WithGenGlobalSimpleColumnTypeAddJsonSliceType("arrFieldName","int64")
+// WithGenGlobalSimpleColumnTypeAddJsonSliceType 函数用于处理WithGenGlobalSimpleColumnTypeAddJsonSliceType相关逻辑。
 func WithGenGlobalSimpleColumnTypeAddJsonSliceType(sliceFieldName, sliceType string) WithGenConfig {
 	return func(gc *GenConfig) {
 		gc.globalSimpleColumnType = append(gc.globalSimpleColumnType, GenFieldType{
@@ -75,6 +81,7 @@ func WithGenGlobalSimpleColumnTypeAddJsonSliceType(sliceFieldName, sliceType str
 	}
 }
 
+// WithGenGlobalSimpleColumnTypeAddJsonType 函数用于处理WithGenGlobalSimpleColumnTypeAddJsonType相关逻辑。
 func WithGenGlobalSimpleColumnTypeAddJsonType(sliceFieldName, sliceType string) WithGenConfig {
 	return func(gc *GenConfig) {
 		gc.globalSimpleColumnType = append(gc.globalSimpleColumnType, GenFieldType{
@@ -85,6 +92,7 @@ func WithGenGlobalSimpleColumnTypeAddJsonType(sliceFieldName, sliceType string) 
 	}
 }
 
+// WithGenGlobalColumnType 函数用于处理WithGenGlobalColumnType相关逻辑。
 func WithGenGlobalColumnType(value map[string]func(gorm.ColumnType) string) WithGenConfig {
 	return func(gc *GenConfig) {
 		if len(gc.globalColumnType) == 0 {
@@ -97,7 +105,7 @@ func WithGenGlobalColumnType(value map[string]func(gorm.ColumnType) string) With
 	}
 }
 
-// WithGenGlobalColumnTypeAddDatatypes 使用官方的date和time,官方包的date输出的日期包含了时间部分,自行取舍
+// WithGenGlobalColumnTypeAddDatatypes 函数用于处理WithGenGlobalColumnTypeAddDatatypes相关逻辑。
 func WithGenGlobalColumnTypeAddDatatypes() WithGenConfig {
 	return func(gc *GenConfig) {
 		if len(gc.globalColumnType) == 0 {
@@ -134,7 +142,7 @@ func WithGenGlobalColumnTypeAddDatatypes() WithGenConfig {
 	}
 }
 
-// Gen 默认字段如果是date和time类型生成go的类型为gb实现的,如果要使用官方库的时间和日期类型,请使用WithGenGlobalColumnTypeAddDatatypes,输出路径不设置默认为:gen/query
+// Gen 方法用于处理Gen相关逻辑。
 func (db *GormClient) Gen(opts ...WithGenConfig) {
 	var genConfig = new(GenConfig)
 	for i := range opts {

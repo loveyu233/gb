@@ -1,5 +1,10 @@
 package gb
 
+import (
+	"gorm.io/gen/field"
+	"gorm.io/gorm"
+)
+
 type ReqDateTimeStartEnd struct {
 	StartDateTimeStr string `json:"start_date_time" form:"start_date_time"`
 	EndDateTimeStr   string `json:"end_date_time" form:"end_date_time"`
@@ -10,28 +15,39 @@ type ReqDateTimeStartEnd struct {
 	DateTimeFilter bool `json:"-"`
 }
 
+// Parse 方法用于处理Parse相关逻辑。
 func (req *ReqDateTimeStartEnd) Parse() error {
-	if req.StartDateTimeStr != "" {
-		s, err := StringToGbDateTimeErr(req.StartDateTimeStr)
-		if err != nil {
-			return err
-		}
-		req.StartDateTime = s
+	start, hasStart, err := parseOptional(req.StartDateTimeStr, ParseDateTimeValue)
+	if err != nil {
+		return err
 	}
-
-	if req.EndDateTimeStr != "" {
-		e, err := StringToGbDateTimeErr(req.EndDateTimeStr)
-		if err != nil {
-			return err
-		}
-		req.EndDateTime = e
+	end, hasEnd, err := parseOptional(req.EndDateTimeStr, ParseDateTimeValue)
+	if err != nil {
+		return err
 	}
-
-	if req.StartDateTimeStr != "" && req.EndDateTimeStr != "" {
-		req.DateTimeFilter = true
+	if hasStart {
+		req.StartDateTime = start
 	}
-
+	if hasEnd {
+		req.EndDateTime = end
+	}
+	req.DateTimeFilter = hasStart && hasEnd
 	return nil
+}
+
+// Enabled 判断是否具备完整的时间范围过滤条件。
+func (req ReqDateTimeStartEnd) Enabled() bool {
+	return req.DateTimeFilter
+}
+
+// Scope 根据字段名生成对应的 GORM Scope。
+func (req ReqDateTimeStartEnd) Scope(column field.IColumnName) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if !req.Enabled() {
+			return db
+		}
+		return db.Where(column.ColumnName()+" BETWEEN ? AND ?", req.StartDateTime.Time(), req.EndDateTime.Time())
+	}
 }
 
 type ReqDateTime struct {
@@ -39,9 +55,10 @@ type ReqDateTime struct {
 	DateTime    DateTime `json:"-" form:"-"`
 }
 
+// Parse 方法用于处理Parse相关逻辑。
 func (req *ReqDateTime) Parse() error {
 	if req.DateTimeStr != "" {
-		s, err := StringToGbDateTimeErr(req.DateTimeStr)
+		s, err := ParseDateTimeValue(req.DateTimeStr)
 		if err != nil {
 			return err
 		}
@@ -61,28 +78,39 @@ type ReqDateStartEnd struct {
 	DateFilter bool `json:"-"`
 }
 
+// Parse 方法用于处理Parse相关逻辑。
 func (req *ReqDateStartEnd) Parse() error {
-	if req.StartDateStr != "" {
-		s, err := StringToGBDateOnly(req.StartDateStr)
-		if err != nil {
-			return err
-		}
-		req.StartDate = s
+	start, hasStart, err := parseOptional(req.StartDateStr, ParseDateOnly)
+	if err != nil {
+		return err
 	}
-
-	if req.EndDateStr != "" {
-		e, err := StringToGBDateOnly(req.EndDateStr)
-		if err != nil {
-			return err
-		}
-		req.EndDate = e
+	end, hasEnd, err := parseOptional(req.EndDateStr, ParseDateOnly)
+	if err != nil {
+		return err
 	}
-
-	if req.StartDateStr != "" && req.EndDateStr != "" {
-		req.DateFilter = true
+	if hasStart {
+		req.StartDate = start
 	}
-
+	if hasEnd {
+		req.EndDate = end
+	}
+	req.DateFilter = hasStart && hasEnd
 	return nil
+}
+
+// Enabled 判断是否启用日期范围过滤。
+func (req ReqDateStartEnd) Enabled() bool {
+	return req.DateFilter
+}
+
+// Scope 返回针对指定字段的日期范围 Scope。
+func (req ReqDateStartEnd) Scope(column field.IColumnName) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if !req.Enabled() {
+			return db
+		}
+		return db.Where(column.ColumnName()+" BETWEEN ? AND ?", req.StartDate.Time(), req.EndDate.Time())
+	}
 }
 
 type ReqDate struct {
@@ -90,13 +118,12 @@ type ReqDate struct {
 	Date    DateOnly `json:"-" form:"-"`
 }
 
+// Parse 方法用于处理Parse相关逻辑。
 func (req *ReqDate) Parse() error {
-	if req.DateStr != "" {
-		s, err := StringToGBDateOnly(req.DateStr)
-		if err != nil {
-			return err
-		}
-		req.Date = s
+	if value, ok, err := parseOptional(req.DateStr, ParseDateOnly); err != nil {
+		return err
+	} else if ok {
+		req.Date = value
 	}
 	return nil
 }
@@ -111,28 +138,39 @@ type ReqTimeStartEnd struct {
 	TimeFilter bool `json:"-"`
 }
 
+// Parse 方法用于处理Parse相关逻辑。
 func (req *ReqTimeStartEnd) Parse() error {
-	if req.StartTimeStr != "" {
-		s, err := StringToGBTimeOnly(req.StartTimeStr)
-		if err != nil {
-			return err
-		}
-		req.StartTime = s
+	start, hasStart, err := parseOptional(req.StartTimeStr, ParseTimeOnly)
+	if err != nil {
+		return err
 	}
-
-	if req.EndTimeStr != "" {
-		e, err := StringToGBTimeOnly(req.EndTimeStr)
-		if err != nil {
-			return err
-		}
-		req.EndTime = e
+	end, hasEnd, err := parseOptional(req.EndTimeStr, ParseTimeOnly)
+	if err != nil {
+		return err
 	}
-
-	if req.StartTimeStr != "" && req.EndTimeStr != "" {
-		req.TimeFilter = true
+	if hasStart {
+		req.StartTime = start
 	}
-
+	if hasEnd {
+		req.EndTime = end
+	}
+	req.TimeFilter = hasStart && hasEnd
 	return nil
+}
+
+// Enabled 判断是否启用具体时间的范围过滤。
+func (req ReqTimeStartEnd) Enabled() bool {
+	return req.TimeFilter
+}
+
+// Scope 返回针对时分秒字段的范围查询 Scope。
+func (req ReqTimeStartEnd) Scope(column field.IColumnName) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if !req.Enabled() {
+			return db
+		}
+		return db.Where(column.ColumnName()+" BETWEEN ? AND ?", req.StartTime.Time(), req.EndTime.Time())
+	}
 }
 
 type ReqTime struct {
@@ -140,13 +178,12 @@ type ReqTime struct {
 	Time    TimeOnly `json:"-" form:"-"`
 }
 
+// Parse 方法用于处理Parse相关逻辑。
 func (req *ReqTime) Parse() error {
-	if req.TimeStr != "" {
-		s, err := StringToGBTimeOnly(req.TimeStr)
-		if err != nil {
-			return err
-		}
-		req.Time = s
+	if value, ok, err := parseOptional(req.TimeStr, ParseTimeOnly); err != nil {
+		return err
+	} else if ok {
+		req.Time = value
 	}
 	return nil
 }
@@ -161,28 +198,39 @@ type ReqTimeHourMinuteStartEnd struct {
 	TimeHourMinuteFilter bool `json:"-"`
 }
 
+// Parse 方法用于处理Parse相关逻辑。
 func (req *ReqTimeHourMinuteStartEnd) Parse() error {
-	if req.StartTimeHourMinuteStr != "" {
-		s, err := StringToGBTimeHourMinute(req.StartTimeHourMinuteStr)
-		if err != nil {
-			return err
-		}
-		req.StartTimeHourMinute = s
+	start, hasStart, err := parseOptional(req.StartTimeHourMinuteStr, ParseHourMinute)
+	if err != nil {
+		return err
 	}
-
-	if req.EndTimeHourMinuteStr != "" {
-		e, err := StringToGBTimeHourMinute(req.EndTimeHourMinuteStr)
-		if err != nil {
-			return err
-		}
-		req.EndTimeHourMinute = e
+	end, hasEnd, err := parseOptional(req.EndTimeHourMinuteStr, ParseHourMinute)
+	if err != nil {
+		return err
 	}
-
-	if req.StartTimeHourMinuteStr != "" && req.EndTimeHourMinuteStr != "" {
-		req.TimeHourMinuteFilter = true
+	if hasStart {
+		req.StartTimeHourMinute = start
 	}
-
+	if hasEnd {
+		req.EndTimeHourMinute = end
+	}
+	req.TimeHourMinuteFilter = hasStart && hasEnd
 	return nil
+}
+
+// Enabled 判断时分范围过滤是否生效。
+func (req ReqTimeHourMinuteStartEnd) Enabled() bool {
+	return req.TimeHourMinuteFilter
+}
+
+// Scope 返回针对时分字段的范围查询 Scope。
+func (req ReqTimeHourMinuteStartEnd) Scope(column field.IColumnName) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if !req.Enabled() {
+			return db
+		}
+		return db.Where(column.ColumnName()+" BETWEEN ? AND ?", req.StartTimeHourMinute.Time(), req.EndTimeHourMinute.Time())
+	}
 }
 
 type ReqTimeHourMinute struct {
@@ -190,14 +238,25 @@ type ReqTimeHourMinute struct {
 	TimeHourMinute    TimeHourMinute `json:"-" form:"-"`
 }
 
+// Parse 方法用于处理Parse相关逻辑。
 func (req *ReqTimeHourMinute) Parse() error {
-	if req.TimeHourMinuteStr != "" {
-		s, err := StringToGBTimeHourMinute(req.TimeHourMinuteStr)
-		if err != nil {
-			return err
-		}
-		req.TimeHourMinute = s
+	if value, ok, err := parseOptional(req.TimeHourMinuteStr, ParseHourMinute); err != nil {
+		return err
+	} else if ok {
+		req.TimeHourMinute = value
 	}
 
 	return nil
+}
+
+func parseOptional[T any](raw string, parse func(string) (T, error)) (value T, ok bool, err error) {
+	if raw == "" {
+		return value, false, nil
+	}
+	parsed, err := parse(raw)
+	if err != nil {
+		var zero T
+		return zero, false, err
+	}
+	return parsed, true, nil
 }

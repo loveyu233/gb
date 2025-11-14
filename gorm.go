@@ -28,7 +28,7 @@ type GormConnConfig struct {
 	Params   map[string]interface{} // 连接参数,默认添加charset=utf8和parseTime=true以及loc=Asia%2FShanghai
 }
 
-// InitGormDB gormLogger可以使用默认的GormDefaultLogger
+// InitGormDB 函数用于处理InitGormDB相关逻辑。
 func InitGormDB(gcc GormConnConfig, gormLogger logger.Interface, opt ...func(db *gorm.DB) error) error {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?", gcc.Username, gcc.Password, gcc.Host, gcc.Port, gcc.Database)
 	if gcc.Params["charset"] == nil {
@@ -68,6 +68,7 @@ func InitGormDB(gcc GormConnConfig, gormLogger logger.Interface, opt ...func(db 
 	return nil
 }
 
+// GormDefaultLogger 函数用于处理GormDefaultLogger相关逻辑。
 func GormDefaultLogger(logLevel ...int) logger.Interface {
 	var ll int
 	if len(logLevel) > 0 && logLevel[0] >= 1 && logLevel[0] <= 4 {

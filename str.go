@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// GetLastNChars 获取字符串的后n位字符
+// GetLastNChars 函数用于处理GetLastNChars相关逻辑。
 func GetLastNChars(str string, n int) string {
 	runes := []rune(str)
 	length := len(runes)
@@ -22,7 +22,7 @@ func GetLastNChars(str string, n int) string {
 	return string(runes[length-n:])
 }
 
-// GetFirstNChars 获取字符串的前n位字符
+// GetFirstNChars 函数用于处理GetFirstNChars相关逻辑。
 func GetFirstNChars(str string, n int) string {
 	runes := []rune(str)
 	length := len(runes)
@@ -38,9 +38,7 @@ func GetFirstNChars(str string, n int) string {
 	return string(runes[:n])
 }
 
-// ConvertStringToUint32 将带前导零的字符串转换为uint32
-// 参数: str - 输入的字符串，如 "01", "02", "03", "11", "101", "1110"
-// 返回: uint32值和错误信息
+// ConvertStringToUint32 函数用于处理ConvertStringToUint32相关逻辑。
 func ConvertStringToUint32(str string) (uint32, error) {
 	// 去除空格
 	str = strings.TrimSpace(str)
@@ -67,8 +65,7 @@ func ConvertStringToUint32(str string) (uint32, error) {
 	return uint32(result), nil
 }
 
-// ConvertStringToUint32Simple 简化版本，不返回错误
-// 如果转换失败则返回0
+// ConvertStringToUint32Simple 函数用于处理ConvertStringToUint32Simple相关逻辑。
 func ConvertStringToUint32Simple(str string) uint32 {
 	result, err := ConvertStringToUint32(str)
 	if err != nil {
@@ -77,6 +74,7 @@ func ConvertStringToUint32Simple(str string) uint32 {
 	return result
 }
 
+// GetGenderFormIDCard 函数用于处理GetGenderFormIDCard相关逻辑。
 func GetGenderFormIDCard(idcard string) string {
 	if !ValidateChineseIDCard(idcard) {
 		return "未知"
@@ -98,6 +96,7 @@ func GetGenderFormIDCard(idcard string) string {
 	return "男"
 }
 
+// KeywordAssembly 函数用于处理KeywordAssembly相关逻辑。
 func KeywordAssembly(keyword string) string {
 	return fmt.Sprintf("%%%s%%", keyword)
 }

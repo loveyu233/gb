@@ -11,12 +11,12 @@ import (
 	"github.com/rs/xid"
 )
 
-// GetUUID 长度为36的字符串
+// GetUUID 函数用于处理GetUUID相关逻辑。
 func GetUUID() string {
 	return uuid.NewString()
 }
 
-// GetXID 长度为20的字符串
+// GetXID 函数用于处理GetXID相关逻辑。
 func GetXID() string {
 	return xid.New().String()
 }
@@ -25,7 +25,7 @@ var worker *Worker
 
 var once sync.Once
 
-// GetSnowflakeID 长度为18的数字
+// GetSnowflakeID 函数用于处理GetSnowflakeID相关逻辑。
 func GetSnowflakeID() int64 {
 	once.Do(func() {
 		w, err := NewWorker(1)
@@ -38,7 +38,7 @@ func GetSnowflakeID() int64 {
 	return worker.GetId()
 }
 
-// RandomString 获取指定长度的随机字符串
+// RandomString 函数用于处理RandomString相关逻辑。
 func RandomString(length int) (string, error) {
 	var charset = RandomCharacterSetAllStr().String()
 	result := make([]byte, length)
@@ -52,6 +52,7 @@ func RandomString(length int) (string, error) {
 	return string(result), nil
 }
 
+// RandomStringNoErr 函数用于处理RandomStringNoErr相关逻辑。
 func RandomStringNoErr() string {
 	var charset = RandomCharacterSetAllStr().String()
 	var seededRand = mrand.New(mrand.NewSource(Now().UnixNano()))
@@ -62,7 +63,7 @@ func RandomStringNoErr() string {
 	return string(b)
 }
 
-// RandomStringWithPrefix 带指定前后缀的指定长度字符串
+// RandomStringWithPrefix 函数用于处理RandomStringWithPrefix相关逻辑。
 func RandomStringWithPrefix(length int, prefix, suffix string) (string, error) {
 	if length <= len(prefix)+len(suffix) {
 		return "", errors.New("prefix + suffix <= length")
@@ -79,50 +80,52 @@ func RandomStringWithPrefix(length int, prefix, suffix string) (string, error) {
 
 type RandomCharacterSet string
 
+// String 方法用于处理String相关逻辑。
 func (r RandomCharacterSet) String() string {
 	return string(r)
 }
 
+// RandomCharacterSetAllStr 函数用于处理RandomCharacterSetAllStr相关逻辑。
 func RandomCharacterSetAllStr() RandomCharacterSet {
 	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 }
 
-// RandomCharacterSetLowerStr 获取全部小写字母
+// RandomCharacterSetLowerStr 函数用于处理RandomCharacterSetLowerStr相关逻辑。
 func RandomCharacterSetLowerStr() RandomCharacterSet {
 	return "abcdefghijklmnopqrstuvwxyz"
 }
 
-// RandomCharacterSetLowerStrExcludeCharIO 获取全部小写字母，排除掉i和o
+// RandomCharacterSetLowerStrExcludeCharIO 函数用于处理RandomCharacterSetLowerStrExcludeCharIO相关逻辑。
 func RandomCharacterSetLowerStrExcludeCharIO() RandomCharacterSet {
 	return "abcdefghjklmnpqrstuvwxyz"
 }
 
-// RandomCharacterSetUpperStr 获取全部大写字母
+// RandomCharacterSetUpperStr 函数用于处理RandomCharacterSetUpperStr相关逻辑。
 func RandomCharacterSetUpperStr() RandomCharacterSet {
 	return "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 }
 
-// RandomCharacterSetUpperStrExcludeCharIO 获取全部大写字母，排除掉I和O
+// RandomCharacterSetUpperStrExcludeCharIO 函数用于处理RandomCharacterSetUpperStrExcludeCharIO相关逻辑。
 func RandomCharacterSetUpperStrExcludeCharIO() RandomCharacterSet {
 	return "ABCDEFGHJKLMNPQRSTUVWXYZ"
 }
 
-// RandomCharacterSetNumberStr 获取全部数字
+// RandomCharacterSetNumberStr 函数用于处理RandomCharacterSetNumberStr相关逻辑。
 func RandomCharacterSetNumberStr() RandomCharacterSet {
 	return "0123456789"
 }
 
-// RandomCharacterSetNumberStrExcludeCharo1 获取全部数字，排除掉1
+// RandomCharacterSetNumberStrExcludeCharo1 函数用于处理RandomCharacterSetNumberStrExcludeCharo1相关逻辑。
 func RandomCharacterSetNumberStrExcludeCharo1() RandomCharacterSet {
 	return "23456789"
 }
 
-// RandomCharacterExcludeErrorPronCharacters 排除易看错的字符 01IOio
+// RandomCharacterExcludeErrorPronCharacters 函数用于处理RandomCharacterExcludeErrorPronCharacters相关逻辑。
 func RandomCharacterExcludeErrorPronCharacters() RandomCharacterSet {
 	return "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz"
 }
 
-// Random 随机返回长度为strLen,随机字符为characterSet,characterSet不写默认为全部字符串
+// Random 函数用于处理Random相关逻辑。
 func Random(strLen int64, characterSet ...RandomCharacterSet) string {
 	var charset string
 	if len(characterSet) == 0 {
@@ -140,7 +143,7 @@ func Random(strLen int64, characterSet ...RandomCharacterSet) string {
 	return string(b)
 }
 
-// RandomExcludeErrorPronCharacters 返回长度为strLen的随机字符串，排除易看错的字符 01IOio
+// RandomExcludeErrorPronCharacters 函数用于处理RandomExcludeErrorPronCharacters相关逻辑。
 func RandomExcludeErrorPronCharacters(strLen int64) string {
 	return Random(strLen, RandomCharacterExcludeErrorPronCharacters())
 }

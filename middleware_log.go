@@ -34,7 +34,7 @@ type RequestLogger struct {
 	logger  zerolog.Logger
 }
 
-// 创建新的请求日志器
+// NewRequestLogger 函数用于处理NewRequestLogger相关逻辑。
 func NewRequestLogger(ctx context.Context, logger zerolog.Logger) *RequestLogger {
 	return &RequestLogger{
 		entries: make([]LogEntry, 0),
@@ -43,7 +43,7 @@ func NewRequestLogger(ctx context.Context, logger zerolog.Logger) *RequestLogger
 	}
 }
 
-// AddEntry 添加日志条目到请求链路
+// AddEntry 方法用于处理AddEntry相关逻辑。
 func (rl *RequestLogger) AddEntry(level zerolog.Level, message string, fields map[string]any) {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
@@ -63,7 +63,7 @@ func (rl *RequestLogger) AddEntry(level zerolog.Level, message string, fields ma
 	rl.entries = append(rl.entries, entry)
 }
 
-// Flush 输出所有收集的日志
+// Flush 方法用于处理Flush相关逻辑。
 func (rl *RequestLogger) Flush() {
 	rl.mu.RLock()
 	defer rl.mu.RUnlock()
@@ -103,7 +103,7 @@ type ContextLogger struct {
 	requestLogger *RequestLogger
 }
 
-// Info 记录 Info 级别日志
+// Info 方法用于处理Info相关逻辑。
 func (cl *ContextLogger) Info() *ContextLogEvent {
 	return &ContextLogEvent{
 		level:         zerolog.InfoLevel,
@@ -112,7 +112,7 @@ func (cl *ContextLogger) Info() *ContextLogEvent {
 	}
 }
 
-// Error 记录 Error 级别日志
+// Error 方法用于处理Error相关逻辑。
 func (cl *ContextLogger) Error() *ContextLogEvent {
 	return &ContextLogEvent{
 		level:         zerolog.ErrorLevel,
@@ -121,7 +121,7 @@ func (cl *ContextLogger) Error() *ContextLogEvent {
 	}
 }
 
-// Warn 记录 Warn 级别日志
+// Warn 方法用于处理Warn相关逻辑。
 func (cl *ContextLogger) Warn() *ContextLogEvent {
 	return &ContextLogEvent{
 		level:         zerolog.WarnLevel,
@@ -130,7 +130,7 @@ func (cl *ContextLogger) Warn() *ContextLogEvent {
 	}
 }
 
-// Debug 记录 Debug 级别日志
+// Debug 方法用于处理Debug相关逻辑。
 func (cl *ContextLogger) Debug() *ContextLogEvent {
 	return &ContextLogEvent{
 		level:         zerolog.DebugLevel,
@@ -146,31 +146,31 @@ type ContextLogEvent struct {
 	fields        map[string]any
 }
 
-// Str 添加字符串字段
+// Str 方法用于处理Str相关逻辑。
 func (e *ContextLogEvent) Str(key, val string) *ContextLogEvent {
 	e.fields[key] = val
 	return e
 }
 
-// Int 添加整数字段
+// Int 方法用于处理Int相关逻辑。
 func (e *ContextLogEvent) Int(key string, val int) *ContextLogEvent {
 	e.fields[key] = val
 	return e
 }
 
-// Float64 添加浮点数字段
+// Float64 方法用于处理Float64相关逻辑。
 func (e *ContextLogEvent) Float64(key string, val float64) *ContextLogEvent {
 	e.fields[key] = val
 	return e
 }
 
-// Bool 添加布尔字段
+// Bool 方法用于处理Bool相关逻辑。
 func (e *ContextLogEvent) Bool(key string, val bool) *ContextLogEvent {
 	e.fields[key] = val
 	return e
 }
 
-// Err 添加错误字段
+// Err 方法用于处理Err相关逻辑。
 func (e *ContextLogEvent) Err(err error) *ContextLogEvent {
 	if err != nil {
 		e.fields["error"] = err.Error()
@@ -178,24 +178,24 @@ func (e *ContextLogEvent) Err(err error) *ContextLogEvent {
 	return e
 }
 
-// Interface 添加任意类型字段
+// Interface 方法用于处理Interface相关逻辑。
 func (e *ContextLogEvent) Interface(key string, val any) *ContextLogEvent {
 	e.fields[key] = val
 	return e
 }
 
-// Dur 添加时间间隔字段
+// Dur 方法用于处理Dur相关逻辑。
 func (e *ContextLogEvent) Dur(key string, d time.Duration) *ContextLogEvent {
 	e.fields[key] = d.String()
 	return e
 }
 
-// Msg 完成日志记录
+// Msg 方法用于处理Msg相关逻辑。
 func (e *ContextLogEvent) Msg(msg string) {
 	e.requestLogger.AddEntry(e.level, msg, e.fields)
 }
 
-// Msgf 完成格式化日志记录
+// Msgf 方法用于处理Msgf相关逻辑。
 func (e *ContextLogEvent) Msgf(format string, v ...any) {
 	e.requestLogger.AddEntry(e.level, fmt.Sprintf(format, v...), e.fields)
 }
@@ -207,13 +207,67 @@ const (
 	RequestLoggerKey contextKey = "request_logger"
 )
 
+const maxLoggedBodyBytes = 1 << 20
+
 // ResponseWriter 是对 gin.ResponseWriter 的包装，用于捕获写入的响应
 type ResponseWriter struct {
 	gin.ResponseWriter
-	body *bytes.Buffer
+	body *limitedBuffer
 }
 
-// Write 重写 Write 方法以捕获响应内容
+type limitedBuffer struct {
+	limit     int
+	truncated bool
+	buf       bytes.Buffer
+}
+
+// newLimitedBuffer 函数用于处理newLimitedBuffer相关逻辑。
+func newLimitedBuffer(limit int) *limitedBuffer {
+	return &limitedBuffer{limit: limit}
+}
+
+// Write 方法用于处理Write相关逻辑。
+func (b *limitedBuffer) Write(p []byte) (int, error) {
+	if b.limit <= 0 {
+		return b.buf.Write(p)
+	}
+	remaining := b.limit - b.buf.Len()
+	if remaining > 0 {
+		toWrite := remaining
+		if len(p) < toWrite {
+			toWrite = len(p)
+		}
+		b.buf.Write(p[:toWrite])
+		if len(p) > toWrite {
+			b.truncated = true
+		}
+	} else if len(p) > 0 {
+		b.truncated = true
+	}
+	return len(p), nil
+}
+
+// WriteString 方法用于处理WriteString相关逻辑。
+func (b *limitedBuffer) WriteString(s string) (int, error) {
+	return b.Write([]byte(s))
+}
+
+// Bytes 方法用于处理Bytes相关逻辑。
+func (b *limitedBuffer) Bytes() []byte {
+	return b.buf.Bytes()
+}
+
+// Len 方法用于处理Len相关逻辑。
+func (b *limitedBuffer) Len() int {
+	return b.buf.Len()
+}
+
+// Truncated 方法用于处理Truncated相关逻辑。
+func (b *limitedBuffer) Truncated() bool {
+	return b.truncated
+}
+
+// Write 方法用于处理Write相关逻辑。
 func (w ResponseWriter) Write(b []byte) (int, error) {
 	// 写入到缓冲区
 	w.body.Write(b)
@@ -221,7 +275,7 @@ func (w ResponseWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-// WriteString 重写 WriteString 方法以捕获响应内容
+// WriteString 方法用于处理WriteString相关逻辑。
 func (w ResponseWriter) WriteString(s string) (int, error) {
 	// 写入到缓冲区
 	w.body.WriteString(s)
@@ -231,6 +285,7 @@ func (w ResponseWriter) WriteString(s string) (int, error) {
 
 var zlog zerolog.Logger
 
+// init 函数用于处理init相关逻辑。
 func init() {
 	//zerolog.TimeFieldFormat = CSTLayout
 	zerolog.TimestampFunc = func() time.Time {
@@ -271,7 +326,7 @@ type FileInfo struct {
 	Header   textproto.MIMEHeader `json:"header"`
 }
 
-// MiddlewareLogger 创建 Gin 中间件,在handler里面使用zlog := gb.GetContextLogger(c),使用zlog进行日志记录
+// MiddlewareLogger 函数用于处理MiddlewareLogger相关逻辑。
 func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 开始时间
@@ -281,7 +336,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 		c.Set(string(RequestLoggerKey), requestLogger)
 
 		// 创建自定义 ResponseWriter
-		bodyBuffer := &bytes.Buffer{}
+		bodyBuffer := newLimitedBuffer(maxLoggedBodyBytes)
 		responseWriter := &ResponseWriter{
 			ResponseWriter: c.Writer,
 			body:           bodyBuffer,
@@ -369,50 +424,52 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 				}
 			}
 		} else if strings.Contains(contentType, "application/json") {
-			// 处理 JSON 数据
-			var requestBody []byte
-			if c.Request.Body != nil && c.Request.Body != http.NoBody {
-				requestBody, _ = io.ReadAll(c.Request.Body)
-				// 重新设置请求体以便后续处理
-				c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
-
-				if len(requestBody) > 0 {
-					var bodyParams any
-					if err := json.Unmarshal(requestBody, &bodyParams); err == nil {
-						params["json"] = bodyParams
-					} else {
-						// JSON 解析失败，存储原始内容
-						params["json_raw"] = string(requestBody)
+			if ok, reason := shouldCaptureRequestBody(c.Request); ok {
+				if requestBody, err := io.ReadAll(c.Request.Body); err == nil {
+					c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
+					if len(requestBody) > 0 {
+						var bodyParams any
+						if err := json.Unmarshal(requestBody, &bodyParams); err == nil {
+							params["json"] = bodyParams
+						} else {
+							params["json_raw"] = string(requestBody)
+						}
 					}
+				} else {
+					recordBodySkip(params, fmt.Sprintf("failed to read request body: %v", err))
 				}
+			} else {
+				recordBodySkip(params, reason)
 			}
 		} else if strings.Contains(contentType, "application/xml") || strings.Contains(contentType, "text/xml") {
-			// 处理 XML 数据
-			var requestBody []byte
-			if c.Request.Body != nil && c.Request.Body != http.NoBody {
-				requestBody, _ = io.ReadAll(c.Request.Body)
-				// 重新设置请求体以便后续处理
-				c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
-
-				if len(requestBody) > 0 {
-					params["xml"] = string(requestBody)
+			if ok, reason := shouldCaptureRequestBody(c.Request); ok {
+				if requestBody, err := io.ReadAll(c.Request.Body); err == nil {
+					c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
+					if len(requestBody) > 0 {
+						params["xml"] = string(requestBody)
+					}
+				} else {
+					recordBodySkip(params, fmt.Sprintf("failed to read request body: %v", err))
 				}
+			} else {
+				recordBodySkip(params, reason)
 			}
 		} else {
-			// 其他类型，尝试读取原始请求体
-			var requestBody []byte
-			if c.Request.Body != nil && c.Request.Body != http.NoBody {
-				requestBody, _ = io.ReadAll(c.Request.Body)
-				// 重新设置请求体以便后续处理
-				c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
-
-				if len(requestBody) > 0 {
-					params["raw"] = map[string]any{
-						"content_type": contentType,
-						"body":         string(requestBody),
-						"size":         len(requestBody),
+			if ok, reason := shouldCaptureRequestBody(c.Request); ok {
+				if requestBody, err := io.ReadAll(c.Request.Body); err == nil {
+					c.Request.Body = io.NopCloser(bytes.NewBuffer(requestBody))
+					if len(requestBody) > 0 {
+						params["raw"] = map[string]any{
+							"content_type": contentType,
+							"body":         string(requestBody),
+							"size":         len(requestBody),
+						}
 					}
+				} else {
+					recordBodySkip(params, fmt.Sprintf("failed to read request body: %v", err))
 				}
+			} else {
+				recordBodySkip(params, reason)
 			}
 		}
 
@@ -466,8 +523,14 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 
 		bodyMap := make(map[string]any)
 		if !c.GetBool("brief") {
-			readAll, _ := io.ReadAll(io.NopCloser(bodyBuffer))
-			json.Unmarshal(readAll, &bodyMap)
+			if data := bodyBuffer.Bytes(); len(data) > 0 {
+				if err := json.Unmarshal(data, &bodyMap); err != nil {
+					bodyMap["raw"] = string(data)
+				}
+			}
+			if bodyBuffer.Truncated() {
+				bodyMap["resp_truncated"] = fmt.Sprintf("response body exceeded %d bytes and was truncated", maxLoggedBodyBytes)
+			}
 		}
 		bodyMap["resp-status"] = c.GetInt("resp-status")
 		bodyMap["resp-message"] = c.GetString("resp-msg")
@@ -503,7 +566,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 	}
 }
 
-// GetContextLogger 从 Gin 上下文中获取链路日志器
+// GetContextLogger 函数用于处理GetContextLogger相关逻辑。
 func GetContextLogger(c *gin.Context) *ContextLogger {
 	if requestLogger, exists := c.Get(string(RequestLoggerKey)); exists {
 		if rl, ok := requestLogger.(*RequestLogger); ok {
@@ -517,20 +580,27 @@ func GetContextLogger(c *gin.Context) *ContextLogger {
 	}
 }
 
+// WriteGinInfoLog 函数用于处理WriteGinInfoLog相关逻辑。
 func WriteGinInfoLog(c *gin.Context, format string, args ...any) {
 	GetContextLogger(c).Info().Msgf(format, args)
 }
+
+// WriteGinDebugLog 函数用于处理WriteGinDebugLog相关逻辑。
 func WriteGinDebugLog(c *gin.Context, format string, args ...any) {
 	GetContextLogger(c).Debug().Msgf(format, args)
 }
+
+// WriteGinWarnLog 函数用于处理WriteGinWarnLog相关逻辑。
 func WriteGinWarnLog(c *gin.Context, format string, args ...any) {
 	GetContextLogger(c).Warn().Msgf(format, args)
 }
+
+// WriteGinErrLog 函数用于处理WriteGinErrLog相关逻辑。
 func WriteGinErrLog(c *gin.Context, format string, args ...any) {
 	GetContextLogger(c).Error().Msgf(format, args)
 }
 
-// GinLogSetModuleName 设置模块名称
+// GinLogSetModuleName 函数用于处理GinLogSetModuleName相关逻辑。
 func GinLogSetModuleName(name string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("module", name)
@@ -538,7 +608,7 @@ func GinLogSetModuleName(name string) gin.HandlerFunc {
 	}
 }
 
-// GinLogSetOptionName 设置操作名称
+// GinLogSetOptionName 函数用于处理GinLogSetOptionName相关逻辑。
 func GinLogSetOptionName(name string, noRecord ...bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("option", name)
@@ -549,7 +619,7 @@ func GinLogSetOptionName(name string, noRecord ...bool) gin.HandlerFunc {
 	}
 }
 
-// GinLogSetSkipLogFlag 跳过日志记录
+// GinLogSetSkipLogFlag 函数用于处理GinLogSetSkipLogFlag相关逻辑。
 func GinLogSetSkipLogFlag() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("skip", true)
@@ -557,7 +627,7 @@ func GinLogSetSkipLogFlag() gin.HandlerFunc {
 	}
 }
 
-// GinLogOnlyReqMsg 只记录请求不记录响应
+// GinLogOnlyReqMsg 函数用于处理GinLogOnlyReqMsg相关逻辑。
 func GinLogOnlyReqMsg() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("only-req", true)
@@ -565,10 +635,37 @@ func GinLogOnlyReqMsg() gin.HandlerFunc {
 	}
 }
 
-// GinLogBriefInformation 记录简短的日志信息, 不记录响应数据中的data,适用于返回的data数据太大的情况
+// GinLogBriefInformation 函数用于处理GinLogBriefInformation相关逻辑。
 func GinLogBriefInformation() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("brief", true)
 		c.Next()
+	}
+}
+
+// shouldCaptureRequestBody 函数用于处理shouldCaptureRequestBody相关逻辑。
+func shouldCaptureRequestBody(r *http.Request) (bool, string) {
+	if r == nil {
+		return false, "request is nil"
+	}
+	if r.Body == nil || r.Body == http.NoBody {
+		return false, "request body is empty"
+	}
+	if r.ContentLength == -1 {
+		return false, "request body size is unknown (chunked transfer)"
+	}
+	if r.ContentLength > maxLoggedBodyBytes {
+		return false, fmt.Sprintf("request body exceeds %d bytes", maxLoggedBodyBytes)
+	}
+	return true, ""
+}
+
+// recordBodySkip 函数用于处理recordBodySkip相关逻辑。
+func recordBodySkip(params map[string]any, reason string) {
+	if reason == "" {
+		return
+	}
+	if _, exists := params["body_skipped"]; !exists {
+		params["body_skipped"] = reason
 	}
 }

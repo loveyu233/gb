@@ -132,7 +132,7 @@ type Generator struct {
 	GlobalParams GlobalParams // 新增：全局参数配置
 }
 
-// NewSwaggerGenerator 创建一个新的Swagger生成器
+// NewSwaggerGenerator 函数用于处理NewSwaggerGenerator相关逻辑。
 func NewSwaggerGenerator(config SwaggerGlobalConfig) *Generator {
 	if config.Schemes == nil {
 		config.Schemes = []string{"http", "https"}
@@ -162,22 +162,22 @@ func NewSwaggerGenerator(config SwaggerGlobalConfig) *Generator {
 	}
 }
 
-// SetGlobalParams 设置全局参数
+// SetGlobalParams 方法用于处理SetGlobalParams相关逻辑。
 func (g *Generator) SetGlobalParams(params GlobalParams) {
 	g.GlobalParams = params
 }
 
-// AddGlobalPathParams 添加全局路径参数
+// AddGlobalPathParams 方法用于处理AddGlobalPathParams相关逻辑。
 func (g *Generator) AddGlobalPathParams(params []SwaggerParamDescription) {
 	g.GlobalParams.PathParams = append(g.GlobalParams.PathParams, params...)
 }
 
-// AddGlobalQueryParams 添加全局查询参数
+// AddGlobalQueryParams 方法用于处理AddGlobalQueryParams相关逻辑。
 func (g *Generator) AddGlobalQueryParams(params []SwaggerParamDescription) {
 	g.GlobalParams.QueryParams = append(g.GlobalParams.QueryParams, params...)
 }
 
-// AddGlobalHeaderParams 添加全局头部参数
+// AddGlobalHeaderParams 方法用于处理AddGlobalHeaderParams相关逻辑。
 func (g *Generator) AddGlobalHeaderParams(params []SwaggerParamDescription) {
 	g.GlobalParams.HeaderParams = append(g.GlobalParams.HeaderParams, params...)
 }
@@ -198,7 +198,7 @@ type SwaggerAPIInfo struct {
 	IgnoreGlobal   bool              // 新增：是否忽略全局参数
 }
 
-// AddAPI 添加API - 增强版
+// AddAPI 方法用于处理AddAPI相关逻辑。
 func (g *Generator) AddAPI(info SwaggerAPIInfo) {
 	method := strings.ToLower(info.Method)
 
@@ -277,7 +277,7 @@ func (g *Generator) AddAPI(info SwaggerAPIInfo) {
 	g.Doc.Paths[info.Path] = pathItem
 }
 
-// addGlobalParams 添加全局参数到操作中
+// addGlobalParams 方法用于处理addGlobalParams相关逻辑。
 func (g *Generator) addGlobalParams(operation *Operation) {
 	// 添加全局路径参数
 	for _, param := range g.GlobalParams.PathParams {
@@ -328,7 +328,7 @@ func (g *Generator) addGlobalParams(operation *Operation) {
 	}
 }
 
-// processParams 处理参数 - 统一的参数处理方法
+// processParams 方法用于处理processParams相关逻辑。
 func (g *Generator) processParams(params interface{}, paramIn string, operation *Operation) {
 	if params == nil {
 		return
@@ -379,7 +379,7 @@ func (g *Generator) processParams(params interface{}, paramIn string, operation 
 	}
 }
 
-// processStructAsParams 将结构体字段处理为参数 - 通用方法
+// processStructAsParams 方法用于处理processStructAsParams相关逻辑。
 func (g *Generator) processStructAsParams(paramStruct interface{}, paramIn string, operation *Operation) {
 	paramType := reflect.TypeOf(paramStruct)
 	if paramType.Kind() == reflect.Ptr {
@@ -438,7 +438,7 @@ func (g *Generator) processStructAsParams(paramStruct interface{}, paramIn strin
 	}
 }
 
-// processRequestParams 处理请求参数 - 支持多种类型
+// processRequestParams 方法用于处理processRequestParams相关逻辑。
 func (g *Generator) processRequestParams(req interface{}, operation *Operation) {
 	reqType := reflect.TypeOf(req)
 	if reqType.Kind() == reflect.Ptr {
@@ -489,7 +489,7 @@ func (g *Generator) processRequestParams(req interface{}, operation *Operation) 
 	}
 }
 
-// processResponseParams 处理响应参数 - 支持多种类型
+// processResponseParams 方法用于处理processResponseParams相关逻辑。
 func (g *Generator) processResponseParams(resp interface{}, operation *Operation) {
 	respType := reflect.TypeOf(resp)
 	if respType.Kind() == reflect.Ptr {
@@ -522,7 +522,7 @@ func (g *Generator) processResponseParams(resp interface{}, operation *Operation
 	}
 }
 
-// getSwaggerTypeFromReflectType 从反射类型获取Swagger类型
+// getSwaggerTypeFromReflectType 函数用于处理getSwaggerTypeFromReflectType相关逻辑。
 func getSwaggerTypeFromReflectType(t reflect.Type) string {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -546,7 +546,7 @@ func getSwaggerTypeFromReflectType(t reflect.Type) string {
 	}
 }
 
-// 提取路径中的参数名
+// extractPathParams 函数用于处理extractPathParams相关逻辑。
 func extractPathParams(path string) []string {
 	var params []string
 	re := regexp.MustCompile(`{([^}]+)}`)
@@ -561,7 +561,7 @@ func extractPathParams(path string) []string {
 	return params
 }
 
-// addModelDefinition 添加模型定义
+// addModelDefinition 方法用于处理addModelDefinition相关逻辑。
 func (g *Generator) addModelDefinition(name string, model interface{}) {
 	if _, exists := g.Doc.Definitions[name]; exists {
 		return
@@ -635,7 +635,7 @@ func (g *Generator) addModelDefinition(name string, model interface{}) {
 	g.Doc.Definitions[name] = definition
 }
 
-// setPropertyType 设置属性类型
+// setPropertyType 方法用于处理setPropertyType相关逻辑。
 func (g *Generator) setPropertyType(property *Property, t reflect.Type) {
 	kind := t.Kind()
 
@@ -712,7 +712,7 @@ func (g *Generator) setPropertyType(property *Property, t reflect.Type) {
 	}
 }
 
-// Generate 生成Swagger文档
+// Generate 方法用于处理Generate相关逻辑。
 func (g *Generator) Generate() error {
 	// 创建输出目录（如果不存在）
 	dir := filepath.Dir(g.Config.OutputPath)
@@ -734,7 +734,7 @@ func (g *Generator) Generate() error {
 	return nil
 }
 
-// 生成操作ID
+// generateOperationID 函数用于处理generateOperationID相关逻辑。
 func generateOperationID(method, path string) string {
 	// 去除路径中的参数部分
 	pathParts := strings.Split(path, "/")
@@ -752,7 +752,7 @@ func generateOperationID(method, path string) string {
 	return strings.ToLower(method) + "_" + cleanPath
 }
 
-// AddPath 添加单个API路径的快捷方法
+// AddPath 方法用于处理AddPath相关逻辑。
 func (g *Generator) AddPath(path, method, summary, description string, tags []string) *Operation {
 	method = strings.ToLower(method)
 
@@ -794,7 +794,7 @@ func (g *Generator) AddPath(path, method, summary, description string, tags []st
 	return &operation
 }
 
-// AddPathParamDesc 为已有操作添加路径参数描述
+// AddPathParamDesc 方法用于处理AddPathParamDesc相关逻辑。
 func (g *Generator) AddPathParamDesc(path, method, paramName, description string, paramType string) error {
 	method = strings.ToLower(method)
 

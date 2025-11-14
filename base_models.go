@@ -16,10 +16,10 @@ type BaseModel struct {
 	UpdatedAtFormat string    `json:"updated_at" gorm:"-"`
 }
 
-// AfterFind 在查询后自动调用，格式化时间
+// AfterFind 方法用于处理AfterFind相关逻辑。
 func (m *BaseModel) AfterFind(tx *gorm.DB) error {
-	m.CreatedAtFormat = DateTimeToString(m.CreatedAt)
-	m.UpdatedAtFormat = DateTimeToString(m.UpdatedAt)
+	m.CreatedAtFormat = FormatDateTime(m.CreatedAt)
+	m.UpdatedAtFormat = FormatDateTime(m.UpdatedAt)
 	return nil
 }
 
@@ -29,10 +29,10 @@ type BaseDeleteAt struct {
 	DeletedAtFormat string         `gorm:"-" json:"deleted_at"`
 }
 
-// AfterFind 在查询后自动调用，格式化时间
+// AfterFind 方法用于处理AfterFind相关逻辑。
 func (m *BaseDeleteAt) AfterFind(tx *gorm.DB) error {
 	t := m.DeletedAt.Time
-	m.DeletedAtFormat = DateTimeToString(t)
+	m.DeletedAtFormat = FormatDateTime(t)
 	return nil
 }
 

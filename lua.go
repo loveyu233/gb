@@ -20,7 +20,7 @@ type LuaRespData struct {
 	Target item   `json:"target"`
 }
 
-// LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue 在LuaRedisZSetGetTargetKeyAndStartToEndRankByScore的基础上添加了获取item的hash_value
+// LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue 方法用于处理LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue(zSetKey, hashKey string, start, end int64, targetMember string, descending bool) (*LuaRespData, error) {
 	lua := `local key = KEYS[1]
 			local hash_key = KEYS[2]  -- New parameter for hash key
@@ -120,20 +120,17 @@ func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHash
 	return luaRespData, nil
 }
 
+// LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValueDesc 方法用于处理LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValueDesc相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValueDesc(zSetKey, hashKey string, start, end int64, targetMember string) (*LuaRespData, error) {
 	return r.LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue(zSetKey, hashKey, start, end, targetMember, true)
 }
 
+// LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValueAsc 方法用于处理LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValueAsc相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValueAsc(zSetKey, hashKey string, start, end int64, targetMember string) (*LuaRespData, error) {
 	return r.LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAndGetHashValue(zSetKey, hashKey, start, end, targetMember, false)
 }
 
-// LuaRedisZSetGetTargetKeyAndStartToEndRankByScore 同时获取指定key的从start到end排名的数据和targetMember的排名和分数
-// key: RedisConfig ZSet 的键名
-// start: 起始排名
-// end: 结束排名
-// targetMember: 目标成员
-// descending: true表示从大到小排序(ZREVRANGE/ZREVRANK), false表示从小到大排序(ZRANGE/ZRANK)
+// LuaRedisZSetGetTargetKeyAndStartToEndRankByScore 方法用于处理LuaRedisZSetGetTargetKeyAndStartToEndRankByScore相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScore(key string, start, end int64, targetMember string, descending bool) (*LuaRespData, error) {
 	lua := `local key = KEYS[1]
 			local start_pos = tonumber(ARGV[1])
@@ -229,12 +226,12 @@ func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScore(key strin
 	return luaRespData, nil
 }
 
-// LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreDesc 新增一个降序排列的便捷函数
+// LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreDesc 方法用于处理LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreDesc相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreDesc(key string, start, end int64, targetMember string) (*LuaRespData, error) {
 	return r.LuaRedisZSetGetTargetKeyAndStartToEndRankByScore(key, start, end, targetMember, true)
 }
 
-// LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAsc 新增一个升序排列的便捷函数
+// LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAsc 方法用于处理LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAsc相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetTargetKeyAndStartToEndRankByScoreAsc(key string, start, end int64, targetMember string) (*LuaRespData, error) {
 	return r.LuaRedisZSetGetTargetKeyAndStartToEndRankByScore(key, start, end, targetMember, false)
 }
@@ -247,10 +244,7 @@ type MemberInfo struct {
 	HashValue string      `json:"hash_value"`
 }
 
-// LuaRedisZSetGetMemberScoreAndRankAndGetHashValue 获取指定 member 的 score 和 rank 以及hash value
-// key: RedisConfig ZSet 的 key
-// member: 要查询的成员
-// descending: true 表示从大到小排序(ZREVRANK), false 表示从小到大排序(ZRANK)
+// LuaRedisZSetGetMemberScoreAndRankAndGetHashValue 方法用于处理LuaRedisZSetGetMemberScoreAndRankAndGetHashValue相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, hashKey string, member string, descending bool) (*MemberInfo, error) {
 	lua := `local key = KEYS[1]
 				local hash_key = KEYS[2]  -- New parameter for hash key
@@ -309,20 +303,17 @@ func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, 
 	return memberInfo, nil
 }
 
-// LuaRedisZSetGetMemberScoreAndRankAndGetHashValueDesc LuaRedisZSetGetMemberScoreAndRankAndGetHashValue的快捷降序
+// LuaRedisZSetGetMemberScoreAndRankAndGetHashValueDesc 方法用于处理LuaRedisZSetGetMemberScoreAndRankAndGetHashValueDesc相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRankAndGetHashValueDesc(zSetKey, hashKey string, member string) (*MemberInfo, error) {
 	return r.LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, hashKey, member, true)
 }
 
-// LuaRedisZSetGetMemberScoreAndRankAndGetHashValueAsc 	LuaRedisZSetGetMemberScoreAndRankAndGetHashValue的快捷升序
+// LuaRedisZSetGetMemberScoreAndRankAndGetHashValueAsc 方法用于处理LuaRedisZSetGetMemberScoreAndRankAndGetHashValueAsc相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRankAndGetHashValueAsc(zSetKey, hashKey string, member string) (*MemberInfo, error) {
 	return r.LuaRedisZSetGetMemberScoreAndRankAndGetHashValue(zSetKey, hashKey, member, false)
 }
 
-// LuaRedisZSetGetMemberScoreAndRank 获取指定 member 的 score 和 rank
-// key: RedisConfig ZSet 的 key
-// member: 要查询的成员
-// descending: true 表示从大到小排序(ZREVRANK), false 表示从小到大排序(ZRANK)
+// LuaRedisZSetGetMemberScoreAndRank 方法用于处理LuaRedisZSetGetMemberScoreAndRank相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRank(key string, member string, descending bool) (*MemberInfo, error) {
 	lua := `local key = KEYS[1]
 				local member = ARGV[1]
@@ -378,17 +369,17 @@ func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRank(key string, member strin
 	return memberInfo, nil
 }
 
-// LuaRedisZSetGetMemberScoreAndRankDesc 获取指定 member 的 score 和 rank,快捷降序
+// LuaRedisZSetGetMemberScoreAndRankDesc 方法用于处理LuaRedisZSetGetMemberScoreAndRankDesc相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRankDesc(key string, member string) (*MemberInfo, error) {
 	return r.LuaRedisZSetGetMemberScoreAndRank(key, member, true)
 }
 
-// LuaRedisZSetGetMemberScoreAndRankAsc 获取指定 member 的 score 和 rank,快捷升序
+// LuaRedisZSetGetMemberScoreAndRankAsc 方法用于处理LuaRedisZSetGetMemberScoreAndRankAsc相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetMemberScoreAndRankAsc(key string, member string) (*MemberInfo, error) {
 	return r.LuaRedisZSetGetMemberScoreAndRank(key, member, false)
 }
 
-// LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues 批量获取多个 member 的 score 和 rank 以及对应hashKey的value
+// LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues 方法用于处理LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues(zSetKey, hashKey string, members []string, descending bool) ([]*MemberInfo, error) {
 	if len(members) == 0 {
 		return []*MemberInfo{}, nil
@@ -464,20 +455,17 @@ func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues(zS
 	return memberInfos, nil
 }
 
-// LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesDesc LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues的desc版本
+// LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesDesc 方法用于处理LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesDesc相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesDesc(zSetKey, hashKey string, members []string) ([]*MemberInfo, error) {
 	return r.LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues(zSetKey, hashKey, members, true)
 }
 
-// LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesAsc LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues的asc版本
+// LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesAsc 方法用于处理LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesAsc相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValuesAsc(zSetKey, hashKey string, members []string) ([]*MemberInfo, error) {
 	return r.LuaRedisZSetGetMultipleMembersScoreAndRankAndHashValues(zSetKey, hashKey, members, false)
 }
 
-// LuaRedisZSetGetMultipleMembersScoreAndRank 批量获取多个 member 的 score 和 rank
-// key: RedisConfig ZSet 的 key
-// members: 要查询的成员列表
-// descending: true 表示从大到小排序, false 表示从小到大排序
+// LuaRedisZSetGetMultipleMembersScoreAndRank 方法用于处理LuaRedisZSetGetMultipleMembersScoreAndRank相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRank(key string, members []string, descending bool) ([]*MemberInfo, error) {
 	if len(members) == 0 {
 		return []*MemberInfo{}, nil
@@ -550,21 +538,19 @@ func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRank(key string, mem
 	return memberInfos, nil
 }
 
-// LuaRedisZSetGetMultipleMembersScoreAndRankDesc 批量获取多个 member 的 score 和 rank,快捷降序
+// LuaRedisZSetGetMultipleMembersScoreAndRankDesc 方法用于处理LuaRedisZSetGetMultipleMembersScoreAndRankDesc相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRankDesc(key string, members []string) ([]*MemberInfo, error) {
 	return r.LuaRedisZSetGetMultipleMembersScoreAndRank(key, members, true)
 }
 
-// LuaRedisZSetGetMultipleMembersScoreAndRankAsc 批量获取多个 member 的 score 和 rank,快捷升序
+// LuaRedisZSetGetMultipleMembersScoreAndRankAsc 方法用于处理LuaRedisZSetGetMultipleMembersScoreAndRankAsc相关逻辑。
 func (r *RedisConfig) LuaRedisZSetGetMultipleMembersScoreAndRankAsc(key string, members []string) ([]*MemberInfo, error) {
 	return r.LuaRedisZSetGetMultipleMembersScoreAndRank(key, members, false)
 }
 
 // 1. 分布式锁相关
 
-// LuaRedisDistributedLock 获取分布式锁
-// key: 锁的键名, value: 锁的值(通常是唯一ID), expireSeconds: 过期时间(秒)
-// 返回: true表示获取锁成功, false表示获取锁失败
+// LuaRedisDistributedLock 方法用于处理LuaRedisDistributedLock相关逻辑。
 func (r *RedisConfig) LuaRedisDistributedLock(key, value string, expireSeconds int64) (bool, error) {
 	lua := `if redis.call('SET', KEYS[1], ARGV[1], 'NX', 'EX', ARGV[2]) then
 				return 1
@@ -579,9 +565,7 @@ func (r *RedisConfig) LuaRedisDistributedLock(key, value string, expireSeconds i
 	return result.(int64) == 1, nil
 }
 
-// LuaRedisDistributedUnlock 释放分布式锁
-// key: 锁的键名, value: 锁的值
-// 返回: true表示释放成功, false表示释放失败(锁不存在或值不匹配)
+// LuaRedisDistributedUnlock 方法用于处理LuaRedisDistributedUnlock相关逻辑。
 func (r *RedisConfig) LuaRedisDistributedUnlock(key, value string) (bool, error) {
 	lua := `if redis.call('GET', KEYS[1]) == ARGV[1] then
 				return redis.call('DEL', KEYS[1])
@@ -598,9 +582,7 @@ func (r *RedisConfig) LuaRedisDistributedUnlock(key, value string) (bool, error)
 
 // 2. 限流相关
 
-// LuaRedisRateLimit 滑动窗口限流
-// key: 限流键名, window: 时间窗口(秒), limit: 限制次数
-// 返回: 剩余可用次数, 如果返回-1表示超过限制
+// LuaRedisRateLimit 方法用于处理LuaRedisRateLimit相关逻辑。
 func (r *RedisConfig) LuaRedisRateLimit(key string, window, limit int64) (int64, error) {
 	lua := `local key = KEYS[1]
 			local window = tonumber(ARGV[1])
@@ -636,8 +618,7 @@ type CounterResult struct {
 	IsSuccess    bool  `json:"is_success"`
 }
 
-// LuaRedisIncrWithLimit 带限制的计数器递增
-// key: 计数器键名, increment: 递增值, maxValue: 最大值, expireSeconds: 过期时间
+// LuaRedisIncrWithLimit 方法用于处理LuaRedisIncrWithLimit相关逻辑。
 func (r *RedisConfig) LuaRedisIncrWithLimit(key string, increment, maxValue, expireSeconds int64) (*CounterResult, error) {
 	lua := `local key = KEYS[1]
 			local increment = tonumber(ARGV[1])
@@ -677,9 +658,7 @@ func (r *RedisConfig) LuaRedisIncrWithLimit(key string, increment, maxValue, exp
 
 // 4. 队列相关
 
-// LuaRedisQueuePushWithLimit 带限制的队列推送
-// key: 队列键名, value: 要推送的值, maxLength: 队列最大长度
-// 返回: 队列当前长度, 如果返回-1表示队列已满
+// LuaRedisQueuePushWithLimit 方法用于处理LuaRedisQueuePushWithLimit相关逻辑。
 func (r *RedisConfig) LuaRedisQueuePushWithLimit(key, value string, maxLength int64) (int64, error) {
 	lua := `local key = KEYS[1]
 			local value = ARGV[1]
@@ -702,9 +681,7 @@ func (r *RedisConfig) LuaRedisQueuePushWithLimit(key, value string, maxLength in
 
 // 5. 缓存相关
 
-// LuaRedisSetWithVersion 带版本控制的设置
-// key: 缓存键名, value: 值, version: 版本号, expireSeconds: 过期时间
-// 返回: true表示设置成功, false表示版本冲突
+// LuaRedisSetWithVersion 方法用于处理LuaRedisSetWithVersion相关逻辑。
 func (r *RedisConfig) LuaRedisSetWithVersion(key, value string, version, expireSeconds int64) (bool, error) {
 	lua := `local key = KEYS[1]
 			local value = ARGV[1]
@@ -736,8 +713,7 @@ type StockResult struct {
 	RemainingStock int64 `json:"remaining_stock"`
 }
 
-// LuaRedisDecrStock 原子扣减库存
-// key: 库存键名, quantity: 扣减数量
+// LuaRedisDecrStock 方法用于处理LuaRedisDecrStock相关逻辑。
 func (r *RedisConfig) LuaRedisDecrStock(key string, quantity int64) (*StockResult, error) {
 	lua := `local key = KEYS[1]
 			local quantity = tonumber(ARGV[1])
@@ -776,8 +752,7 @@ func (r *RedisConfig) LuaRedisDecrStock(key string, quantity int64) (*StockResul
 
 // 7. HyperLogLog 去重计数
 
-// LuaRedisHLLAddAndCount HyperLogLog 添加元素并返回估计数量
-// key: HLL键名, elements: 要添加的元素列表
+// LuaRedisHLLAddAndCount 方法用于处理LuaRedisHLLAddAndCount相关逻辑。
 func (r *RedisConfig) LuaRedisHLLAddAndCount(key string, elements []string) (int64, error) {
 	lua := `local key = KEYS[1]
 			local elements = {}
@@ -812,8 +787,7 @@ type LeaderboardMember struct {
 	Rank   int64       `json:"rank"`
 }
 
-// LuaRedisLeaderboardIncr 排行榜分数递增并返回排名信息
-// key: 排行榜键名, member: 成员名, increment: 递增分数
+// LuaRedisLeaderboardIncr 方法用于处理LuaRedisLeaderboardIncr相关逻辑。
 func (r *RedisConfig) LuaRedisLeaderboardIncr(key, member string, increment float64) (*LeaderboardMember, error) {
 	lua := `local key = KEYS[1]
 			local member = ARGV[1]
@@ -846,8 +820,7 @@ type DelayedMessage struct {
 	Score   int64  `json:"score"`
 }
 
-// LuaRedisDelayQueuePop 从延迟队列中弹出到期的消息
-// key: 延迟队列键名, currentTime: 当前时间戳, limit: 最多弹出数量
+// LuaRedisDelayQueuePop 方法用于处理LuaRedisDelayQueuePop相关逻辑。
 func (r *RedisConfig) LuaRedisDelayQueuePop(key string, currentTime int64, limit int64) ([]*DelayedMessage, error) {
 	lua := `local key = KEYS[1]
 			local current_time = tonumber(ARGV[1])
@@ -895,8 +868,7 @@ func (r *RedisConfig) LuaRedisDelayQueuePop(key string, currentTime int64, limit
 
 // 10. 布隆过滤器模拟 (使用多个 Hash)
 
-// LuaRedisBloomAdd 布隆过滤器添加元素
-// key: 布隆过滤器键名, element: 要添加的元素
+// LuaRedisBloomAdd 方法用于处理LuaRedisBloomAdd相关逻辑。
 func (r *RedisConfig) LuaRedisBloomAdd(key, element string) error {
 	lua := `local key = KEYS[1]
 			local element = ARGV[1]
@@ -916,8 +888,7 @@ func (r *RedisConfig) LuaRedisBloomAdd(key, element string) error {
 	return err
 }
 
-// LuaRedisBloomExists 检查布隆过滤器中是否存在元素
-// key: 布隆过滤器键名, element: 要检查的元素
+// LuaRedisBloomExists 方法用于处理LuaRedisBloomExists相关逻辑。
 func (r *RedisConfig) LuaRedisBloomExists(key, element string) (bool, error) {
 	lua := `local key = KEYS[1]
 			local element = ARGV[1]
@@ -952,28 +923,28 @@ type luaRedisIDConfig struct {
 
 type WithLuaRedisIDConfigOption func(*luaRedisIDConfig)
 
-// WithLuaRedisIDConfigKeyName 设置键名
+// WithLuaRedisIDConfigKeyName 函数用于处理WithLuaRedisIDConfigKeyName相关逻辑。
 func WithLuaRedisIDConfigKeyName(key string) WithLuaRedisIDConfigOption {
 	return func(config *luaRedisIDConfig) {
 		config.key = key
 	}
 }
 
-// WithLuaRedisIDConfigStartNumber 设置起始值
+// WithLuaRedisIDConfigStartNumber 函数用于处理WithLuaRedisIDConfigStartNumber相关逻辑。
 func WithLuaRedisIDConfigStartNumber(startNumber int64) WithLuaRedisIDConfigOption {
 	return func(config *luaRedisIDConfig) {
 		config.startNumber = startNumber
 	}
 }
 
-// WithLuaRedisIDConfigINCRValue 设置自增值
+// WithLuaRedisIDConfigINCRValue 函数用于处理WithLuaRedisIDConfigINCRValue相关逻辑。
 func WithLuaRedisIDConfigINCRValue(INCRValue int64) WithLuaRedisIDConfigOption {
 	return func(config *luaRedisIDConfig) {
 		config.iNCRValue = INCRValue
 	}
 }
 
-// LuaRedisID 使用lua脚本获取自增ID
+// LuaRedisID 方法用于处理LuaRedisID相关逻辑。
 func (r *RedisConfig) LuaRedisID(opts ...WithLuaRedisIDConfigOption) (int64, error) {
 	idConfig := &luaRedisIDConfig{
 		key:         "global-id",

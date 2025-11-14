@@ -17,45 +17,56 @@ type PaginationParams struct {
 
 type PaginationParamsOption func(*PaginationParams)
 
+// WithPaginationMinPage 函数用于处理WithPaginationMinPage相关逻辑。
 func WithPaginationMinPage(minPage int) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.minPage = minPage
 	}
 }
+
+// WithPaginationMinSize 函数用于处理WithPaginationMinSize相关逻辑。
 func WithPaginationMinSize(minSize int) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.minSize = minSize
 	}
 }
 
+// WithPaginationMaxSize 函数用于处理WithPaginationMaxSize相关逻辑。
 func WithPaginationMaxSize(maxSize int) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.maxSize = maxSize
 	}
 }
+
+// WithPaginationDefaultPage 函数用于处理WithPaginationDefaultPage相关逻辑。
 func WithPaginationDefaultPage(defaultPage int) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.defaultPage = defaultPage
 	}
 }
+
+// WithPaginationDefaultSize 函数用于处理WithPaginationDefaultSize相关逻辑。
 func WithPaginationDefaultSize(defaultSize int) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.defaultSize = defaultSize
 	}
 }
 
+// WithPaginationPageFieldName 函数用于处理WithPaginationPageFieldName相关逻辑。
 func WithPaginationPageFieldName(pageFieldName string) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.pageFieldName = pageFieldName
 	}
 }
+
+// WithPaginationSizeFieldName 函数用于处理WithPaginationSizeFieldName相关逻辑。
 func WithPaginationSizeFieldName(sizeFieldName string) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.sizeFieldName = sizeFieldName
 	}
 }
 
-// ParsePaginationParams 从请求中解析分页参数
+// ParsePaginationParams 函数用于处理ParsePaginationParams相关逻辑。
 func ParsePaginationParams(c *gin.Context, options ...PaginationParamsOption) (page, size int) {
 	var defaultPagination = &PaginationParams{
 		defaultPage:   1,
@@ -83,7 +94,7 @@ func ParsePaginationParams(c *gin.Context, options ...PaginationParamsOption) (p
 	return page, size
 }
 
-// GetGinQueryDefault 带默认值的可选参数方法
+// GetGinQueryDefault 函数用于处理GetGinQueryDefault相关逻辑。
 func GetGinQueryDefault[T any](c *gin.Context, key string, defaultValue T) (T, error) {
 	value := c.Query(key)
 
@@ -102,7 +113,7 @@ func GetGinQueryDefault[T any](c *gin.Context, key string, defaultValue T) (T, e
 	return result, nil
 }
 
-// GetGinQueryRequired 必需的查询参数，不能为空
+// GetGinQueryRequired 函数用于处理GetGinQueryRequired相关逻辑。
 func GetGinQueryRequired[T any](c *gin.Context, key string) (T, error) {
 	var zero T
 	value := c.Query(key)
@@ -122,7 +133,7 @@ func GetGinQueryRequired[T any](c *gin.Context, key string) (T, error) {
 	return result, nil
 }
 
-// GetGinPathRequired 必需的查询参数，不能为空
+// GetGinPathRequired 函数用于处理GetGinPathRequired相关逻辑。
 func GetGinPathRequired[T any](c *gin.Context, key string) (T, error) {
 	var zero T
 	value := c.Param(key)

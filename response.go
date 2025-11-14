@@ -16,10 +16,12 @@ type AppError struct {
 	Message string `json:"message"`
 }
 
+// Error 方法用于处理Error相关逻辑。
 func (e *AppError) Error() string {
 	return fmt.Sprintf("错误码: %d, 错误信息: %s", e.Code, e.Message)
 }
 
+// WithMessage 方法用于处理WithMessage相关逻辑。
 func (e *AppError) WithMessage(format string, args ...any) *AppError {
 	if len(args) > 0 {
 		format = fmt.Sprintf(format, args...)
@@ -31,6 +33,7 @@ func (e *AppError) WithMessage(format string, args ...any) *AppError {
 	return newErr
 }
 
+// NewAppError 函数用于处理NewAppError相关逻辑。
 func NewAppError(code int, message string) *AppError {
 	return &AppError{
 		Code:    code,
@@ -75,6 +78,7 @@ var (
 	// ... 可以继续添加其他预定义错误
 )
 
+// ReturnErrDatabase 函数用于处理ReturnErrDatabase相关逻辑。
 func ReturnErrDatabase(err error, msg string, notfoundMsg ...string) *AppError {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		if len(notfoundMsg) == 0 {
@@ -85,15 +89,17 @@ func ReturnErrDatabase(err error, msg string, notfoundMsg ...string) *AppError {
 	return ErrDatabase.WithMessage(msg)
 }
 
+// ReturnErrSimpleDatabase 函数用于处理ReturnErrSimpleDatabase相关逻辑。
 func ReturnErrSimpleDatabase(err error) *AppError {
 	return ErrDatabase.WithMessage(err.Error())
 }
 
+// ReturnErrInvalidParam 函数用于处理ReturnErrInvalidParam相关逻辑。
 func ReturnErrInvalidParam(msg string) *AppError {
 	return ErrInvalidParam.WithMessage(msg)
 }
 
-// ConvertToAppError 将各种错误转换为业务相关的AppError
+// ConvertToAppError 函数用于处理ConvertToAppError相关逻辑。
 func ConvertToAppError(err error) *AppError {
 	if err == nil {
 		return ErrServerBusy.WithMessage("未知错误")
@@ -136,22 +142,24 @@ type Response struct {
 	TraceID string      `json:"trace_id,omitempty"`
 }
 
+// ResponseError 函数用于处理ResponseError相关逻辑。
 func ResponseError(c *gin.Context, err error) {
 	appErr := ConvertToAppError(err)
 	c.Set("resp-status", appErr.Code)
 	c.Set("resp-msg", appErr.Message)
-	c.Header("X-Request-Id", c.GetString("trace_id"))
+	setTraceHeaders(c)
 	c.JSON(http.StatusOK, &Response{
 		Code:    appErr.Code,
 		Message: appErr.Message,
 	})
 }
 
+// ResponseParamError 函数用于处理ResponseParamError相关逻辑。
 func ResponseParamError(c *gin.Context, err error) {
 	te := TranslateError(err).Error()
 	c.Set("resp-status", ErrInvalidParam.Code)
 	c.Set("resp-msg", te)
-	c.Header("X-Request-Id", c.GetString("trace_id"))
+	setTraceHeaders(c)
 	if te == "" {
 		te = ErrInvalidParam.Message
 	}
@@ -161,19 +169,23 @@ func ResponseParamError(c *gin.Context, err error) {
 	})
 }
 
+// ResponseSuccess 函数用于处理ResponseSuccess相关逻辑。
 func ResponseSuccess(c *gin.Context, data interface{}) {
 	c.Set("resp-status", http.StatusOK)
 	c.Set("resp-msg", "请求成功")
-	c.Header("X-Request-Id", c.GetString("trace_id"))
+	setTraceHeaders(c)
 	c.JSON(http.StatusOK, &Response{
 		Code:    http.StatusOK,
 		Message: "请求成功",
 		Data:    data,
 	})
 }
+
+// ResponseSuccessEncryptData 函数用于处理ResponseSuccessEncryptData相关逻辑。
 func ResponseSuccessEncryptData(c *gin.Context, data interface{}, custom func(now int64) (key, nonce string)) {
 	c.Set("resp-status", http.StatusOK)
 	c.Set("resp-msg", "请求成功")
+	setTraceHeaders(c)
 	response, err := EncryptData(data, custom)
 	if err != nil {
 		c.JSON(http.StatusOK, &Response{
@@ -189,16 +201,32 @@ func ResponseSuccessEncryptData(c *gin.Context, data interface{}, custom func(no
 	})
 }
 
+// ResponseThirdPartyHTTPBody 函数用于处理ResponseThirdPartyHTTPBody相关逻辑。
 func ResponseThirdPartyHTTPBody(c *gin.Context, body any, code ...int) {
 	if len(code) == 0 {
 		code = append(code, 200)
 	}
+	setTraceHeaders(c)
 	c.JSON(code[0], body)
 }
 
+// FuncErr 函数用于处理FuncErr相关逻辑。
 func FuncErr(fun func() error) error {
 	if err := fun(); err != nil {
 		return ReturnErrSimpleDatabase(err)
 	}
 	return nil
+}
+
+// setTraceHeaders 函数用于处理setTraceHeaders相关逻辑。
+func setTraceHeaders(c *gin.Context) {
+	traceID := c.GetString("trace_id")
+	if traceID == "" {
+		traceID = c.GetHeader(TraceIDHeader)
+	}
+	if traceID == "" {
+		return
+	}
+	c.Header(TraceIDHeader, traceID)
+	c.Header("X-Request-Id", traceID)
 }

@@ -23,251 +23,252 @@ type RedisConfig struct {
 
 type WithRedisOption func(*redis.UniversalOptions)
 
-// WithRedisAddressOption 设置Redis服务器地址列表
+// WithRedisAddressOption 函数用于处理WithRedisAddressOption相关逻辑。
 func WithRedisAddressOption(address []string) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.Addrs = address
 	}
 }
 
-// WithRedisClientNameOption 设置客户端名称
+// WithRedisClientNameOption 函数用于处理WithRedisClientNameOption相关逻辑。
 func WithRedisClientNameOption(clientName string) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.ClientName = clientName
 	}
 }
 
-// WithRedisDBOption 设置Redis数据库索引
+// WithRedisDBOption 函数用于处理WithRedisDBOption相关逻辑。
 func WithRedisDBOption(db int) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.DB = db
 	}
 }
 
-// WithRedisDialerOption 设置自定义拨号器
+// WithRedisDialerOption 函数用于处理WithRedisDialerOption相关逻辑。
 func WithRedisDialerOption(dialer func(ctx context.Context, network, addr string) (net.Conn, error)) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.Dialer = dialer
 	}
 }
 
-// WithRedisOnConnectOption 设置连接建立时的回调函数
+// WithRedisOnConnectOption 函数用于处理WithRedisOnConnectOption相关逻辑。
 func WithRedisOnConnectOption(onConnect func(ctx context.Context, cn *redis.Conn) error) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.OnConnect = onConnect
 	}
 }
 
-// WithRedisProtocolOption 设置Redis协议版本
+// WithRedisProtocolOption 函数用于处理WithRedisProtocolOption相关逻辑。
 func WithRedisProtocolOption(protocol int) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.Protocol = protocol
 	}
 }
 
-// WithRedisUsernameOption 设置Redis用户名
+// WithRedisUsernameOption 函数用于处理WithRedisUsernameOption相关逻辑。
 func WithRedisUsernameOption(username string) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.Username = username
 	}
 }
 
-// WithRedisPasswordOption 设置Redis密码
+// WithRedisPasswordOption 函数用于处理WithRedisPasswordOption相关逻辑。
 func WithRedisPasswordOption(password string) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.Password = password
 	}
 }
 
-// WithRedisSentinelUsernameOption 设置哨兵用户名
+// WithRedisSentinelUsernameOption 函数用于处理WithRedisSentinelUsernameOption相关逻辑。
 func WithRedisSentinelUsernameOption(sentinelUsername string) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.SentinelUsername = sentinelUsername
 	}
 }
 
-// WithRedisSentinelPasswordOption 设置哨兵密码
+// WithRedisSentinelPasswordOption 函数用于处理WithRedisSentinelPasswordOption相关逻辑。
 func WithRedisSentinelPasswordOption(sentinelPassword string) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.SentinelPassword = sentinelPassword
 	}
 }
 
-// WithRedisMaxRetriesOption 设置最大重试次数
+// WithRedisMaxRetriesOption 函数用于处理WithRedisMaxRetriesOption相关逻辑。
 func WithRedisMaxRetriesOption(maxRetries int) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.MaxRetries = maxRetries
 	}
 }
 
-// WithRedisMinRetryBackoffOption 设置最小重试退避时间
+// WithRedisMinRetryBackoffOption 函数用于处理WithRedisMinRetryBackoffOption相关逻辑。
 func WithRedisMinRetryBackoffOption(minRetryBackoff time.Duration) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.MinRetryBackoff = minRetryBackoff
 	}
 }
 
-// WithRedisMaxRetryBackoffOption 设置最大重试退避时间
+// WithRedisMaxRetryBackoffOption 函数用于处理WithRedisMaxRetryBackoffOption相关逻辑。
 func WithRedisMaxRetryBackoffOption(maxRetryBackoff time.Duration) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.MaxRetryBackoff = maxRetryBackoff
 	}
 }
 
-// WithRedisDialTimeoutOption 设置连接超时时间
+// WithRedisDialTimeoutOption 函数用于处理WithRedisDialTimeoutOption相关逻辑。
 func WithRedisDialTimeoutOption(dialTimeout time.Duration) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.DialTimeout = dialTimeout
 	}
 }
 
-// WithRedisReadTimeoutOption 设置读取超时时间
+// WithRedisReadTimeoutOption 函数用于处理WithRedisReadTimeoutOption相关逻辑。
 func WithRedisReadTimeoutOption(readTimeout time.Duration) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.ReadTimeout = readTimeout
 	}
 }
 
-// WithRedisWriteTimeoutOption 设置写入超时时间
+// WithRedisWriteTimeoutOption 函数用于处理WithRedisWriteTimeoutOption相关逻辑。
 func WithRedisWriteTimeoutOption(writeTimeout time.Duration) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.WriteTimeout = writeTimeout
 	}
 }
 
-// WithRedisContextTimeoutEnabledOption 设置是否启用上下文超时
+// WithRedisContextTimeoutEnabledOption 函数用于处理WithRedisContextTimeoutEnabledOption相关逻辑。
 func WithRedisContextTimeoutEnabledOption(enabled bool) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.ContextTimeoutEnabled = enabled
 	}
 }
 
-// WithRedisPoolFIFOOption 设置连接池是否使用FIFO模式
+// WithRedisPoolFIFOOption 函数用于处理WithRedisPoolFIFOOption相关逻辑。
 func WithRedisPoolFIFOOption(poolFIFO bool) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.PoolFIFO = poolFIFO
 	}
 }
 
-// WithRedisPoolSizeOption 设置连接池大小
+// WithRedisPoolSizeOption 函数用于处理WithRedisPoolSizeOption相关逻辑。
 func WithRedisPoolSizeOption(poolSize int) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.PoolSize = poolSize
 	}
 }
 
-// WithRedisPoolTimeoutOption 设置从连接池获取连接的超时时间
+// WithRedisPoolTimeoutOption 函数用于处理WithRedisPoolTimeoutOption相关逻辑。
 func WithRedisPoolTimeoutOption(poolTimeout time.Duration) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.PoolTimeout = poolTimeout
 	}
 }
 
-// WithRedisMinIdleConnsOption 设置连接池中最小空闲连接数
+// WithRedisMinIdleConnsOption 函数用于处理WithRedisMinIdleConnsOption相关逻辑。
 func WithRedisMinIdleConnsOption(minIdleConns int) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.MinIdleConns = minIdleConns
 	}
 }
 
-// WithRedisMaxIdleConnsOption 设置连接池中最大空闲连接数
+// WithRedisMaxIdleConnsOption 函数用于处理WithRedisMaxIdleConnsOption相关逻辑。
 func WithRedisMaxIdleConnsOption(maxIdleConns int) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.MaxIdleConns = maxIdleConns
 	}
 }
 
-// WithRedisMaxActiveConnsOption 设置连接池中最大活跃连接数
+// WithRedisMaxActiveConnsOption 函数用于处理WithRedisMaxActiveConnsOption相关逻辑。
 func WithRedisMaxActiveConnsOption(maxActiveConns int) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.MaxActiveConns = maxActiveConns
 	}
 }
 
-// WithRedisConnMaxIdleTimeOption 设置连接最大空闲时间
+// WithRedisConnMaxIdleTimeOption 函数用于处理WithRedisConnMaxIdleTimeOption相关逻辑。
 func WithRedisConnMaxIdleTimeOption(connMaxIdleTime time.Duration) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.ConnMaxIdleTime = connMaxIdleTime
 	}
 }
 
-// WithRedisConnMaxLifetimeOption 设置连接最大生命周期
+// WithRedisConnMaxLifetimeOption 函数用于处理WithRedisConnMaxLifetimeOption相关逻辑。
 func WithRedisConnMaxLifetimeOption(connMaxLifetime time.Duration) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.ConnMaxLifetime = connMaxLifetime
 	}
 }
 
-// WithRedisTLSConfigOption 设置TLS配置
+// WithRedisTLSConfigOption 函数用于处理WithRedisTLSConfigOption相关逻辑。
 func WithRedisTLSConfigOption(tlsConfig *tls.Config) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.TLSConfig = tlsConfig
 	}
 }
 
-// WithRedisMaxRedirectsOption 设置集群模式下最大重定向次数
+// WithRedisMaxRedirectsOption 函数用于处理WithRedisMaxRedirectsOption相关逻辑。
 func WithRedisMaxRedirectsOption(maxRedirects int) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.MaxRedirects = maxRedirects
 	}
 }
 
-// WithRedisReadOnlyOption 设置是否只读模式
+// WithRedisReadOnlyOption 函数用于处理WithRedisReadOnlyOption相关逻辑。
 func WithRedisReadOnlyOption(readOnly bool) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.ReadOnly = readOnly
 	}
 }
 
-// WithRedisRouteByLatencyOption 设置是否按延迟路由请求
+// WithRedisRouteByLatencyOption 函数用于处理WithRedisRouteByLatencyOption相关逻辑。
 func WithRedisRouteByLatencyOption(routeByLatency bool) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.RouteByLatency = routeByLatency
 	}
 }
 
-// WithRedisRouteRandomlyOption 设置是否随机路由请求
+// WithRedisRouteRandomlyOption 函数用于处理WithRedisRouteRandomlyOption相关逻辑。
 func WithRedisRouteRandomlyOption(routeRandomly bool) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.RouteRandomly = routeRandomly
 	}
 }
 
-// WithRedisMasterNameOption 设置哨兵模式下的主服务器名称
+// WithRedisMasterNameOption 函数用于处理WithRedisMasterNameOption相关逻辑。
 func WithRedisMasterNameOption(masterName string) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.MasterName = masterName
 	}
 }
 
-// WithRedisDisableIdentityOption 设置是否禁用身份验证
+// WithRedisDisableIdentityOption 函数用于处理WithRedisDisableIdentityOption相关逻辑。
 func WithRedisDisableIdentityOption(disableIdentity bool) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.DisableIdentity = disableIdentity
 	}
 }
 
-// WithRedisIdentitySuffixOption 设置身份后缀
+// WithRedisIdentitySuffixOption 函数用于处理WithRedisIdentitySuffixOption相关逻辑。
 func WithRedisIdentitySuffixOption(identitySuffix string) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.IdentitySuffix = identitySuffix
 	}
 }
 
-// WithRedisUnstableResp3Option 设置是否启用不稳定的RESP3协议
+// WithRedisUnstableResp3Option 函数用于处理WithRedisUnstableResp3Option相关逻辑。
 func WithRedisUnstableResp3Option(unstableResp3 bool) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.UnstableResp3 = unstableResp3
 	}
 }
 
-// WithRedisIsClusterModeOption 设置是否为集群模式
+// WithRedisIsClusterModeOption 函数用于处理WithRedisIsClusterModeOption相关逻辑。
 func WithRedisIsClusterModeOption(isClusterMode bool) WithRedisOption {
 	return func(options *redis.UniversalOptions) {
 		options.IsClusterMode = isClusterMode
 	}
 }
 
+// InitRedis 函数用于处理InitRedis相关逻辑。
 func InitRedis(ops ...WithRedisOption) error {
 	InsRedis = new(RedisConfig)
 	InsRedis.once = sync.Once{}
@@ -282,7 +283,7 @@ func InitRedis(ops ...WithRedisOption) error {
 	return InsRedis.UniversalClient.Ping(context.Background()).Err()
 }
 
-// NewLock 使用: https://github.com/go-redsync/redsync, 不设置options会有默认的重试次数和时间,也就是会lock会有错误返回,示例:examples/redis_test.go
+// NewLock 方法用于处理NewLock相关逻辑。
 func (r *RedisConfig) NewLock(key string, options ...redsync.Option) *redsync.Mutex {
 	r.once.Do(func() {
 		r.lock = redsync.New(goredis.NewPool(InsRedis))
@@ -291,9 +292,11 @@ func (r *RedisConfig) NewLock(key string, options ...redsync.Option) *redsync.Mu
 	return r.lock.NewMutex(key, options...)
 }
 
-// FindAllBitMapByTargetValue 返回bitmap类型key的value中bit位值为targetValue的bit位置
+// FindAllBitMapByTargetValue 方法用于处理FindAllBitMapByTargetValue相关逻辑。
 func (r *RedisConfig) FindAllBitMapByTargetValue(key string, targetValue byte) ([]int64, error) {
-	value, err := r.Get(Context(), key).Result()
+	ctx, cancel := Context()
+	defer cancel()
+	value, err := r.Get(ctx, key).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -313,14 +316,18 @@ func (r *RedisConfig) FindAllBitMapByTargetValue(key string, targetValue byte) (
 	})
 	return setBits, nil
 }
+
+// SetCaptcha 方法用于处理SetCaptcha相关逻辑。
 func (r *RedisConfig) SetCaptcha(key string, value any, expiration time.Duration) error {
 	return r.SetNX(context.Background(), key, value, expiration).Err()
 }
 
+// GetCaptcha 方法用于处理GetCaptcha相关逻辑。
 func (r *RedisConfig) GetCaptcha(key string) (string, error) {
 	return r.Get(context.Background(), key).Result()
 }
 
+// DelCaptcha 方法用于处理DelCaptcha相关逻辑。
 func (r *RedisConfig) DelCaptcha(key string) error {
 	return r.Del(context.Background(), key).Err()
 }

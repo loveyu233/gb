@@ -37,6 +37,7 @@ type MappingError struct {
 	Message string // 错误信息
 }
 
+// Error 方法用于处理Error相关逻辑。
 func (e MappingError) Error() string {
 	return fmt.Sprintf("row %d, column %s, field %s: %s (value: %s)",
 		e.Row, e.Column, e.Field, e.Message, e.Value)
@@ -74,42 +75,42 @@ var (
 
 type WithExcelMapperOption func(m *ExcelMapper)
 
-// WithExcelMapperSheetName 要读取的工作表名称,和WithExcelMapperSheetIndex二选一填写即可
+// WithExcelMapperSheetName 函数用于处理WithExcelMapperSheetName相关逻辑。
 func WithExcelMapperSheetName(sheetName string) WithExcelMapperOption {
 	return func(m *ExcelMapper) {
 		m.SheetName = sheetName
 	}
 }
 
-// WithExcelMapperSheetIndex 要读取的工作表索引,和WithExcelMapperSheetName二选一填写即可
+// WithExcelMapperSheetIndex 函数用于处理WithExcelMapperSheetIndex相关逻辑。
 func WithExcelMapperSheetIndex(sheetIndex int) WithExcelMapperOption {
 	return func(m *ExcelMapper) {
 		m.SheetIndex = sheetIndex
 	}
 }
 
-// WithExcelMapperHeaderRow 表头数据起始行
+// WithExcelMapperHeaderRow 函数用于处理WithExcelMapperHeaderRow相关逻辑。
 func WithExcelMapperHeaderRow(headerRow int) WithExcelMapperOption {
 	return func(m *ExcelMapper) {
 		m.HeaderRow = headerRow
 	}
 }
 
-// WithExcelMapperDataStartRow 需要读取数据的起始行
+// WithExcelMapperDataStartRow 函数用于处理WithExcelMapperDataStartRow相关逻辑。
 func WithExcelMapperDataStartRow(dataStartRow int) WithExcelMapperOption {
 	return func(m *ExcelMapper) {
 		m.DataStartRow = dataStartRow
 	}
 }
 
-// WithExcelMapperStrictMode 是否开启严格模式
+// WithExcelMapperStrictMode 函数用于处理WithExcelMapperStrictMode相关逻辑。
 func WithExcelMapperStrictMode(strictMode bool) WithExcelMapperOption {
 	return func(m *ExcelMapper) {
 		m.StrictMode = strictMode
 	}
 }
 
-// InitExcelMapper 创建Excel映射器,不写参数默认读取第一个工作表,默认表头第一行,数据从第二行开始,非严格模式
+// InitExcelMapper 函数用于处理InitExcelMapper相关逻辑。
 func InitExcelMapper(options ...WithExcelMapperOption) *ExcelMapper {
 	excelMapper := new(ExcelMapper)
 	for i := range options {
@@ -126,8 +127,7 @@ func InitExcelMapper(options ...WithExcelMapperOption) *ExcelMapper {
 	return excelMapper
 }
 
-// MapToStructs 将Excel数据映射到结构体数组,结构体标签为:excel,值支持:excel:"ID"精确匹配列名 excel:"A"Excel列名匹配 `excel:"2"列索引匹配 `excel:"年龄"中文列名匹配,结构体类型支持基础类型和指针空值
-// 不支持的类型有:复合类型,无符号整数,byte,rune,interface{},any,chan,func()
+// MapToStructs 方法用于处理MapToStructs相关逻辑。
 func (m *ExcelMapper) MapToStructs(filePath string, result interface{}) error {
 	// 参数验证
 	resultValue := reflect.ValueOf(result)
@@ -188,7 +188,7 @@ func (m *ExcelMapper) MapToStructs(filePath string, result interface{}) error {
 	return m.processDataRows(dataRows, sliceValue, elemType, structInfo, columnMap)
 }
 
-// getStructInfo 获取结构体信息（带缓存）
+// getStructInfo 方法用于处理getStructInfo相关逻辑。
 func (m *ExcelMapper) getStructInfo(elemType reflect.Type) (*structInfo, error) {
 	m.cacheMutex.RLock()
 	if info, exists := m.fieldCache[elemType]; exists {
@@ -245,7 +245,7 @@ func (m *ExcelMapper) getStructInfo(elemType reflect.Type) (*structInfo, error) 
 	return info, nil
 }
 
-// getConverter 获取值转换器
+// getConverter 方法用于处理getConverter相关逻辑。
 func (m *ExcelMapper) getConverter(fieldType reflect.Type) valueConverter {
 	switch fieldType.Kind() {
 	case reflect.String:
@@ -268,7 +268,7 @@ func (m *ExcelMapper) getConverter(fieldType reflect.Type) valueConverter {
 	return nil
 }
 
-// buildColumnMap 构建列映射关系
+// buildColumnMap 方法用于处理buildColumnMap相关逻辑。
 func (m *ExcelMapper) buildColumnMap(rows [][]string, structInfo *structInfo) (map[string]int, error) {
 	if len(rows) < m.HeaderRow {
 		return nil, fmt.Errorf("标题行 %d 未找到", m.HeaderRow)
@@ -292,7 +292,7 @@ func (m *ExcelMapper) buildColumnMap(rows [][]string, structInfo *structInfo) (m
 	return columnMap, nil
 }
 
-// findColumnIndex 查找列索引
+// findColumnIndex 方法用于处理findColumnIndex相关逻辑。
 func (m *ExcelMapper) findColumnIndex(headers []string, tag string) int {
 	// 优先精确匹配
 	for i, header := range headers {
@@ -322,7 +322,7 @@ func (m *ExcelMapper) findColumnIndex(headers []string, tag string) int {
 	return -1
 }
 
-// parseExcelColumn 解析Excel列名为索引
+// parseExcelColumn 方法用于处理parseExcelColumn相关逻辑。
 func (m *ExcelMapper) parseExcelColumn(col string) int {
 	col = strings.ToUpper(strings.TrimSpace(col))
 	if col == "" {
@@ -339,7 +339,7 @@ func (m *ExcelMapper) parseExcelColumn(col string) int {
 	return result - 1
 }
 
-// processDataRows 处理数据行
+// processDataRows 方法用于处理processDataRows相关逻辑。
 func (m *ExcelMapper) processDataRows(dataRows [][]string, sliceValue reflect.Value,
 	elemType reflect.Type, structInfo *structInfo, columnMap map[string]int) error {
 
@@ -390,7 +390,7 @@ func (m *ExcelMapper) processDataRows(dataRows [][]string, sliceValue reflect.Va
 	return nil
 }
 
-// setFieldValue 设置字段值
+// setFieldValue 方法用于处理setFieldValue相关逻辑。
 func (m *ExcelMapper) setFieldValue(instance reflect.Value, fieldInfo fieldInfo,
 	cellValue string, row int, column string) error {
 
@@ -433,7 +433,7 @@ func (m *ExcelMapper) setFieldValue(instance reflect.Value, fieldInfo fieldInfo,
 	return nil
 }
 
-// isEmptyRow 检查是否为空行
+// isEmptyRow 方法用于处理isEmptyRow相关逻辑。
 func (m *ExcelMapper) isEmptyRow(row []string) bool {
 	for _, cell := range row {
 		if strings.TrimSpace(cell) != "" {
@@ -443,12 +443,12 @@ func (m *ExcelMapper) isEmptyRow(row []string) bool {
 	return true
 }
 
-// GetErrors 获取映射过程中的错误
+// GetErrors 方法用于处理GetErrors相关逻辑。
 func (m *ExcelMapper) GetErrors() []MappingError {
 	return m.errors
 }
 
-// ClearErrors 清空错误记录
+// ClearErrors 方法用于处理ClearErrors相关逻辑。
 func (m *ExcelMapper) ClearErrors() {
 	m.errors = m.errors[:0]
 }
@@ -456,10 +456,12 @@ func (m *ExcelMapper) ClearErrors() {
 // 值转换器实现
 type stringConv struct{}
 
+// Convert 方法用于处理Convert相关逻辑。
 func (c *stringConv) Convert(value string) (interface{}, error) { return value, nil }
 
 type intConv struct{}
 
+// Convert 方法用于处理Convert相关逻辑。
 func (c *intConv) Convert(value string) (interface{}, error) {
 	result, err := strconv.Atoi(value)
 	return result, err
@@ -467,6 +469,7 @@ func (c *intConv) Convert(value string) (interface{}, error) {
 
 type int64Conv struct{}
 
+// Convert 方法用于处理Convert相关逻辑。
 func (c *int64Conv) Convert(value string) (interface{}, error) {
 	result, err := strconv.ParseInt(value, 10, 64)
 	return result, err
@@ -474,6 +477,7 @@ func (c *int64Conv) Convert(value string) (interface{}, error) {
 
 type float64Conv struct{}
 
+// Convert 方法用于处理Convert相关逻辑。
 func (c *float64Conv) Convert(value string) (interface{}, error) {
 	result, err := strconv.ParseFloat(value, 64)
 	return result, err
@@ -481,6 +485,7 @@ func (c *float64Conv) Convert(value string) (interface{}, error) {
 
 type boolConv struct{}
 
+// Convert 方法用于处理Convert相关逻辑。
 func (c *boolConv) Convert(value string) (interface{}, error) {
 	value = strings.ToLower(value)
 	switch value {
@@ -495,6 +500,7 @@ func (c *boolConv) Convert(value string) (interface{}, error) {
 
 type timeConv struct{}
 
+// Convert 方法用于处理Convert相关逻辑。
 func (c *timeConv) Convert(value string) (interface{}, error) {
 	// 常见时间格式
 	formats := []string{

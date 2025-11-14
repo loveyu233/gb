@@ -21,7 +21,7 @@ type SignalHook struct {
 	ctx chan os.Signal
 }
 
-// NewHook create a Hook instance
+// NewHook 函数用于处理NewHook相关逻辑。
 func NewHook() Hook {
 	hook := &SignalHook{
 		ctx: make(chan os.Signal, 1),
@@ -30,6 +30,7 @@ func NewHook() Hook {
 	return hook.WithSignals(syscall.SIGINT, syscall.SIGTERM)
 }
 
+// WithSignals 方法用于处理WithSignals相关逻辑。
 func (h *SignalHook) WithSignals(signals ...syscall.Signal) Hook {
 	for _, s := range signals {
 		signal.Notify(h.ctx, s)
@@ -38,6 +39,7 @@ func (h *SignalHook) WithSignals(signals ...syscall.Signal) Hook {
 	return h
 }
 
+// Close 方法用于处理Close相关逻辑。
 func (h *SignalHook) Close(funcs ...func()) {
 	select {
 	case <-h.ctx:

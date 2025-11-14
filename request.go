@@ -6,10 +6,12 @@ import (
 	"sync"
 )
 
+// ReqKeywordAssembly 函数用于处理ReqKeywordAssembly相关逻辑。
 func ReqKeywordAssembly(keyword string) string {
 	return fmt.Sprintf("%%%s%%", keyword)
 }
 
+// ReqPageSize 函数用于处理ReqPageSize相关逻辑。
 func ReqPageSize(page, size int) (int, int) {
 	if page <= 0 {
 		page = 1
@@ -20,22 +22,27 @@ func ReqPageSize(page, size int) (int, int) {
 	return page, size
 }
 
+// ReqFileUploadGoroutine 函数用于处理ReqFileUploadGoroutine相关逻辑。
 func ReqFileUploadGoroutine(files []*multipart.FileHeader, uploadFileFunc func(file *multipart.FileHeader) (string, error)) (fileURLS []string, errs []error) {
 	var (
 		group sync.WaitGroup
+		mu    sync.Mutex
 	)
 
-	for _, ele := range files {
+	for _, fileHeader := range files {
+		fh := fileHeader
 		group.Add(1)
-		go func() {
+		go func(header *multipart.FileHeader) {
 			defer group.Done()
-			url, err := uploadFileFunc(ele)
+			url, err := uploadFileFunc(header)
+			mu.Lock()
+			defer mu.Unlock()
 			if err != nil {
 				errs = append(errs, err)
-			} else {
-				fileURLS = append(fileURLS, url)
+				return
 			}
-		}()
+			fileURLS = append(fileURLS, url)
+		}(fh)
 	}
 	group.Wait()
 

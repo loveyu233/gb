@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Cors 函数用于处理Cors相关逻辑。
 func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 允许的请求来源

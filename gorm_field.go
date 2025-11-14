@@ -6,17 +6,17 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-// GenJSONArrayQuery datatypes.JSONArrayQuery(columnName)
+// GenJSONArrayQuery 函数用于处理GenJSONArrayQuery相关逻辑。
 func GenJSONArrayQuery(column field.IColumnName) *datatypes.JSONArrayExpression {
 	return datatypes.JSONArrayQuery(column.ColumnName().String())
 }
 
-// GenNewTime field.NewTime(tableName, columnName)
+// GenNewTime 函数用于处理GenNewTime相关逻辑。
 func GenNewTime(table schema.Tabler, column field.IColumnName) field.Time {
 	return field.NewTime(table.TableName(), column.ColumnName().String())
 }
 
-// GenNewUnsafeFieldRaw field.NewUnsafeFieldRaw(rawSQL, vars...)
+// GenNewUnsafeFieldRaw 函数用于处理GenNewUnsafeFieldRaw相关逻辑。
 func GenNewUnsafeFieldRaw(rawSQL string, vars ...interface{}) field.Field {
 	return field.NewUnsafeFieldRaw(rawSQL, vars...)
 }

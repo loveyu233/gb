@@ -6,7 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// PasswordEncryption 密码加密,返回字符串长度固定为60个字符,password不能超过72字节
+// PasswordEncryption 函数用于处理PasswordEncryption相关逻辑。
 func PasswordEncryption(password string) (string, error) {
 	fromPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -15,12 +15,12 @@ func PasswordEncryption(password string) (string, error) {
 	return string(fromPassword), nil
 }
 
-// PasswordCompare 判断密码是否正确
+// PasswordCompare 函数用于处理PasswordCompare相关逻辑。
 func PasswordCompare(hashedPassword, password string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)) == nil
 }
 
-// PasswordValidateStrength 校验密码强度,判断是否同时包含大小写数字和字符,不能有空格
+// PasswordValidateStrength 函数用于处理PasswordValidateStrength相关逻辑。
 func PasswordValidateStrength(password string, minLen, maxLen int) bool {
 	if len(password) < minLen || len(password) > maxLen {
 		return false

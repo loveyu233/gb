@@ -18,7 +18,7 @@ import (
 	to结构体的方法如何和form中的结构体字段名称一样会被调用
 */
 
-// Copy 把from的值赋值到to中,如果还需要进行字段的处理github.com/samber/lo中的Map方法更灵活
+// Copy 函数用于处理Copy相关逻辑。
 func Copy(from, to any) error {
 	if !IsPtr(to) {
 		return errors.New("to必须是指针类型")
@@ -26,7 +26,7 @@ func Copy(from, to any) error {
 	return copier.Copy(to, from)
 }
 
-// DeepCopy 嵌套型结构复制,如果还需要进行字段的处理github.com/samber/lo中的Map方法更灵活
+// DeepCopy 函数用于处理DeepCopy相关逻辑。
 func DeepCopy(from, to any) error {
 	if !IsPtr(to) {
 		return errors.New("to必须是指针类型")

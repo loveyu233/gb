@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-// ScopeOrderDesc 倒序
+// ScopeOrderDesc 方法用于处理ScopeOrderDesc相关逻辑。
 func (db *GormClient) ScopeOrderDesc(columnName ...string) func(db *gorm.DB) *gorm.DB {
 	var order string
 	if len(columnName) > 0 {
@@ -25,7 +25,7 @@ func (db *GormClient) ScopeOrderDesc(columnName ...string) func(db *gorm.DB) *go
 	}
 }
 
-// SelectByID 查询指定id数据,obj必须为指针
+// SelectByID 方法用于处理SelectByID相关逻辑。
 func (db *GormClient) SelectByID(obj schema.Tabler, id any) error {
 	if !IsPtr(obj) {
 		return errors.New("obj必须是指针类型")
@@ -40,7 +40,7 @@ func (db *GormClient) SelectByID(obj schema.Tabler, id any) error {
 	return nil
 }
 
-// ScopePaginationFromGin 从gin的上下文中解析出分页参数并返回分页的scope
+// ScopePaginationFromGin 方法用于处理ScopePaginationFromGin相关逻辑。
 func (db *GormClient) ScopePaginationFromGin(c *gin.Context) func(db *gorm.DB) *gorm.DB {
 	page, size := ParsePaginationParams(c)
 
@@ -53,7 +53,7 @@ func (db *GormClient) ScopePaginationFromGin(c *gin.Context) func(db *gorm.DB) *
 	}
 }
 
-// ScopePagination 分页,默认从1开始
+// ScopePagination 方法用于处理ScopePagination相关逻辑。
 func (db *GormClient) ScopePagination(page, size int) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if size == -1 {
@@ -64,21 +64,21 @@ func (db *GormClient) ScopePagination(page, size int) func(db *gorm.DB) *gorm.DB
 	}
 }
 
-// ScopeFilterID 根据ID过滤
+// ScopeFilterID 方法用于处理ScopeFilterID相关逻辑。
 func (db *GormClient) ScopeFilterID(id int64) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("id = ?", id)
 	}
 }
 
-// ScopeFilterStatus 根据状态过滤
+// ScopeFilterStatus 方法用于处理ScopeFilterStatus相关逻辑。
 func (db *GormClient) ScopeFilterStatus(status any) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("status = ?", status)
 	}
 }
 
-// ScopeDateRange 根据时间范围过滤
+// ScopeDateRange 方法用于处理ScopeDateRange相关逻辑。
 func (db *GormClient) ScopeDateRange(field string, start, end *time.Time) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if start == nil && end == nil {
@@ -97,7 +97,7 @@ func (db *GormClient) ScopeDateRange(field string, start, end *time.Time) func(d
 	}
 }
 
-// ScopeFilterKeyword 根据关键字过滤
+// ScopeFilterKeyword 方法用于处理ScopeFilterKeyword相关逻辑。
 func (db *GormClient) ScopeFilterKeyword(keyword string, columns ...string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if keyword == "" || len(columns) == 0 {
@@ -121,12 +121,12 @@ func (db *GormClient) ScopeFilterKeyword(keyword string, columns ...string) func
 	}
 }
 
-// SelectForUpdateTx 获取事务并加锁
+// SelectForUpdateTx 方法用于处理SelectForUpdateTx相关逻辑。
 func (db *GormClient) SelectForUpdateTx() *gorm.DB {
 	return db.DB.Clauses(clause.Locking{Strength: "UPDATE"})
 }
 
-// ScopeTime 查询时间范围, start <= column < end
+// ScopeTime 方法用于处理ScopeTime相关逻辑。
 func (db *GormClient) ScopeTime(start, end string, columns ...string) func(db *gorm.DB) *gorm.DB {
 	var column string
 	if len(columns) > 0 {
@@ -139,12 +139,12 @@ func (db *GormClient) ScopeTime(start, end string, columns ...string) func(db *g
 	}
 }
 
-// Transaction 开启事务(db.Transaction)
+// Transaction 方法用于处理Transaction相关逻辑。
 func (db *GormClient) Transaction(tx func(tx *gorm.DB) error) error {
 	return db.DB.Transaction(tx)
 }
 
-// Lock 加锁
+// Lock 方法用于处理Lock相关逻辑。
 func (db *GormClient) Lock() *gorm.DB {
 	return db.Clauses(clause.Locking{Strength: "UPDATE"})
 }

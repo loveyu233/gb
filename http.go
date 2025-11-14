@@ -12,7 +12,7 @@ type HTTPServer struct {
 	server *http.Server
 }
 
-// InitHTTPServerAndStart 默认自动添加/前缀/healthz的any请求用于存活和就绪检查,没有配置前缀则默认前缀为/api
+// InitHTTPServerAndStart 函数用于处理InitHTTPServerAndStart相关逻辑。
 func InitHTTPServerAndStart(listenAddr string, opts ...GinRouterConfigOptionFunc) *HTTPServer {
 	var config RouterConfig
 	for _, opt := range opts {
@@ -24,7 +24,7 @@ func InitHTTPServerAndStart(listenAddr string, opts ...GinRouterConfigOptionFunc
 	if config.prefix == "" {
 		config.prefix = "/api"
 	}
-	initPrivateRouter(config)
+	engine := initPrivateRouter(config)
 	server := &HTTPServer{server: &http.Server{
 		Addr:    listenAddr,
 		Handler: engine,
@@ -46,14 +46,14 @@ func InitHTTPServerAndStart(listenAddr string, opts ...GinRouterConfigOptionFunc
 	return server
 }
 
-// StartHTTPServer 启动http服务
+// startHTTPServer 方法用于处理startHTTPServer相关逻辑。
 func (h *HTTPServer) startHTTPServer() {
 	if err := h.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		panic(err)
 	}
 }
 
-// setupGracefulShutdown 优雅关机
+// setupGracefulShutdown 方法用于处理setupGracefulShutdown相关逻辑。
 func (h *HTTPServer) setupGracefulShutdown() {
 	NewHook().Close(func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
