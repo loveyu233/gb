@@ -19,7 +19,7 @@ func ReqPageSize(page, size int) (int, int) {
 	if size <= 0 || size > 50 {
 		size = 20
 	}
-	return page, size
+	return page, (page - 1) * size
 }
 
 // ReqFileUploadGoroutine 函数用于处理ReqFileUploadGoroutine相关逻辑。
