@@ -95,7 +95,7 @@ func MaskMobile(mobile string) string {
 	}
 
 	// 对手机号进行脱敏：前3位 + 5个* + 后3位
-	return mobile[:3] + "*****" + mobile[8:]
+	return mobile[:3] + "****" + mobile[7:]
 }
 
 // MaskIDCardCustom 函数用于处理MaskIDCardCustom相关逻辑。
