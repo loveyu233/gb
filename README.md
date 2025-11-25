@@ -1,36 +1,27 @@
-# gb · Go Web 开发工具箱
+# gb · Go Web 多端服务工具箱
 
-<p align="center">
-  <img alt="Go Version" src="https://img.shields.io/badge/Go-1.18%2B-00ADD8?style=flat-square" />
-  <img alt="License" src="https://img.shields.io/badge/License-MIT-green?style=flat-square" />
-  <img alt="Build" src="https://img.shields.io/badge/Build-Passing-brightgreen?style=flat-square" />
-  <img alt="Coverage" src="https://img.shields.io/badge/Coverage-85%25-yellow?style=flat-square" />
-</p>
+`gb` 是一个面向业务团队的 Go Web 工具箱，提供 **统一的登录 / 支付多渠道聚合、Web 中间件、数据访问、任务调度、日志与常见工具**。通过约定式初始化 (`InitXxx`) 与单例调用 (`InsXxx`) 的方式，开发者可以在最短时间内搭建具备生产特性的 API 服务。
 
-<p align="center">`gb` 是一个面向 Go Web 场景的多合一工具箱，帮助你在最短时间内交付可靠的 API、任务和工具服务。</p>
+## 目录
+- [核心特性](#核心特性)
+- [快速开始](#快速开始)
+- [多渠道登录 / 支付服务](#多渠道登录--支付服务)
+- [Web & 中间件](#web--中间件)
+- [数据与工具](#数据与工具)
+- [模块一览](#模块一览)
+- [开发建议](#开发建议)
+- [贡献指南](#贡献指南)
 
----
-
-## 📌 项目简介
-
-`gb` 通过统一的初始化（`InitXxx`）与获取实例（`InsXxx`）约定，封装了 Web、存储、任务、并发与常用工具能力，开发者可以按需挑选模块，快速构建具备生产级特性的 Go 服务。
-
----
-
-## ✨ 功能亮点
-
-| 维度 | 能力速览 |
+## 核心特性
+| 维度 | 能力 |
 | --- | --- |
-| Web 接入 | Gin 引擎、Trace-ID、请求日志、恢复、中间件链路、Swagger 文档、参数校验 |
-| 数据存储 | GORM 封装、MySQL 驱动、Redis / RedSync、分布式锁、雪花 ID、精度计算 |
-| 工程效率 | Zerolog 日志、Gocron 任务、Resty HTTP 客户端、Excel 导入导出、Lua 引擎 |
-| 并发控制 | ants 协程池、Context 助手、信号钩子、统一配置加载 |
-| 安全与认证 | JWT 中间件、密码哈希、掩码工具 |
+| 多渠道登录 / 支付 | 内置微信 / 支付宝 Provider，可拓展自定义渠道，统一路由与日志沉淀 |
+| Web 中台 | Gin 引擎封装、TraceID、链路日志、CORS、恢复、Swagger、参数校验 |
+| 数据访问 | GORM 包装、参数 Scope 工具、Redis/RedSync、分布式锁、Snowflake ID |
+| 工程效率 | Zerolog 日志、Resty HTTP 客户端、Gocron 调度、Excel 导入导出、Lua 扩展 |
+| 安全工具 | JWT 中间件、密码哈希、掩码、AES 加密、请求重试及限流脚本 |
 
----
-
-## 🚀 快速开始
-
+## 快速开始
 ```go
 package main
 
@@ -38,77 +29,106 @@ import (
     "log"
 
     "github.com/loveyu233/gb"
+    "github.com/loveyu233/gb/channel"
+    "github.com/loveyu233/gb/login"
+    "github.com/loveyu233/gb/pay"
 )
 
 func main() {
-    if err := gb.InitGormDB(gb.GormConnConfig{
-        Username: "root",
-        Password: "password",
-        Host:     "127.0.0.1",
-        Port:     3306,
-        Database: "demo",
-    }, gb.GormDefaultLogger()); err != nil {
+    // 初始化数据库、Redis、HTTP 服务等
+    if err := gb.InitGormDB(gb.GormConnConfig{Username: "root", Password: "123456", Host: "127.0.0.1", Port: 3306, Database: "demo"}, gb.GormDefaultLogger()); err != nil {
+        log.Fatal(err)
+    }
+    if err := gb.InitRedis(gb.WithRedisAddressOption([]string{"127.0.0.1:6379"})); err != nil {
         log.Fatal(err)
     }
 
-    if err := gb.InitRedis(
-        gb.WithRedisAddressOption([]string{"127.0.0.1:6379"}),
-        gb.WithRedisPasswordOption("")
-    ); err != nil {
-        log.Fatal(err)
-    }
+    // 构建渠道 Provider（以微信/支付宝示例，业务方实现对应接口即可）
+    wxLoginSvc, _ := login.InitWXMiniProgramService(/* 配置 */)
+    wxPaySvc, _ := pay.InitWXWXPaymentApp(/* 配置 */)
+    pay.InitAliClient(/* 配置 */, true, &CustomZFBImpl{})
 
-    gb.InitHTTPServerAndStart(":8080",
-        gb.WithGinRouterPrefix("/api"),
-        gb.WithGinRouterGlobalMiddleware(gb.GinLogSetModuleName("example")),
+    unifiedSvc, _ := channel.NewService(
+        channel.Provider{Login: wxLoginSvc, Payment: wxPaySvc},
+        channel.Provider{Login: pay.InsZFB, Payment: pay.InsZFB},
     )
+
+    router := gb.InitHTTPServerAndStart(":8080",
+        gb.WithGinRouterPrefix("/api"),
+        gb.WithGinRouterGlobalMiddleware(gb.GinLogSetModuleName("demo")),
+    )
+    unifiedSvc.RegisterRoutes(router.Group("/channel"))
+
+    select {}
 }
 ```
+路由示例：
+- `POST /api/channel/wechat/login`
+- `POST /api/channel/alipay/pay`
+- `POST /api/channel/wechat/pay/notify`
+- `POST /api/channel/alipay/refund`
 
----
+## 多渠道登录 / 支付服务
+`channel.Service` 通过注册 `LoginProvider` 与 `PaymentProvider`，实现：
+- **统一路由**：自动根据 `:channel` 参数选择实现。
+- **日志与追踪**：中间件自动写入 `module/option`，可结合 `MiddlewareLogger` 持久化。
+- **业务解耦**：微信 / 支付宝 / 自定义渠道共享同一套 Handler，业务方只需实现接口。
 
-## 🧩 核心模块
+### 接口约定
+```go
+type LoginProvider interface {
+    ChannelName() string
+    HandleLogin(*gin.Context)
+    SaveLoginLog() bool
+}
 
-### Web & API
-- Gin 引擎封装：统一注入 Trace-ID、请求日志、恢复、中英文响应结构。
-- JWT、中间件链路、Swagger 文档生成、请求参数验证。
+type PaymentProvider interface {
+    ChannelName() string
+    HandlePay(*gin.Context)
+    HandlePayNotify(*gin.Context)
+    HandleRefund(*gin.Context)
+    HandleRefundNotify(*gin.Context)
+    SavePaymentLog() bool
+}
+```
+官方实现：
+- 微信：`WXMini`（登录）、`WXPay`（支付）
+- 支付宝：`ZFBClient`（登录 + 支付）
 
-### 数据与存储
-- `InitGormDB / InsDB`：简化多环境数据库接入。
-- Redis + RedSync：提供缓存、分布式锁、验证码存储等常见场景实现。
-- Excel 工具、Decimal 精度、ID 生成器（Snowflake、XID）。
+## Web & 中间件
+- `InitHTTPServerAndStart`：统一封装 Gin Engine、路由前缀、读写超时等配置。
+- 中间件：TraceID、请求日志（支持敏感头屏蔽、Body 截断）、CORS、异常恢复、请求耗时统计。
+- 参数工具：`params_verfiy`、`params_time`、`gin_param` 等结构体 Scope，可直接挂载到 GORM 查询。
+- Swagger：`swagger.Generator` 支持结构体、全局参数、模型自动生成。
 
-### 工具与任务
-- Resty HTTP 客户端、Gocron 任务调度、ants 协程池、Zerolog 日志体系。
-- Context、信号 Hook、配置加载、加解密、密码、掩码、Lua 等辅助工具。
+## 数据与工具
+- **GORM**：`InitGormDB` / `InsDB` 统一连接；常用 Scope（分页、时间、关键字）内置安全校验。
+- **Redis**：`InitRedis`、RedSync 分布式锁、限流 / 计数 / 队列 / Bloom / HLL 等 Lua 脚本封装。
+- **工具集**：Resty HTTP 客户端、Gocron 定时任务、ants 协程池、Excel 导入导出、AES/密码/掩码、Diff 比较、模板替换、日志适配等。
 
----
+## 模块一览
+| 模块 | 说明 |
+| --- | --- |
+| `channel` | 多渠道登录 / 支付统一调度与路由 |
+| `login` | 微信小程序登录（可拓展自定义实现） |
+| `pay` | 微信 / 支付宝支付能力、通知、退款 |
+| `middleware_*` | 日志、TraceID、CORS、恢复、耗时统计等中间件 |
+| `redis.go` | Redis 客户端、Lua 脚本（锁、限流、计数、布隆等） |
+| `excel_*` | Excel 导入/导出、Mapper、格式化工具 |
+| `sql_type.go` | 自定义日期/时间类型、JSON Slice、防止注入的 Scope |
+| `swagger.go` | Swagger 文档生成器与全局参数管理 |
+| 其他包 | `auth_jwt`、`params_*`、`mask`、`encrypt`、`snowflake` 等通用能力 |
 
-## 🌱 生态扩展
+## 开发建议
+1. **模块初始化一次即可**：例如 `InitGormDB`、`InitRedis`、`InitWXWXPaymentApp`，使用单例 `InsXxx`，避免重复连接。
+2. **统一错误响应**：`ResponseSuccess` / `ResponseError` / `ConvertToAppError` 帮助保持错误码一致。
+3. **安全使用 Scope**：`common.ScopeOrderDesc`、`ScopeFilterKeyword` 已加列名校验，鼓励二次封装业务查询。
+4. **日志与审计**：`MiddlewareLogger` 支持敏感头掩码与 Body 截断；支付、登录通过 `Save*Log` 控制审计需求。
+5. **扩展渠道**：实现 `LoginProvider` / `PaymentProvider`，即可接入任意第三方；建议在 Provider 内聚合底层 SDK。
 
-| 模块 | 描述 | 地址 |
-| --- | --- | --- |
-| Pay | 支付聚合能力（支付宝、微信） | https://github.com/loveyu233/pay |
-| Msg | 消息推送（企业微信、短信等） | https://github.com/loveyu233/msg |
-| Connection | 基础设施接入（ETCD、MQ 等） | https://github.com/loveyu233/connection |
-| Captcha | 图形验证码（滑块、旋转、点选） | https://github.com/loveyu233/captcha |
-| Login | 微信小程序等快捷登录流程 | https://github.com/loveyu233/login |
+## 贡献指南
+- **Issue**：欢迎提交需求、Bug 或安全问题。
+- **Pull Request**：请遵循 Go 官方格式 (`gofmt`) 并附带必要的单元测试。
+- **代码规范**：保持接口文档注释、中文错误提示与统一日志字段。
 
----
-
-## 🛠️ 开发建议
-
-1. **配置统一入口**：使用 `InitConfig` 绑定 JSON/YAML 配置，可通过 `GB_ENV / GO_ENV` 控制环境。
-2. **模块单例原则**：所有服务初始化后使用 `InsXxx()` 访问，避免重复创建。
-3. **链路日志**：结合 `MiddlewareLogger` 与自定义 `SaveLog`，沉淀查询条件与链路日志。
-4. **范围参数**：利用 `params_time.go` 中的 `Req*` 结构体，为 GET/POST 查询自动解析并包装 GORM Scope。
-
----
-
-## 🤝 参与贡献
-
-欢迎提交 Issue / PR 反馈需求、漏洞与想法。若该项目对你有帮助，请留下一个 ⭐️，让更多开发者看见它。
-
----
-
-Made with ❤️ by [loveyu233](https://github.com/loveyu233)
+如果 `gb` 对你有所帮助，欢迎 ⭐️ 支持，让更多团队受益。EOF
