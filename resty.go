@@ -12,7 +12,7 @@ var (
 	restyOnce          sync.Once
 )
 
-// initRestyClient 函数用于处理initRestyClient相关逻辑。
+// initRestyClient 用来按默认配置初始化 Resty 客户端。
 func initRestyClient() {
 	defaultRestyClient = resty.New()
 	defaultRestyClient.
@@ -22,13 +22,13 @@ func initRestyClient() {
 		SetRetryMaxWaitTime(2 * time.Second)
 }
 
-// RestyClient 函数用于处理RestyClient相关逻辑。
+// RestyClient 用来返回带懒加载的 Resty 单例。
 func RestyClient() *resty.Client {
 	restyOnce.Do(initRestyClient)
 	return defaultRestyClient
 }
 
-// R 函数用于处理R相关逻辑。
+// R 用来基于默认客户端创建请求。
 func R() *resty.Request {
 	return RestyClient().R()
 }

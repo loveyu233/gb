@@ -7,7 +7,7 @@ import (
 
 const TraceIDHeader = "Trace-Id"
 
-// MiddlewareTraceID 函数用于处理MiddlewareTraceID相关逻辑。
+// MiddlewareTraceID 用来确保请求拥有统一的 Trace ID。
 func MiddlewareTraceID() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		traceID := c.Request.Header.Get(TraceIDHeader)

@@ -5,7 +5,7 @@ import (
 	"html/template"
 )
 
-// TemplateReplace 函数用于处理TemplateReplace相关逻辑。
+// TemplateReplace 用来将字符串模板渲染成实际内容。
 func TemplateReplace(tmp string, replace any) (string, error) {
 	tpl, err := template.New("fee").Parse(tmp)
 	if err != nil {

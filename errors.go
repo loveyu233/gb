@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// IsErrRecordNotFound 函数用于处理IsErrRecordNotFound相关逻辑。
+// IsErrRecordNotFound 用来判断错误是否表示记录不存在。
 func IsErrRecordNotFound(err error) bool {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return true
@@ -14,12 +14,12 @@ func IsErrRecordNotFound(err error) bool {
 	return false
 }
 
-// redisClientNilErr 函数用于处理redisClientNilErr相关逻辑。
+// redisClientNilErr 用来生成 Redis 客户端未初始化的错误。
 func redisClientNilErr() error {
 	return errors.New("RedisClient为空,需要先使用gb.InitRedis()进行初始化")
 }
 
-// IsErrMysqlOne 函数用于处理IsErrMysqlOne相关逻辑。
+// IsErrMysqlOne 用来判断错误是否由唯一键冲突引起。
 func IsErrMysqlOne(err error) bool {
 	if err.Error() == "duplicated key not allowed" {
 		return true

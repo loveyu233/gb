@@ -6,12 +6,12 @@ import (
 	"sync"
 )
 
-// ReqKeywordAssembly 函数用于处理ReqKeywordAssembly相关逻辑。
+// ReqKeywordAssembly 用来把关键字包装成模糊查询格式。
 func ReqKeywordAssembly(keyword string) string {
 	return fmt.Sprintf("%%%s%%", keyword)
 }
 
-// ReqPageSize 函数用于处理ReqPageSize相关逻辑。
+// ReqPageSize 用来校正页码、页大小并计算偏移量。
 func ReqPageSize(page, size int) (int, int) {
 	if page <= 0 {
 		page = 1
@@ -22,7 +22,7 @@ func ReqPageSize(page, size int) (int, int) {
 	return page, (page - 1) * size
 }
 
-// ReqFileUploadGoroutine 函数用于处理ReqFileUploadGoroutine相关逻辑。
+// ReqFileUploadGoroutine 用来并发上传多文件并收集结果。
 func ReqFileUploadGoroutine(files []*multipart.FileHeader, uploadFileFunc func(file *multipart.FileHeader) (string, error)) (fileURLS []string, errs []error) {
 	var (
 		group sync.WaitGroup

@@ -28,7 +28,7 @@ type Worker struct {
 	number    int64      // 当前毫秒已经生成的id序列号(从0开始累加) 1秒内最多生成4194304个id
 }
 
-// NewWorker 函数用于处理NewWorker相关逻辑。
+// NewWorker 用来初始化一个雪花算法节点。
 func NewWorker(workerId int64) (*Worker, error) {
 	// 要先检测workerId是否在上面定义的范围内
 	if workerId < 0 || workerId > workerMax {
@@ -41,7 +41,7 @@ func NewWorker(workerId int64) (*Worker, error) {
 	}, nil
 }
 
-// GetId 方法用于处理GetId相关逻辑。
+// GetId 用来生成下一个全局唯一 ID。
 func (w *Worker) GetId() int64 {
 	//解决并发安全
 	w.mu.Lock()
@@ -85,7 +85,7 @@ func (w *Worker) GetId() int64 {
 	return int64((now-epoch)<<timeShift | (w.workerId << workerShift) | (w.number))
 }
 
-// Now 方法用于处理Now相关逻辑。
+// Now 用来返回当前的 Unix 时间戳。
 func (w *Worker) Now() int64 {
 	return time.Now().Unix()
 }

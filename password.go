@@ -6,7 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// PasswordEncryption 函数用于处理PasswordEncryption相关逻辑。
+// PasswordEncryption 用来对明文密码进行 bcrypt 加密。
 func PasswordEncryption(password string) (string, error) {
 	fromPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -15,12 +15,12 @@ func PasswordEncryption(password string) (string, error) {
 	return string(fromPassword), nil
 }
 
-// PasswordCompare 函数用于处理PasswordCompare相关逻辑。
+// PasswordCompare 用来比较加密密码与输入密码。
 func PasswordCompare(hashedPassword, password string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)) == nil
 }
 
-// PasswordValidateStrength 函数用于处理PasswordValidateStrength相关逻辑。
+// PasswordValidateStrength 用来检测密码的长度和复杂度是否合规。
 func PasswordValidateStrength(password string, minLen, maxLen int) bool {
 	if len(password) < minLen || len(password) > maxLen {
 		return false

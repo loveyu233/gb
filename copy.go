@@ -18,7 +18,7 @@ import (
 	to结构体的方法如何和form中的结构体字段名称一样会被调用
 */
 
-// Copy 函数用于处理Copy相关逻辑。
+// Copy 用来按字段名复制结构体数据到目标。
 func Copy(from, to any) error {
 	if !IsPtr(to) {
 		return errors.New("to必须是指针类型")
@@ -26,7 +26,7 @@ func Copy(from, to any) error {
 	return copier.Copy(to, from)
 }
 
-// DeepCopy 函数用于处理DeepCopy相关逻辑。
+// DeepCopy 用来执行深度复制并跳过空值。
 func DeepCopy(from, to any) error {
 	if !IsPtr(to) {
 		return errors.New("to必须是指针类型")

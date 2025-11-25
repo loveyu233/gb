@@ -15,7 +15,7 @@ type ReqDateTimeStartEnd struct {
 	DateTimeFilter bool `json:"-"`
 }
 
-// Parse 方法用于处理Parse相关逻辑。
+// Parse 用来解析开始与结束的日期时间并设置过滤标记。
 func (req *ReqDateTimeStartEnd) Parse() error {
 	start, hasStart, err := parseOptional(req.StartDateTimeStr, ParseDateTimeValue)
 	if err != nil {
@@ -55,7 +55,7 @@ type ReqDateTime struct {
 	DateTime    DateTime `json:"-" form:"-"`
 }
 
-// Parse 方法用于处理Parse相关逻辑。
+// Parse 用来解析单个日期时间字符串。
 func (req *ReqDateTime) Parse() error {
 	if req.DateTimeStr != "" {
 		s, err := ParseDateTimeValue(req.DateTimeStr)
@@ -78,7 +78,7 @@ type ReqDateStartEnd struct {
 	DateFilter bool `json:"-"`
 }
 
-// Parse 方法用于处理Parse相关逻辑。
+// Parse 用来解析日期范围参数。
 func (req *ReqDateStartEnd) Parse() error {
 	start, hasStart, err := parseOptional(req.StartDateStr, ParseDateOnly)
 	if err != nil {
@@ -118,7 +118,7 @@ type ReqDate struct {
 	Date    DateOnly `json:"-" form:"-"`
 }
 
-// Parse 方法用于处理Parse相关逻辑。
+// Parse 用来解析单个日期字符串。
 func (req *ReqDate) Parse() error {
 	if value, ok, err := parseOptional(req.DateStr, ParseDateOnly); err != nil {
 		return err
@@ -138,7 +138,7 @@ type ReqTimeStartEnd struct {
 	TimeFilter bool `json:"-"`
 }
 
-// Parse 方法用于处理Parse相关逻辑。
+// Parse 用来解析起止时间并设置 TimeFilter。
 func (req *ReqTimeStartEnd) Parse() error {
 	start, hasStart, err := parseOptional(req.StartTimeStr, ParseTimeOnly)
 	if err != nil {
@@ -178,7 +178,7 @@ type ReqTime struct {
 	Time    TimeOnly `json:"-" form:"-"`
 }
 
-// Parse 方法用于处理Parse相关逻辑。
+// Parse 用来解析单个时间值。
 func (req *ReqTime) Parse() error {
 	if value, ok, err := parseOptional(req.TimeStr, ParseTimeOnly); err != nil {
 		return err
@@ -198,7 +198,7 @@ type ReqTimeHourMinuteStartEnd struct {
 	TimeHourMinuteFilter bool `json:"-"`
 }
 
-// Parse 方法用于处理Parse相关逻辑。
+// Parse 用来解析起止的时分参数。
 func (req *ReqTimeHourMinuteStartEnd) Parse() error {
 	start, hasStart, err := parseOptional(req.StartTimeHourMinuteStr, ParseHourMinute)
 	if err != nil {
@@ -238,7 +238,7 @@ type ReqTimeHourMinute struct {
 	TimeHourMinute    TimeHourMinute `json:"-" form:"-"`
 }
 
-// Parse 方法用于处理Parse相关逻辑。
+// Parse 用来解析单个时分字符串。
 func (req *ReqTimeHourMinute) Parse() error {
 	if value, ok, err := parseOptional(req.TimeHourMinuteStr, ParseHourMinute); err != nil {
 		return err

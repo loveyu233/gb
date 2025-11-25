@@ -28,7 +28,7 @@ type RouterConfig struct {
 
 type GinModel string
 
-// String 方法用于处理String相关逻辑。
+// String 用来返回 GinModel 的字符串表现形式。
 func (m GinModel) String() string {
 	return string(m)
 }
@@ -41,91 +41,91 @@ var (
 
 type GinRouterConfigOptionFunc func(*RouterConfig)
 
-// WithGinSkipLog 函数用于处理WithGinSkipLog相关逻辑。
+// WithGinSkipLog 用来控制是否跳过访问日志中间件。
 func WithGinSkipLog(skipLog bool) GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.skipLog = skipLog
 	}
 }
 
-// WithGinReadTimeout 函数用于处理WithGinReadTimeout相关逻辑。
+// WithGinReadTimeout 用来设置 HTTP 服务器的读取超时。
 func WithGinReadTimeout(d time.Duration) GinRouterConfigOptionFunc {
 	return func(routerConfig *RouterConfig) {
 		routerConfig.readTimeout = d
 	}
 }
 
-// WithGinWriteTimeout 函数用于处理WithGinWriteTimeout相关逻辑。
+// WithGinWriteTimeout 用来设置 HTTP 响应写入超时。
 func WithGinWriteTimeout(d time.Duration) GinRouterConfigOptionFunc {
 	return func(routerConfig *RouterConfig) {
 		routerConfig.writeTimeout = d
 	}
 }
 
-// WithGinIdleTimeout 函数用于处理WithGinIdleTimeout相关逻辑。
+// WithGinIdleTimeout 用来设置连接空闲超时时间。
 func WithGinIdleTimeout(d time.Duration) GinRouterConfigOptionFunc {
 	return func(routerConfig *RouterConfig) {
 		routerConfig.idleTimeout = d
 	}
 }
 
-// WithGinMaxHeaderBytes 函数用于处理WithGinMaxHeaderBytes相关逻辑。
+// WithGinMaxHeaderBytes 用来限制请求头允许的最大字节数。
 func WithGinMaxHeaderBytes(d int) GinRouterConfigOptionFunc {
 	return func(routerConfig *RouterConfig) {
 		routerConfig.maxHeaderBytes = d
 	}
 }
 
-// WithGinRouterModel 函数用于处理WithGinRouterModel相关逻辑。
+// WithGinRouterModel 用来指定 gin 运行模式。
 func WithGinRouterModel(model GinModel) GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.model = model
 	}
 }
 
-// WithGinRouterOutputHealthzLog 函数用于处理WithGinRouterOutputHealthzLog相关逻辑。
+// WithGinRouterOutputHealthzLog 用来允许 healthz 请求输出日志。
 func WithGinRouterOutputHealthzLog() GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.outputHealthz = true
 	}
 }
 
-// WithGinRouterPrefix 函数用于处理WithGinRouterPrefix相关逻辑。
+// WithGinRouterPrefix 用来设置 API 前缀。
 func WithGinRouterPrefix(prefix string) GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.prefix = prefix
 	}
 }
 
-// WithGinRouterAuthHandler 函数用于处理WithGinRouterAuthHandler相关逻辑。
+// WithGinRouterAuthHandler 用来配置需要鉴权的中间件。
 func WithGinRouterAuthHandler(handlers ...gin.HandlerFunc) GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.authMiddleware = handlers
 	}
 }
 
-// WithGinRouterGlobalMiddleware 函数用于处理WithGinRouterGlobalMiddleware相关逻辑。
+// WithGinRouterGlobalMiddleware 用来注册全局中间件链。
 func WithGinRouterGlobalMiddleware(handlers ...gin.HandlerFunc) GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.globalMiddleware = handlers
 	}
 }
 
-// WithGinRouterLogRecordHeaderKeys 函数用于处理WithGinRouterLogRecordHeaderKeys相关逻辑。
+// WithGinRouterLogRecordHeaderKeys 用来指定需要记录的请求头。
 func WithGinRouterLogRecordHeaderKeys(keys []string) GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.recordHeaderKeys = keys
 	}
 }
 
-// WithGinRouterLogSaveLog 函数用于处理WithGinRouterLogSaveLog相关逻辑。
+// WithGinRouterLogSaveLog 用来注入持久化请求日志的回调。
 func WithGinRouterLogSaveLog(f func(ReqLog)) GinRouterConfigOptionFunc {
 	return func(config *RouterConfig) {
 		config.saveLog = f
 	}
 }
 
-// initPrivateRouter 函数用于处理initPrivateRouter相关逻辑。
+// initPrivateRouter 用来组装带公共和私有路由的 gin 引擎。
 func initPrivateRouter(config RouterConfig) *gin.Engine {
 	publicRoutes := make([]func(*gin.RouterGroup), 0, len(PublicRoutes)+1)
 	publicRoutes = append(publicRoutes, func(group *gin.RouterGroup) {
@@ -156,7 +156,7 @@ func initPrivateRouter(config RouterConfig) *gin.Engine {
 	return engine
 }
 
-// newGinRouter 函数用于处理newGinRouter相关逻辑。
+// newGinRouter 用来创建指定模式的 gin.Engine 并挂载中间件。
 func newGinRouter(mode GinModel, globalMiddlewares ...gin.HandlerFunc) *gin.Engine {
 	gin.SetMode(mode.String())
 	engine := gin.New()
@@ -167,7 +167,7 @@ func newGinRouter(mode GinModel, globalMiddlewares ...gin.HandlerFunc) *gin.Engi
 	return engine
 }
 
-// registerRoutes 函数用于处理registerRoutes相关逻辑。
+// registerRoutes 用来在基本路径下注入公开和私有路由。
 func registerRoutes(r *gin.Engine, baseRouterPrefix string, publicRoutes, privateRoutes []func(*gin.RouterGroup), authMiddlewares ...gin.HandlerFunc) {
 	baseRouter := r.Group(baseRouterPrefix)
 	for _, route := range publicRoutes {

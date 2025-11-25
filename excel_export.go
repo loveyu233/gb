@@ -85,56 +85,56 @@ var (
 
 type WithExcelExporterOption func(*ExcelExporter)
 
-// WithExcelExporterSheetName 函数用于处理WithExcelExporterSheetName相关逻辑。
+// WithExcelExporterSheetName 用来设置导出的工作表名称。
 func WithExcelExporterSheetName(sheetName string) WithExcelExporterOption {
 	return func(e *ExcelExporter) {
 		e.SheetName = sheetName
 	}
 }
 
-// WithExcelExporterHeaderRow 函数用于处理WithExcelExporterHeaderRow相关逻辑。
+// WithExcelExporterHeaderRow 用来指定表头所在的行号。
 func WithExcelExporterHeaderRow(headerRow int) WithExcelExporterOption {
 	return func(e *ExcelExporter) {
 		e.HeaderRow = headerRow
 	}
 }
 
-// WithExcelExporterDataStartRow 函数用于处理WithExcelExporterDataStartRow相关逻辑。
+// WithExcelExporterDataStartRow 用来设置数据开始写入的行。
 func WithExcelExporterDataStartRow(dataStartRow int) WithExcelExporterOption {
 	return func(e *ExcelExporter) {
 		e.DataStartRow = dataStartRow
 	}
 }
 
-// WithExcelExporterIncludeHeader 函数用于处理WithExcelExporterIncludeHeader相关逻辑。
+// WithExcelExporterIncludeHeader 用来控制是否写入表头。
 func WithExcelExporterIncludeHeader(includeHeader *bool) WithExcelExporterOption {
 	return func(e *ExcelExporter) {
 		e.IncludeHeaderPtr = includeHeader
 	}
 }
 
-// WithExcelExporterColumnWidths 函数用于处理WithExcelExporterColumnWidths相关逻辑。
+// WithExcelExporterColumnWidths 用来批量定义列宽设置。
 func WithExcelExporterColumnWidths(columnWidths map[string]float64) WithExcelExporterOption {
 	return func(e *ExcelExporter) {
 		e.ColumnWidths = columnWidths
 	}
 }
 
-// WithExcelExporterHeaderStyle 函数用于处理WithExcelExporterHeaderStyle相关逻辑。
+// WithExcelExporterHeaderStyle 用来自定义表头样式。
 func WithExcelExporterHeaderStyle(headerStyle *HeaderStyle) WithExcelExporterOption {
 	return func(e *ExcelExporter) {
 		e.HeaderStyle = headerStyle
 	}
 }
 
-// WithExcelExporterDataStyle 函数用于处理WithExcelExporterDataStyle相关逻辑。
+// WithExcelExporterDataStyle 用来设定数据行样式。
 func WithExcelExporterDataStyle(dataStyle *DataStyle) WithExcelExporterOption {
 	return func(e *ExcelExporter) {
 		e.DataStyle = dataStyle
 	}
 }
 
-// InitExcelExporter 函数用于处理InitExcelExporter相关逻辑。
+// InitExcelExporter 用来根据选项初始化 ExcelExporter。
 func InitExcelExporter(options ...WithExcelExporterOption) *ExcelExporter {
 	excelExporter := new(ExcelExporter)
 	for i := range options {
@@ -182,7 +182,7 @@ func InitExcelExporter(options ...WithExcelExporterOption) *ExcelExporter {
 	return excelExporter
 }
 
-// ExportToFile 方法用于处理ExportToFile相关逻辑。
+// ExportToFile 用来将数据导出的结果保存为 Excel 文件。
 func (e *ExcelExporter) ExportToFile(data interface{}, filePath string) error {
 	// 创建Excel文件
 	file := excelize.NewFile()
@@ -203,7 +203,7 @@ func (e *ExcelExporter) ExportToFile(data interface{}, filePath string) error {
 	return file.SaveAs(filePath)
 }
 
-// ExportToBuffer 方法用于处理ExportToBuffer相关逻辑。
+// ExportToBuffer 用来将导出的 Excel 内容写入内存缓冲区。
 func (e *ExcelExporter) ExportToBuffer(data interface{}) (*bytes.Buffer, error) {
 	// 创建Excel文件
 	file := excelize.NewFile()
@@ -220,7 +220,7 @@ func (e *ExcelExporter) ExportToBuffer(data interface{}) (*bytes.Buffer, error) 
 	return file.WriteToBuffer()
 }
 
-// ExportToExcelizeFile 方法用于处理ExportToExcelizeFile相关逻辑。
+// ExportToExcelizeFile 用来返回包含导出内容的 excelize.File。
 func (e *ExcelExporter) ExportToExcelizeFile(data interface{}) (*excelize.File, error) {
 	// 创建Excel文件
 	file := excelize.NewFile()
@@ -237,7 +237,7 @@ func (e *ExcelExporter) ExportToExcelizeFile(data interface{}) (*excelize.File, 
 	return file, nil
 }
 
-// ExportToSheet 方法用于处理ExportToSheet相关逻辑。
+// ExportToSheet 用来把数据写入指定工作表并应用样式。
 func (e *ExcelExporter) ExportToSheet(data interface{}, file *excelize.File, sheetName string) error {
 	// 参数验证
 	dataValue := reflect.ValueOf(data)
@@ -295,7 +295,7 @@ func (e *ExcelExporter) ExportToSheet(data interface{}, file *excelize.File, she
 	return nil
 }
 
-// getExportStructInfo 方法用于处理getExportStructInfo相关逻辑。
+// getExportStructInfo 用来解析结构体标签并缓存导出字段信息。
 func (e *ExcelExporter) getExportStructInfo(elemType reflect.Type) (*exportStructInfo, error) {
 	e.cacheMutex.RLock()
 	if info, exists := e.structCache[elemType]; exists {
@@ -367,7 +367,7 @@ func (e *ExcelExporter) getExportStructInfo(elemType reflect.Type) (*exportStruc
 	return info, nil
 }
 
-// getFormatter 方法用于处理getFormatter相关逻辑。
+// getFormatter 用来根据字段类型挑选合适的格式化器。
 func (e *ExcelExporter) getFormatter(fieldType reflect.Type, isPointer bool) valueFormatter {
 	if isPointer {
 		return pointerFormatter
@@ -392,7 +392,7 @@ func (e *ExcelExporter) getFormatter(fieldType reflect.Type, isPointer bool) val
 	return stringFormatter // 默认转换为字符串
 }
 
-// writeHeaders 方法用于处理writeHeaders相关逻辑。
+// writeHeaders 用来写入表头并应用表头样式。
 func (e *ExcelExporter) writeHeaders(file *excelize.File, sheetName string,
 	structInfo *exportStructInfo, row int) error {
 
@@ -424,7 +424,7 @@ func (e *ExcelExporter) writeHeaders(file *excelize.File, sheetName string,
 	return nil
 }
 
-// writeData 方法用于处理writeData相关逻辑。
+// writeData 用来批量格式化数据并写入工作表。
 func (e *ExcelExporter) writeData(file *excelize.File, sheetName string,
 	dataValue reflect.Value, structInfo *exportStructInfo, startRow int) error {
 
@@ -472,7 +472,7 @@ func (e *ExcelExporter) writeData(file *excelize.File, sheetName string,
 	return nil
 }
 
-// writeBatch 方法用于处理writeBatch相关逻辑。
+// writeBatch 用来将暂存的单元格数据写入 Excel。
 func (e *ExcelExporter) writeBatch(file *excelize.File, sheetName string,
 	cellData [][]interface{}, structInfo *exportStructInfo, startRow int, styleID int) error {
 
@@ -501,12 +501,12 @@ func (e *ExcelExporter) writeBatch(file *excelize.File, sheetName string,
 	return nil
 }
 
-// getCellName 方法用于处理getCellName相关逻辑。
+// getCellName 用来把行列索引转换成单元格名称。
 func (e *ExcelExporter) getCellName(row, col int) string {
 	return e.getColumnName(col) + strconv.Itoa(row)
 }
 
-// getColumnName 方法用于处理getColumnName相关逻辑。
+// getColumnName 用来把列索引转换为 Excel 列字母。
 func (e *ExcelExporter) getColumnName(col int) string {
 	if col < 26 {
 		return string(rune('A' + col))
@@ -525,7 +525,7 @@ func (e *ExcelExporter) getColumnName(col int) string {
 	return *(*string)(unsafe.Pointer(&result))
 }
 
-// createHeaderStyle 方法用于处理createHeaderStyle相关逻辑。
+// createHeaderStyle 用来根据配置生成表头样式。
 func (e *ExcelExporter) createHeaderStyle(file *excelize.File) (int, error) {
 	if e.HeaderStyle == nil {
 		return 0, nil
@@ -555,7 +555,7 @@ func (e *ExcelExporter) createHeaderStyle(file *excelize.File) (int, error) {
 	return file.NewStyle(style)
 }
 
-// createDataStyle 方法用于处理createDataStyle相关逻辑。
+// createDataStyle 用来创建数据单元格的样式。
 func (e *ExcelExporter) createDataStyle(file *excelize.File) (int, error) {
 	if e.DataStyle == nil {
 		return 0, nil
@@ -576,7 +576,7 @@ func (e *ExcelExporter) createDataStyle(file *excelize.File) (int, error) {
 	return file.NewStyle(style)
 }
 
-// applyColumnWidths 方法用于处理applyColumnWidths相关逻辑。
+// applyColumnWidths 用来为每列设置自定义或默认宽度。
 func (e *ExcelExporter) applyColumnWidths(file *excelize.File, sheetName string,
 	structInfo *exportStructInfo) {
 
@@ -595,7 +595,7 @@ func (e *ExcelExporter) applyColumnWidths(file *excelize.File, sheetName string,
 	}
 }
 
-// getDefaultColumnWidth 方法用于处理getDefaultColumnWidth相关逻辑。
+// getDefaultColumnWidth 用来根据字段类型返回推荐列宽。
 func (e *ExcelExporter) getDefaultColumnWidth(fieldType reflect.Type) float64 {
 	switch fieldType.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32:
@@ -617,7 +617,7 @@ func (e *ExcelExporter) getDefaultColumnWidth(fieldType reflect.Type) float64 {
 	return 15.0 // 默认宽度
 }
 
-// GetStats 方法用于处理GetStats相关逻辑。
+// GetStats 用来返回导出的行数和列数统计。
 func (e *ExcelExporter) GetStats() (rows, cols int) {
 	return e.exportedRows, e.exportedCols
 }
@@ -625,7 +625,7 @@ func (e *ExcelExporter) GetStats() (rows, cols int) {
 // 值格式化器实现
 type stringFormat struct{}
 
-// Format 方法用于处理Format相关逻辑。
+// Format 用来按原样输出字符串值。
 func (f *stringFormat) Format(value interface{}) string {
 	if value == nil {
 		return ""
@@ -635,7 +635,7 @@ func (f *stringFormat) Format(value interface{}) string {
 
 type intFormat struct{}
 
-// Format 方法用于处理Format相关逻辑。
+// Format 用来把整数转换为字符串。
 func (f *intFormat) Format(value interface{}) string {
 	if value == nil {
 		return ""
@@ -645,7 +645,7 @@ func (f *intFormat) Format(value interface{}) string {
 
 type floatFormat struct{}
 
-// Format 方法用于处理Format相关逻辑。
+// Format 用来将浮点数格式化为两位小数。
 func (f *floatFormat) Format(value interface{}) string {
 	if value == nil {
 		return ""
@@ -655,7 +655,7 @@ func (f *floatFormat) Format(value interface{}) string {
 
 type boolFormat struct{}
 
-// Format 方法用于处理Format相关逻辑。
+// Format 用来把布尔值转换为“是/否”文本。
 func (f *boolFormat) Format(value interface{}) string {
 	if value == nil {
 		return ""
@@ -671,7 +671,7 @@ func (f *boolFormat) Format(value interface{}) string {
 
 type timeFormat struct{}
 
-// Format 方法用于处理Format相关逻辑。
+// Format 用来将时间值转成标准字符串。
 func (f *timeFormat) Format(value interface{}) string {
 	if value == nil {
 		return ""
@@ -687,7 +687,7 @@ func (f *timeFormat) Format(value interface{}) string {
 
 type pointerFormat struct{}
 
-// Format 方法用于处理Format相关逻辑。
+// Format 用来解引用指针并委托对应的格式化器。
 func (f *pointerFormat) Format(value interface{}) string {
 	rv := reflect.ValueOf(value)
 	if rv.Kind() != reflect.Ptr || rv.IsNil() {

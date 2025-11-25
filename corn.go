@@ -19,17 +19,17 @@ type CornConfig struct {
 	Scheduler             gocron.Scheduler
 }
 
-// RunJob 方法用于处理RunJob相关逻辑。
+// RunJob 用来在调度器中注册一个任务。
 func (corn *CornConfig) RunJob(df gocron.JobDefinition, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	return corn.Scheduler.NewJob(df, task, options...)
 }
 
-// redisKey 方法用于处理redisKey相关逻辑。
+// redisKey 用来构建任务锁的 Redis 键名。
 func (corn *CornConfig) redisKey(id any) string {
 	return fmt.Sprintf("corn-%v-lock", id)
 }
 
-// RunJobTheOne 方法用于处理RunJobTheOne相关逻辑。
+// RunJobTheOne 用来在持有 Redis 锁时才注册任务，避免重复调度。
 func (corn *CornConfig) RunJobTheOne(id any, df gocron.JobDefinition, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	if InsRedis == nil {
 		return nil, redisClientNilErr()
@@ -40,7 +40,7 @@ func (corn *CornConfig) RunJobTheOne(id any, df gocron.JobDefinition, task gocro
 	return nil, nil
 }
 
-// RunJobEveryDuration 方法用于处理RunJobEveryDuration相关逻辑。
+// RunJobEveryDuration 用来按固定间隔周期执行任务。
 func (corn *CornConfig) RunJobEveryDuration(duration time.Duration, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	return corn.Scheduler.NewJob(
 		gocron.DurationJob(duration),
@@ -49,7 +49,7 @@ func (corn *CornConfig) RunJobEveryDuration(duration time.Duration, task gocron.
 	)
 }
 
-// RunJobEveryDurationTheOne 方法用于处理RunJobEveryDurationTheOne相关逻辑。
+// RunJobEveryDurationTheOne 用来在加锁后以固定间隔执行任务。
 func (corn *CornConfig) RunJobEveryDurationTheOne(id any, duration time.Duration, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	if InsRedis == nil {
 		return nil, redisClientNilErr()
@@ -64,12 +64,12 @@ func (corn *CornConfig) RunJobEveryDurationTheOne(id any, duration time.Duration
 	return nil, nil
 }
 
-// RunJobiATime 方法用于处理RunJobiATime相关逻辑。
+// RunJobiATime 用来在指定时间运行一次任务。
 func (corn *CornConfig) RunJobiATime(time time.Time, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	return corn.Scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartDateTime(time)), task, options...)
 }
 
-// RunJobiATimeTheOne 方法用于处理RunJobiATimeTheOne相关逻辑。
+// RunJobiATimeTheOne 用来加锁后在指定时间运行一次任务。
 func (corn *CornConfig) RunJobiATimeTheOne(id any, time time.Time, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	if InsRedis == nil {
 		return nil, redisClientNilErr()
@@ -81,12 +81,12 @@ func (corn *CornConfig) RunJobiATimeTheOne(id any, time time.Time, task gocron.T
 
 }
 
-// RunJobiATimes 方法用于处理RunJobiATimes相关逻辑。
+// RunJobiATimes 用来在多个指定时间各运行一次任务。
 func (corn *CornConfig) RunJobiATimes(times []time.Time, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	return corn.Scheduler.NewJob(gocron.OneTimeJob(gocron.OneTimeJobStartDateTimes(times...)), task, options...)
 }
 
-// RunJobiATimesTheOne 方法用于处理RunJobiATimesTheOne相关逻辑。
+// RunJobiATimesTheOne 用来在持锁情况下在多个时间执行任务。
 func (corn *CornConfig) RunJobiATimesTheOne(id any, times []time.Time, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	if InsRedis == nil {
 		return nil, redisClientNilErr()
@@ -97,7 +97,7 @@ func (corn *CornConfig) RunJobiATimesTheOne(id any, times []time.Time, task gocr
 	return nil, nil
 }
 
-// RunJobEverDay 方法用于处理RunJobEverDay相关逻辑。
+// RunJobEverDay 用来按每天固定时间段执行任务。
 func (corn *CornConfig) RunJobEverDay(hours, minutes, seconds, interval uint, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	return corn.Scheduler.NewJob(
 		gocron.DailyJob(interval, gocron.NewAtTimes(
@@ -108,7 +108,7 @@ func (corn *CornConfig) RunJobEverDay(hours, minutes, seconds, interval uint, ta
 	)
 }
 
-// RunJobEverDayTheOne 方法用于处理RunJobEverDayTheOne相关逻辑。
+// RunJobEverDayTheOne 用来在加锁后每天固定时刻执行任务。
 func (corn *CornConfig) RunJobEverDayTheOne(id any, hours, minutes, seconds, interval uint, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	if InsRedis == nil {
 		return nil, redisClientNilErr()
@@ -125,7 +125,7 @@ func (corn *CornConfig) RunJobEverDayTheOne(id any, hours, minutes, seconds, int
 	return nil, nil
 }
 
-// RunJobCrontab 方法用于处理RunJobCrontab相关逻辑。
+// RunJobCrontab 用来根据 cron 表达式调度任务。
 func (corn *CornConfig) RunJobCrontab(crontab string, withSeconds bool, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	return corn.Scheduler.NewJob(
 		gocron.CronJob(crontab, withSeconds),
@@ -134,7 +134,7 @@ func (corn *CornConfig) RunJobCrontab(crontab string, withSeconds bool, task goc
 	)
 }
 
-// RunJobCrontabTheOne 方法用于处理RunJobCrontabTheOne相关逻辑。
+// RunJobCrontabTheOne 用来在锁定后按 cron 表达式调度任务。
 func (corn *CornConfig) RunJobCrontabTheOne(id any, crontab string, withSeconds bool, task gocron.Task, options ...gocron.JobOption) (gocron.Job, error) {
 	if InsRedis == nil {
 		return nil, redisClientNilErr()
@@ -151,42 +151,42 @@ func (corn *CornConfig) RunJobCrontabTheOne(id any, crontab string, withSeconds 
 
 type CornOptionFunc func(*CornConfig)
 
-// WithLocation 函数用于处理WithLocation相关逻辑。
+// WithLocation 用来指定调度器使用的时区。
 func WithLocation(loc *time.Location) CornOptionFunc {
 	return func(c *CornConfig) {
 		c.location = loc
 	}
 }
 
-// WithBeforeJobRuns 函数用于处理WithBeforeJobRuns相关逻辑。
+// WithBeforeJobRuns 用来设置任务执行前的回调。
 func WithBeforeJobRuns(beforeJobRuns func(jobID uuid.UUID, jobName string)) CornOptionFunc {
 	return func(c *CornConfig) {
 		c.beforeJobRuns = beforeJobRuns
 	}
 }
 
-// WithAfterJobRuns 函数用于处理WithAfterJobRuns相关逻辑。
+// WithAfterJobRuns 用来设置任务执行后的回调。
 func WithAfterJobRuns(afterJobRuns func(jobID uuid.UUID, jobName string)) CornOptionFunc {
 	return func(c *CornConfig) {
 		c.afterJobRuns = afterJobRuns
 	}
 }
 
-// WithAfterJobRunsWithError 函数用于处理WithAfterJobRunsWithError相关逻辑。
+// WithAfterJobRunsWithError 用来设置任务出错时的回调。
 func WithAfterJobRunsWithError(afterJobRunsWithError func(jobID uuid.UUID, jobName string, err error)) CornOptionFunc {
 	return func(c *CornConfig) {
 		c.afterJobRunsWithError = afterJobRunsWithError
 	}
 }
 
-// WithCornJobs 函数用于处理WithCornJobs相关逻辑。
+// WithCornJobs 用来追加自定义的调度器选项。
 func WithCornJobs(options ...gocron.SchedulerOption) CornOptionFunc {
 	return func(c *CornConfig) {
 		c.options = append(c.options, options...)
 	}
 }
 
-// InitCornJob 函数用于处理InitCornJob相关逻辑。
+// InitCornJob 用来初始化 gocron 调度器并保存全局实例。
 func InitCornJob(options ...CornOptionFunc) error {
 	var corn = &CornConfig{
 		options: make([]gocron.SchedulerOption, 0),
@@ -226,12 +226,12 @@ func InitCornJob(options ...CornOptionFunc) error {
 	return nil
 }
 
-// Start 方法用于处理Start相关逻辑。
+// Start 用来启动调度器开始运行任务。
 func (corn *CornConfig) Start() {
 	corn.Scheduler.Start()
 }
 
-// Stop 方法用于处理Stop相关逻辑。
+// Stop 用来优雅关闭调度器。
 func (corn *CornConfig) Stop() error {
 	if err := corn.Scheduler.Shutdown(); err != nil {
 		return err

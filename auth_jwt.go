@@ -1,25 +1,3 @@
-// The MIT License (MIT)
-//
-// Copyright (c) 2016 Bo-Yi Wu
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 package gb
 
 import (
@@ -249,7 +227,7 @@ var (
 	IdentityKey = "identity"
 )
 
-// InitGinJWTMiddleware 函数用于处理InitGinJWTMiddleware相关逻辑。
+// InitGinJWTMiddleware 用来初始化 GinJWTMiddleware 并执行必要检查。
 func InitGinJWTMiddleware(m *GinJWTMiddleware) (*GinJWTMiddleware, error) {
 	if err := m.MiddlewareInit(); err != nil {
 		return nil, err
@@ -258,7 +236,7 @@ func InitGinJWTMiddleware(m *GinJWTMiddleware) (*GinJWTMiddleware, error) {
 	return m, nil
 }
 
-// readKeys 方法用于处理readKeys相关逻辑。
+// readKeys 用来加载配置中的私钥和公钥文件。
 func (mw *GinJWTMiddleware) readKeys() error {
 	err := mw.privateKey()
 	if err != nil {
@@ -271,7 +249,7 @@ func (mw *GinJWTMiddleware) readKeys() error {
 	return nil
 }
 
-// privateKey 方法用于处理privateKey相关逻辑。
+// privateKey 用来读取并解析 RSA 私钥。
 func (mw *GinJWTMiddleware) privateKey() error {
 	var keyData []byte
 	if mw.PrivKeyFile == "" {
@@ -292,7 +270,7 @@ func (mw *GinJWTMiddleware) privateKey() error {
 	return nil
 }
 
-// publicKey 方法用于处理publicKey相关逻辑。
+// publicKey 用来读取并解析 RSA 公钥。
 func (mw *GinJWTMiddleware) publicKey() error {
 	var keyData []byte
 	if mw.PubKeyFile == "" {
@@ -313,7 +291,7 @@ func (mw *GinJWTMiddleware) publicKey() error {
 	return nil
 }
 
-// usingPublicKeyAlgo 方法用于处理usingPublicKeyAlgo相关逻辑。
+// usingPublicKeyAlgo 用来判断签名算法是否为公钥算法。
 func (mw *GinJWTMiddleware) usingPublicKeyAlgo() bool {
 	switch mw.SigningAlgorithm {
 	case "RS256", "RS512", "RS384":
@@ -322,7 +300,7 @@ func (mw *GinJWTMiddleware) usingPublicKeyAlgo() bool {
 	return false
 }
 
-// MiddlewareInit 方法用于处理MiddlewareInit相关逻辑。
+// MiddlewareInit 用来填充中间件的默认配置与依赖。
 func (mw *GinJWTMiddleware) MiddlewareInit() error {
 	if mw.TokenLookup == "" {
 		mw.TokenLookup = "header:Authorization"
@@ -438,14 +416,14 @@ func (mw *GinJWTMiddleware) MiddlewareInit() error {
 	return nil
 }
 
-// MiddlewareFunc 方法用于处理MiddlewareFunc相关逻辑。
+// MiddlewareFunc 用来返回执行 JWT 校验的 gin.HandlerFunc。
 func (mw *GinJWTMiddleware) MiddlewareFunc() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		mw.middlewareImpl(c)
 	}
 }
 
-// middlewareImpl 方法用于处理middlewareImpl相关逻辑。
+// middlewareImpl 用来解析令牌、校验权限并写入上下文。
 func (mw *GinJWTMiddleware) middlewareImpl(c *gin.Context) {
 	claims, err := mw.GetClaimsFromJWT(c)
 	if err != nil {
@@ -492,7 +470,7 @@ func (mw *GinJWTMiddleware) middlewareImpl(c *gin.Context) {
 	c.Next()
 }
 
-// GetClaimsFromJWT 方法用于处理GetClaimsFromJWT相关逻辑。
+// GetClaimsFromJWT 用来解析请求中的 JWT 并返回 Claims。
 func (mw *GinJWTMiddleware) GetClaimsFromJWT(c *gin.Context) (MapClaims, error) {
 	token, err := mw.ParseToken(c)
 	if err != nil {
@@ -513,7 +491,7 @@ func (mw *GinJWTMiddleware) GetClaimsFromJWT(c *gin.Context) (MapClaims, error) 
 	return claims, nil
 }
 
-// LoginHandler 方法用于处理LoginHandler相关逻辑。
+// LoginHandler 用来处理登录请求并签发访问令牌。
 func (mw *GinJWTMiddleware) LoginHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if mw.Authenticator == nil {
@@ -564,7 +542,7 @@ func (mw *GinJWTMiddleware) LoginHandler() gin.HandlerFunc {
 	}
 }
 
-// LogoutHandler 方法用于处理LogoutHandler相关逻辑。
+// LogoutHandler 用来清理客户端 cookie 并返回退出响应。
 func (mw *GinJWTMiddleware) LogoutHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 删除认证 cookie
@@ -577,7 +555,7 @@ func (mw *GinJWTMiddleware) LogoutHandler() gin.HandlerFunc {
 	}
 }
 
-// signedString 方法用于处理signedString相关逻辑。
+// signedString 用来根据配置的密钥对 token 进行签名。
 func (mw *GinJWTMiddleware) signedString(token *jwt.Token) (string, error) {
 	var tokenString string
 	var err error
@@ -589,7 +567,7 @@ func (mw *GinJWTMiddleware) signedString(token *jwt.Token) (string, error) {
 	return tokenString, err
 }
 
-// RefreshHandler 方法用于处理RefreshHandler相关逻辑。
+// RefreshHandler 用来响应刷新令牌的 HTTP 请求。
 func (mw *GinJWTMiddleware) RefreshHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString, expire, err := mw.RefreshToken(c)
@@ -602,7 +580,7 @@ func (mw *GinJWTMiddleware) RefreshHandler() gin.HandlerFunc {
 	}
 }
 
-// RefreshToken 方法用于处理RefreshToken相关逻辑。
+// RefreshToken 用来校验旧令牌并生成新的 JWT。
 func (mw *GinJWTMiddleware) RefreshToken(c *gin.Context) (string, time.Time, error) {
 	claims, err := mw.CheckIfTokenExpire(c)
 	if err != nil {
@@ -638,7 +616,7 @@ func (mw *GinJWTMiddleware) RefreshToken(c *gin.Context) (string, time.Time, err
 	return tokenString, expire, nil
 }
 
-// CheckIfTokenExpire 方法用于处理CheckIfTokenExpire相关逻辑。
+// CheckIfTokenExpire 用来校验令牌是否在可刷新时间范围内。
 func (mw *GinJWTMiddleware) CheckIfTokenExpire(c *gin.Context) (jwt.MapClaims, error) {
 	token, err := mw.ParseToken(c)
 	if err != nil {
@@ -659,7 +637,7 @@ func (mw *GinJWTMiddleware) CheckIfTokenExpire(c *gin.Context) (jwt.MapClaims, e
 	return claims, nil
 }
 
-// TokenGenerator 方法用于处理TokenGenerator相关逻辑。
+// TokenGenerator 用来根据自定义数据生成 JWT 及过期时间。
 func (mw *GinJWTMiddleware) TokenGenerator(data interface{}) (string, time.Time, error) {
 	token := jwt.New(jwt.GetSigningMethod(mw.SigningAlgorithm))
 	claims := token.Claims.(jwt.MapClaims)
@@ -686,7 +664,7 @@ func (mw *GinJWTMiddleware) TokenGenerator(data interface{}) (string, time.Time,
 	return tokenString, expire, nil
 }
 
-// jwtFromHeader 方法用于处理jwtFromHeader相关逻辑。
+// jwtFromHeader 用来从指定的请求头中提取 token。
 func (mw *GinJWTMiddleware) jwtFromHeader(c *gin.Context, key string) (string, error) {
 	authHeader := c.GetHeader(key)
 
@@ -703,7 +681,7 @@ func (mw *GinJWTMiddleware) jwtFromHeader(c *gin.Context, key string) (string, e
 	return parts[len(parts)-1], nil
 }
 
-// jwtFromQuery 方法用于处理jwtFromQuery相关逻辑。
+// jwtFromQuery 用来从查询参数中提取 token。
 func (mw *GinJWTMiddleware) jwtFromQuery(c *gin.Context, key string) (string, error) {
 	token := c.Query(key)
 
@@ -714,7 +692,7 @@ func (mw *GinJWTMiddleware) jwtFromQuery(c *gin.Context, key string) (string, er
 	return token, nil
 }
 
-// jwtFromCookie 方法用于处理jwtFromCookie相关逻辑。
+// jwtFromCookie 用来从 Cookie 中读取 token。
 func (mw *GinJWTMiddleware) jwtFromCookie(c *gin.Context, key string) (string, error) {
 	cookie, err := c.Cookie(key)
 	if err != nil {
@@ -728,7 +706,7 @@ func (mw *GinJWTMiddleware) jwtFromCookie(c *gin.Context, key string) (string, e
 	return cookie, nil
 }
 
-// jwtFromParam 方法用于处理jwtFromParam相关逻辑。
+// jwtFromParam 用来从路由参数中提取 token。
 func (mw *GinJWTMiddleware) jwtFromParam(c *gin.Context, key string) (string, error) {
 	token := c.Param(key)
 
@@ -739,7 +717,7 @@ func (mw *GinJWTMiddleware) jwtFromParam(c *gin.Context, key string) (string, er
 	return token, nil
 }
 
-// jwtFromForm 方法用于处理jwtFromForm相关逻辑。
+// jwtFromForm 用来从表单字段中提取 token。
 func (mw *GinJWTMiddleware) jwtFromForm(c *gin.Context, key string) (string, error) {
 	token := c.PostForm(key)
 
@@ -750,7 +728,7 @@ func (mw *GinJWTMiddleware) jwtFromForm(c *gin.Context, key string) (string, err
 	return token, nil
 }
 
-// ParseToken 方法用于处理ParseToken相关逻辑。
+// ParseToken 用来按照配置的来源顺序解析请求中的 JWT。
 func (mw *GinJWTMiddleware) ParseToken(c *gin.Context) (*jwt.Token, error) {
 	var token string
 	var err error
@@ -800,7 +778,7 @@ func (mw *GinJWTMiddleware) ParseToken(c *gin.Context) (*jwt.Token, error) {
 	}, mw.ParseOptions...)
 }
 
-// ParseTokenString 方法用于处理ParseTokenString相关逻辑。
+// ParseTokenString 用来解析给定的原始令牌字符串。
 func (mw *GinJWTMiddleware) ParseTokenString(token string) (*jwt.Token, error) {
 	if mw.KeyFunc != nil {
 		return jwt.Parse(token, mw.KeyFunc, mw.ParseOptions...)
@@ -818,7 +796,7 @@ func (mw *GinJWTMiddleware) ParseTokenString(token string) (*jwt.Token, error) {
 	}, mw.ParseOptions...)
 }
 
-// unauthorized 方法用于处理unauthorized相关逻辑。
+// unauthorized 用来统一返回未授权响应并中断请求。
 func (mw *GinJWTMiddleware) unauthorized(c *gin.Context, code int, message string) {
 	c.Header("WWW-Authenticate", "JWT realm="+mw.Realm)
 	if !mw.DisabledAbort {
@@ -828,7 +806,7 @@ func (mw *GinJWTMiddleware) unauthorized(c *gin.Context, code int, message strin
 	mw.Unauthorized(c, code, message)
 }
 
-// ExtractClaims 函数用于处理ExtractClaims相关逻辑。
+// ExtractClaims 用来从 gin.Context 中取出 JWT Claims。
 func ExtractClaims(c *gin.Context) MapClaims {
 	claims, exists := c.Get("JWT_PAYLOAD")
 	if !exists {
@@ -838,7 +816,7 @@ func ExtractClaims(c *gin.Context) MapClaims {
 	return claims.(MapClaims)
 }
 
-// ExtractClaimsFromToken 函数用于处理ExtractClaimsFromToken相关逻辑。
+// ExtractClaimsFromToken 用来从 jwt.Token 中复制 Claims。
 func ExtractClaimsFromToken(token *jwt.Token) MapClaims {
 	if token == nil {
 		return make(MapClaims)
@@ -852,7 +830,7 @@ func ExtractClaimsFromToken(token *jwt.Token) MapClaims {
 	return claims
 }
 
-// GetToken 函数用于处理GetToken相关逻辑。
+// GetToken 用来从上下文获取解析过的 token 字符串。
 func GetToken(c *gin.Context) string {
 	token, exists := c.Get("JWT_TOKEN")
 	if !exists {

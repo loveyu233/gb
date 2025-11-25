@@ -11,12 +11,12 @@ import (
 	"github.com/rs/xid"
 )
 
-// GetUUID 函数用于处理GetUUID相关逻辑。
+// GetUUID 用来生成一个标准的 UUID 字符串。
 func GetUUID() string {
 	return uuid.NewString()
 }
 
-// GetXID 函数用于处理GetXID相关逻辑。
+// GetXID 用来生成紧凑的 XID。
 func GetXID() string {
 	return xid.New().String()
 }
@@ -25,7 +25,7 @@ var worker *Worker
 
 var once sync.Once
 
-// GetSnowflakeID 函数用于处理GetSnowflakeID相关逻辑。
+// GetSnowflakeID 用来产生分布式雪花 ID。
 func GetSnowflakeID() int64 {
 	once.Do(func() {
 		w, err := NewWorker(1)
@@ -38,7 +38,7 @@ func GetSnowflakeID() int64 {
 	return worker.GetId()
 }
 
-// RandomString 函数用于处理RandomString相关逻辑。
+// RandomString 用来生成指定长度的随机字符串。
 func RandomString(length int) (string, error) {
 	var charset = RandomCharacterSetAllStr().String()
 	result := make([]byte, length)
@@ -52,7 +52,7 @@ func RandomString(length int) (string, error) {
 	return string(result), nil
 }
 
-// RandomStringNoErr 函数用于处理RandomStringNoErr相关逻辑。
+// RandomStringNoErr 用来快速生成一个 6 位随机字符串。
 func RandomStringNoErr() string {
 	var charset = RandomCharacterSetAllStr().String()
 	var seededRand = mrand.New(mrand.NewSource(Now().UnixNano()))
@@ -63,7 +63,7 @@ func RandomStringNoErr() string {
 	return string(b)
 }
 
-// RandomStringWithPrefix 函数用于处理RandomStringWithPrefix相关逻辑。
+// RandomStringWithPrefix 用来生成带前后缀的随机字符串。
 func RandomStringWithPrefix(length int, prefix, suffix string) (string, error) {
 	if length <= len(prefix)+len(suffix) {
 		return "", errors.New("prefix + suffix <= length")
@@ -80,52 +80,52 @@ func RandomStringWithPrefix(length int, prefix, suffix string) (string, error) {
 
 type RandomCharacterSet string
 
-// String 方法用于处理String相关逻辑。
+// String 用来返回字符集的实际内容。
 func (r RandomCharacterSet) String() string {
 	return string(r)
 }
 
-// RandomCharacterSetAllStr 函数用于处理RandomCharacterSetAllStr相关逻辑。
+// RandomCharacterSetAllStr 用来返回包含大小写字母和数字的字符集。
 func RandomCharacterSetAllStr() RandomCharacterSet {
 	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 }
 
-// RandomCharacterSetLowerStr 函数用于处理RandomCharacterSetLowerStr相关逻辑。
+// RandomCharacterSetLowerStr 用来返回全部小写字母字符集。
 func RandomCharacterSetLowerStr() RandomCharacterSet {
 	return "abcdefghijklmnopqrstuvwxyz"
 }
 
-// RandomCharacterSetLowerStrExcludeCharIO 函数用于处理RandomCharacterSetLowerStrExcludeCharIO相关逻辑。
+// RandomCharacterSetLowerStrExcludeCharIO 用来返回去除易混淆字符的全小写字符集。
 func RandomCharacterSetLowerStrExcludeCharIO() RandomCharacterSet {
 	return "abcdefghjklmnpqrstuvwxyz"
 }
 
-// RandomCharacterSetUpperStr 函数用于处理RandomCharacterSetUpperStr相关逻辑。
+// RandomCharacterSetUpperStr 用来返回全部大写字母字符集。
 func RandomCharacterSetUpperStr() RandomCharacterSet {
 	return "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 }
 
-// RandomCharacterSetUpperStrExcludeCharIO 函数用于处理RandomCharacterSetUpperStrExcludeCharIO相关逻辑。
+// RandomCharacterSetUpperStrExcludeCharIO 用来返回去掉 I/O 的大写字符集。
 func RandomCharacterSetUpperStrExcludeCharIO() RandomCharacterSet {
 	return "ABCDEFGHJKLMNPQRSTUVWXYZ"
 }
 
-// RandomCharacterSetNumberStr 函数用于处理RandomCharacterSetNumberStr相关逻辑。
+// RandomCharacterSetNumberStr 用来返回 0-9 的数字字符集。
 func RandomCharacterSetNumberStr() RandomCharacterSet {
 	return "0123456789"
 }
 
-// RandomCharacterSetNumberStrExcludeCharo1 函数用于处理RandomCharacterSetNumberStrExcludeCharo1相关逻辑。
+// RandomCharacterSetNumberStrExcludeCharo1 用来返回去除 0/1 的数字字符集。
 func RandomCharacterSetNumberStrExcludeCharo1() RandomCharacterSet {
 	return "23456789"
 }
 
-// RandomCharacterExcludeErrorPronCharacters 函数用于处理RandomCharacterExcludeErrorPronCharacters相关逻辑。
+// RandomCharacterExcludeErrorPronCharacters 用来构建去除易混淆字符的集合。
 func RandomCharacterExcludeErrorPronCharacters() RandomCharacterSet {
 	return "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz"
 }
 
-// Random 函数用于处理Random相关逻辑。
+// Random 用来从指定字符集中生成随机字符串。
 func Random(strLen int64, characterSet ...RandomCharacterSet) string {
 	var charset string
 	if len(characterSet) == 0 {
@@ -143,7 +143,7 @@ func Random(strLen int64, characterSet ...RandomCharacterSet) string {
 	return string(b)
 }
 
-// RandomExcludeErrorPronCharacters 函数用于处理RandomExcludeErrorPronCharacters相关逻辑。
+// RandomExcludeErrorPronCharacters 用来生成没有易混淆字符的随机串。
 func RandomExcludeErrorPronCharacters(strLen int64) string {
 	return Random(strLen, RandomCharacterExcludeErrorPronCharacters())
 }

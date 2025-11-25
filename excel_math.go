@@ -5,7 +5,7 @@ import (
 	"unsafe"
 )
 
-// ExcelGetPosition 函数用于处理ExcelGetPosition相关逻辑。
+// ExcelGetPosition 用来把行列索引转换为 Excel 坐标字符串。
 func ExcelGetPosition(row, col int) string {
 	if row < 0 || col < 0 {
 		return ""
@@ -26,7 +26,7 @@ func ExcelGetPosition(row, col int) string {
 	return *(*string)(unsafe.Pointer(&buf))
 }
 
-// appendExcelColumn 函数用于处理appendExcelColumn相关逻辑。
+// appendExcelColumn 用来把列索引编码成 Excel 列字母。
 func appendExcelColumn(buf []byte, col int) []byte {
 	if col < 26 {
 		// 单字母情况，直接处理
@@ -56,7 +56,7 @@ func appendExcelColumn(buf []byte, col int) []byte {
 	return buf
 }
 
-// appendInt64 函数用于处理appendInt64相关逻辑。
+// appendInt64 用来将整数值以字符形式附加到缓冲区。
 func appendInt64(buf []byte, n int) []byte {
 	if n == 0 {
 		return append(buf, '0')
@@ -89,7 +89,7 @@ func appendInt64(buf []byte, n int) []byte {
 	return buf
 }
 
-// ExcelGetPositionBatch 函数用于处理ExcelGetPositionBatch相关逻辑。
+// ExcelGetPositionBatch 用来批量计算多个单元格坐标。
 func ExcelGetPositionBatch(positions []struct{ Row, Col int }) []string {
 	results := make([]string, len(positions))
 	buf := make([]byte, 0, 32) // 复用缓冲区
@@ -112,7 +112,7 @@ func ExcelGetPositionBatch(positions []struct{ Row, Col int }) []string {
 	return results
 }
 
-// ExcelColumnToIndex 函数用于处理ExcelColumnToIndex相关逻辑。
+// ExcelColumnToIndex 用来把 Excel 列字母转换为索引。
 func ExcelColumnToIndex(col string) int64 {
 	var result int64
 	for _, char := range col {
@@ -124,7 +124,7 @@ func ExcelColumnToIndex(col string) int64 {
 	return result - 1
 }
 
-// ExcelParsePosition 函数用于处理ExcelParsePosition相关逻辑。
+// ExcelParsePosition 用来解析如 A1 这样的坐标为行列索引。
 func ExcelParsePosition(position string) (row, col int64, err error) {
 	if len(position) == 0 {
 		return 0, 0, fmt.Errorf("空位置字符串")
@@ -193,7 +193,7 @@ func ExcelParsePosition(position string) (row, col int64, err error) {
 	return row, col, nil
 }
 
-// ExcelParsePositionUnsafe 函数用于处理ExcelParsePositionUnsafe相关逻辑。
+// ExcelParsePositionUnsafe 用来在不做校验的情况下快速解析坐标。
 func ExcelParsePositionUnsafe(position string) (row, col int64) {
 	if len(position) == 0 {
 		return 0, 0

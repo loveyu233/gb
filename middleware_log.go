@@ -34,7 +34,7 @@ type RequestLogger struct {
 	logger  zerolog.Logger
 }
 
-// NewRequestLogger 函数用于处理NewRequestLogger相关逻辑。
+// NewRequestLogger 用来创建单次请求期间使用的日志缓冲器。
 func NewRequestLogger(ctx context.Context, logger zerolog.Logger) *RequestLogger {
 	return &RequestLogger{
 		entries: make([]LogEntry, 0),
@@ -43,7 +43,7 @@ func NewRequestLogger(ctx context.Context, logger zerolog.Logger) *RequestLogger
 	}
 }
 
-// AddEntry 方法用于处理AddEntry相关逻辑。
+// AddEntry 用来把一条日志事件写入缓冲区。
 func (rl *RequestLogger) AddEntry(level zerolog.Level, message string, fields map[string]any) {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
@@ -63,7 +63,7 @@ func (rl *RequestLogger) AddEntry(level zerolog.Level, message string, fields ma
 	rl.entries = append(rl.entries, entry)
 }
 
-// Flush 方法用于处理Flush相关逻辑。
+// Flush 用来把收集到的日志一次性输出到底层日志器。
 func (rl *RequestLogger) Flush() {
 	rl.mu.RLock()
 	defer rl.mu.RUnlock()
@@ -103,7 +103,7 @@ type ContextLogger struct {
 	requestLogger *RequestLogger
 }
 
-// Info 方法用于处理Info相关逻辑。
+// Info 用来创建记录 Info 级别日志的事件。
 func (cl *ContextLogger) Info() *ContextLogEvent {
 	return &ContextLogEvent{
 		level:         zerolog.InfoLevel,
@@ -112,7 +112,7 @@ func (cl *ContextLogger) Info() *ContextLogEvent {
 	}
 }
 
-// Error 方法用于处理Error相关逻辑。
+// Error 用来创建记录 Error 级别日志的事件。
 func (cl *ContextLogger) Error() *ContextLogEvent {
 	return &ContextLogEvent{
 		level:         zerolog.ErrorLevel,
@@ -121,7 +121,7 @@ func (cl *ContextLogger) Error() *ContextLogEvent {
 	}
 }
 
-// Warn 方法用于处理Warn相关逻辑。
+// Warn 用来创建记录 Warn 级别日志的事件。
 func (cl *ContextLogger) Warn() *ContextLogEvent {
 	return &ContextLogEvent{
 		level:         zerolog.WarnLevel,
@@ -130,7 +130,7 @@ func (cl *ContextLogger) Warn() *ContextLogEvent {
 	}
 }
 
-// Debug 方法用于处理Debug相关逻辑。
+// Debug 用来创建记录 Debug 级别日志的事件。
 func (cl *ContextLogger) Debug() *ContextLogEvent {
 	return &ContextLogEvent{
 		level:         zerolog.DebugLevel,
@@ -146,31 +146,31 @@ type ContextLogEvent struct {
 	fields        map[string]any
 }
 
-// Str 方法用于处理Str相关逻辑。
+// Str 用来为当前日志事件添加字符串字段。
 func (e *ContextLogEvent) Str(key, val string) *ContextLogEvent {
 	e.fields[key] = val
 	return e
 }
 
-// Int 方法用于处理Int相关逻辑。
+// Int 用来为日志事件添加整数字段。
 func (e *ContextLogEvent) Int(key string, val int) *ContextLogEvent {
 	e.fields[key] = val
 	return e
 }
 
-// Float64 方法用于处理Float64相关逻辑。
+// Float64 用来为日志事件添加浮点数字段。
 func (e *ContextLogEvent) Float64(key string, val float64) *ContextLogEvent {
 	e.fields[key] = val
 	return e
 }
 
-// Bool 方法用于处理Bool相关逻辑。
+// Bool 用来为日志事件添加布尔字段。
 func (e *ContextLogEvent) Bool(key string, val bool) *ContextLogEvent {
 	e.fields[key] = val
 	return e
 }
 
-// Err 方法用于处理Err相关逻辑。
+// Err 用来把错误详情附加到日志事件。
 func (e *ContextLogEvent) Err(err error) *ContextLogEvent {
 	if err != nil {
 		e.fields["error"] = err.Error()
@@ -178,24 +178,24 @@ func (e *ContextLogEvent) Err(err error) *ContextLogEvent {
 	return e
 }
 
-// Interface 方法用于处理Interface相关逻辑。
+// Interface 用来为日志事件添加任意类型字段。
 func (e *ContextLogEvent) Interface(key string, val any) *ContextLogEvent {
 	e.fields[key] = val
 	return e
 }
 
-// Dur 方法用于处理Dur相关逻辑。
+// Dur 用来为日志事件添加持续时间信息。
 func (e *ContextLogEvent) Dur(key string, d time.Duration) *ContextLogEvent {
 	e.fields[key] = d.String()
 	return e
 }
 
-// Msg 方法用于处理Msg相关逻辑。
+// Msg 用来将事件写入请求日志缓冲区。
 func (e *ContextLogEvent) Msg(msg string) {
 	e.requestLogger.AddEntry(e.level, msg, e.fields)
 }
 
-// Msgf 方法用于处理Msgf相关逻辑。
+// Msgf 用来以格式化文本写入请求日志。
 func (e *ContextLogEvent) Msgf(format string, v ...any) {
 	e.requestLogger.AddEntry(e.level, fmt.Sprintf(format, v...), e.fields)
 }
@@ -221,12 +221,12 @@ type limitedBuffer struct {
 	buf       bytes.Buffer
 }
 
-// newLimitedBuffer 函数用于处理newLimitedBuffer相关逻辑。
+// newLimitedBuffer 用来创建限制最大容量的缓冲区。
 func newLimitedBuffer(limit int) *limitedBuffer {
 	return &limitedBuffer{limit: limit}
 }
 
-// Write 方法用于处理Write相关逻辑。
+// Write 用来写入数据并在超过限制时标记截断。
 func (b *limitedBuffer) Write(p []byte) (int, error) {
 	if b.limit <= 0 {
 		return b.buf.Write(p)
@@ -247,27 +247,27 @@ func (b *limitedBuffer) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
-// WriteString 方法用于处理WriteString相关逻辑。
+// WriteString 用来将字符串内容写入缓冲区。
 func (b *limitedBuffer) WriteString(s string) (int, error) {
 	return b.Write([]byte(s))
 }
 
-// Bytes 方法用于处理Bytes相关逻辑。
+// Bytes 用来返回当前缓冲区内容。
 func (b *limitedBuffer) Bytes() []byte {
 	return b.buf.Bytes()
 }
 
-// Len 方法用于处理Len相关逻辑。
+// Len 用来获取当前缓冲区长度。
 func (b *limitedBuffer) Len() int {
 	return b.buf.Len()
 }
 
-// Truncated 方法用于处理Truncated相关逻辑。
+// Truncated 用来指示缓冲区内容是否被截断。
 func (b *limitedBuffer) Truncated() bool {
 	return b.truncated
 }
 
-// Write 方法用于处理Write相关逻辑。
+// Write 用来捕获响应数据同时写回客户端。
 func (w ResponseWriter) Write(b []byte) (int, error) {
 	// 写入到缓冲区
 	w.body.Write(b)
@@ -275,7 +275,7 @@ func (w ResponseWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-// WriteString 方法用于处理WriteString相关逻辑。
+// WriteString 用来捕获响应字符串并写回客户端。
 func (w ResponseWriter) WriteString(s string) (int, error) {
 	// 写入到缓冲区
 	w.body.WriteString(s)
@@ -285,7 +285,7 @@ func (w ResponseWriter) WriteString(s string) (int, error) {
 
 var zlog zerolog.Logger
 
-// init 函数用于处理init相关逻辑。
+// init 用来初始化 zerolog 配置并构建默认日志器。
 func init() {
 	//zerolog.TimeFieldFormat = CSTLayout
 	zerolog.TimestampFunc = func() time.Time {
@@ -315,9 +315,10 @@ type ReqLog struct {
 }
 
 type MiddlewareLogConfig struct {
-	HeaderKeys  []string
-	ContentKeys []string
-	SaveLog     func(ReqLog)
+	HeaderKeys       []string
+	ContentKeys      []string
+	SensitiveHeaders []string
+	SaveLog          func(ReqLog)
 }
 
 type FileInfo struct {
@@ -326,7 +327,7 @@ type FileInfo struct {
 	Header   textproto.MIMEHeader `json:"header"`
 }
 
-// MiddlewareLogger 函数用于处理MiddlewareLogger相关逻辑。
+// MiddlewareLogger 用来在 gin 中记录请求与响应的详细日志。
 func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 开始时间
@@ -473,9 +474,15 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 			}
 		}
 
+		maskedHeaders := resolveMaskedHeaders(mc.SensitiveHeaders)
 		headerMap := make(map[string]string)
 		for _, item := range mc.HeaderKeys {
-			headerMap[item] = c.GetHeader(item)
+			value := c.GetHeader(item)
+			if _, ok := maskedHeaders[strings.ToLower(item)]; ok && value != "" {
+				headerMap[item] = "***REDACTED***"
+				continue
+			}
+			headerMap[item] = value
 		}
 
 		scheme := "http"
@@ -566,7 +573,7 @@ func MiddlewareLogger(mc MiddlewareLogConfig) gin.HandlerFunc {
 	}
 }
 
-// GetContextLogger 函数用于处理GetContextLogger相关逻辑。
+// GetContextLogger 用来从 gin.Context 获取请求级日志器。
 func GetContextLogger(c *gin.Context) *ContextLogger {
 	if requestLogger, exists := c.Get(string(RequestLoggerKey)); exists {
 		if rl, ok := requestLogger.(*RequestLogger); ok {
@@ -580,27 +587,27 @@ func GetContextLogger(c *gin.Context) *ContextLogger {
 	}
 }
 
-// WriteGinInfoLog 函数用于处理WriteGinInfoLog相关逻辑。
+// WriteGinInfoLog 用来在当前请求记录 Info 级别日志。
 func WriteGinInfoLog(c *gin.Context, format string, args ...any) {
-	GetContextLogger(c).Info().Msgf(format, args)
+	GetContextLogger(c).Info().Msgf(format, args...)
 }
 
-// WriteGinDebugLog 函数用于处理WriteGinDebugLog相关逻辑。
+// WriteGinDebugLog 用来在当前请求记录 Debug 级别日志。
 func WriteGinDebugLog(c *gin.Context, format string, args ...any) {
-	GetContextLogger(c).Debug().Msgf(format, args)
+	GetContextLogger(c).Debug().Msgf(format, args...)
 }
 
-// WriteGinWarnLog 函数用于处理WriteGinWarnLog相关逻辑。
+// WriteGinWarnLog 用来在当前请求记录 Warn 级别日志。
 func WriteGinWarnLog(c *gin.Context, format string, args ...any) {
-	GetContextLogger(c).Warn().Msgf(format, args)
+	GetContextLogger(c).Warn().Msgf(format, args...)
 }
 
-// WriteGinErrLog 函数用于处理WriteGinErrLog相关逻辑。
+// WriteGinErrLog 用来在当前请求记录 Error 级别日志。
 func WriteGinErrLog(c *gin.Context, format string, args ...any) {
-	GetContextLogger(c).Error().Msgf(format, args)
+	GetContextLogger(c).Error().Msgf(format, args...)
 }
 
-// GinLogSetModuleName 函数用于处理GinLogSetModuleName相关逻辑。
+// GinLogSetModuleName 用来在上下文中标记模块名称。
 func GinLogSetModuleName(name string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("module", name)
@@ -608,7 +615,7 @@ func GinLogSetModuleName(name string) gin.HandlerFunc {
 	}
 }
 
-// GinLogSetOptionName 函数用于处理GinLogSetOptionName相关逻辑。
+// GinLogSetOptionName 用来记录操作名称并可选择不持久化日志。
 func GinLogSetOptionName(name string, noRecord ...bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("option", name)
@@ -619,7 +626,7 @@ func GinLogSetOptionName(name string, noRecord ...bool) gin.HandlerFunc {
 	}
 }
 
-// GinLogSetSkipLogFlag 函数用于处理GinLogSetSkipLogFlag相关逻辑。
+// GinLogSetSkipLogFlag 用来标记当前请求跳过日志流程。
 func GinLogSetSkipLogFlag() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("skip", true)
@@ -627,7 +634,7 @@ func GinLogSetSkipLogFlag() gin.HandlerFunc {
 	}
 }
 
-// GinLogOnlyReqMsg 函数用于处理GinLogOnlyReqMsg相关逻辑。
+// GinLogOnlyReqMsg 用来仅记录请求阶段日志。
 func GinLogOnlyReqMsg() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("only-req", true)
@@ -635,7 +642,7 @@ func GinLogOnlyReqMsg() gin.HandlerFunc {
 	}
 }
 
-// GinLogBriefInformation 函数用于处理GinLogBriefInformation相关逻辑。
+// GinLogBriefInformation 用来只记录响应摘要信息。
 func GinLogBriefInformation() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("brief", true)
@@ -643,7 +650,7 @@ func GinLogBriefInformation() gin.HandlerFunc {
 	}
 }
 
-// shouldCaptureRequestBody 函数用于处理shouldCaptureRequestBody相关逻辑。
+// shouldCaptureRequestBody 用来判断请求体是否可被记录并给出原因。
 func shouldCaptureRequestBody(r *http.Request) (bool, string) {
 	if r == nil {
 		return false, "request is nil"
@@ -660,7 +667,7 @@ func shouldCaptureRequestBody(r *http.Request) (bool, string) {
 	return true, ""
 }
 
-// recordBodySkip 函数用于处理recordBodySkip相关逻辑。
+// recordBodySkip 用来写入未记录请求体的原因。
 func recordBodySkip(params map[string]any, reason string) {
 	if reason == "" {
 		return
@@ -668,4 +675,24 @@ func recordBodySkip(params map[string]any, reason string) {
 	if _, exists := params["body_skipped"]; !exists {
 		params["body_skipped"] = reason
 	}
+}
+
+var defaultMaskedHeaders = []string{"authorization"}
+
+func resolveMaskedHeaders(custom []string) map[string]struct{} {
+	var headers []string
+	if len(custom) == 0 {
+		headers = defaultMaskedHeaders
+	} else {
+		headers = make([]string, len(custom))
+		copy(headers, custom)
+	}
+	m := make(map[string]struct{}, len(headers))
+	for _, header := range headers {
+		if header == "" {
+			continue
+		}
+		m[strings.ToLower(header)] = struct{}{}
+	}
+	return m
 }

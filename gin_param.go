@@ -17,56 +17,56 @@ type PaginationParams struct {
 
 type PaginationParamsOption func(*PaginationParams)
 
-// WithPaginationMinPage 函数用于处理WithPaginationMinPage相关逻辑。
+// WithPaginationMinPage 用来设置允许的最小页码。
 func WithPaginationMinPage(minPage int) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.minPage = minPage
 	}
 }
 
-// WithPaginationMinSize 函数用于处理WithPaginationMinSize相关逻辑。
+// WithPaginationMinSize 用来设置分页的最小条数。
 func WithPaginationMinSize(minSize int) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.minSize = minSize
 	}
 }
 
-// WithPaginationMaxSize 函数用于处理WithPaginationMaxSize相关逻辑。
+// WithPaginationMaxSize 用来限制每页可请求的最大数量。
 func WithPaginationMaxSize(maxSize int) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.maxSize = maxSize
 	}
 }
 
-// WithPaginationDefaultPage 函数用于处理WithPaginationDefaultPage相关逻辑。
+// WithPaginationDefaultPage 用来配置默认页码。
 func WithPaginationDefaultPage(defaultPage int) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.defaultPage = defaultPage
 	}
 }
 
-// WithPaginationDefaultSize 函数用于处理WithPaginationDefaultSize相关逻辑。
+// WithPaginationDefaultSize 用来配置默认分页大小。
 func WithPaginationDefaultSize(defaultSize int) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.defaultSize = defaultSize
 	}
 }
 
-// WithPaginationPageFieldName 函数用于处理WithPaginationPageFieldName相关逻辑。
+// WithPaginationPageFieldName 用来自定义页码参数名。
 func WithPaginationPageFieldName(pageFieldName string) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.pageFieldName = pageFieldName
 	}
 }
 
-// WithPaginationSizeFieldName 函数用于处理WithPaginationSizeFieldName相关逻辑。
+// WithPaginationSizeFieldName 用来自定义分页大小参数名。
 func WithPaginationSizeFieldName(sizeFieldName string) PaginationParamsOption {
 	return func(p *PaginationParams) {
 		p.sizeFieldName = sizeFieldName
 	}
 }
 
-// ParsePaginationParams 函数用于处理ParsePaginationParams相关逻辑。
+// ParsePaginationParams 用来从请求查询参数解析分页信息。
 func ParsePaginationParams(c *gin.Context, options ...PaginationParamsOption) (page, size int) {
 	var defaultPagination = &PaginationParams{
 		defaultPage:   1,
@@ -94,7 +94,7 @@ func ParsePaginationParams(c *gin.Context, options ...PaginationParamsOption) (p
 	return page, size
 }
 
-// GetGinQueryDefault 函数用于处理GetGinQueryDefault相关逻辑。
+// GetGinQueryDefault 用来获取 query 参数并在缺失时返回默认值。
 func GetGinQueryDefault[T any](c *gin.Context, key string, defaultValue T) (T, error) {
 	value := c.Query(key)
 
@@ -113,7 +113,7 @@ func GetGinQueryDefault[T any](c *gin.Context, key string, defaultValue T) (T, e
 	return result, nil
 }
 
-// GetGinQueryRequired 函数用于处理GetGinQueryRequired相关逻辑。
+// GetGinQueryRequired 用来获取必须存在的 query 参数并转换类型。
 func GetGinQueryRequired[T any](c *gin.Context, key string) (T, error) {
 	var zero T
 	value := c.Query(key)
@@ -133,7 +133,7 @@ func GetGinQueryRequired[T any](c *gin.Context, key string) (T, error) {
 	return result, nil
 }
 
-// GetGinPathRequired 函数用于处理GetGinPathRequired相关逻辑。
+// GetGinPathRequired 用来读取路径参数并转换为指定类型。
 func GetGinPathRequired[T any](c *gin.Context, key string) (T, error) {
 	var zero T
 	value := c.Param(key)

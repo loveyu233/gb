@@ -12,7 +12,7 @@ type HTTPServer struct {
 	server *http.Server
 }
 
-// InitHTTPServerAndStart 函数用于处理InitHTTPServerAndStart相关逻辑。
+// InitHTTPServerAndStart 用来根据路由配置启动 HTTP 服务并注册钩子。
 func InitHTTPServerAndStart(listenAddr string, opts ...GinRouterConfigOptionFunc) *HTTPServer {
 	var config RouterConfig
 	for _, opt := range opts {
@@ -46,14 +46,14 @@ func InitHTTPServerAndStart(listenAddr string, opts ...GinRouterConfigOptionFunc
 	return server
 }
 
-// startHTTPServer 方法用于处理startHTTPServer相关逻辑。
+// startHTTPServer 用来启动底层 http.Server。
 func (h *HTTPServer) startHTTPServer() {
 	if err := h.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		panic(err)
 	}
 }
 
-// setupGracefulShutdown 方法用于处理setupGracefulShutdown相关逻辑。
+// setupGracefulShutdown 用来注册系统信号以优雅关闭服务。
 func (h *HTTPServer) setupGracefulShutdown() {
 	NewHook().Close(func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)

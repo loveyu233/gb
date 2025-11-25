@@ -11,22 +11,22 @@ type GBLog interface {
 type GbDefaultlogger struct {
 }
 
-// init 函数用于处理init相关逻辑。
+// init 用来设置标准库日志的默认格式。
 func init() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 }
 
-// Infof 方法用于处理Infof相关逻辑。
+// Infof 用来输出信息级日志。
 func (l GbDefaultlogger) Infof(format string, args ...interface{}) {
 	log.Printf(format, args...)
 }
 
-// Debugf 方法用于处理Debugf相关逻辑。
+// Debugf 用来输出调试级日志。
 func (l GbDefaultlogger) Debugf(format string, args ...interface{}) {
 	log.Printf(format, args...)
 }
 
-// Errorf 方法用于处理Errorf相关逻辑。
+// Errorf 用来输出错误级日志。
 func (l GbDefaultlogger) Errorf(format string, args ...interface{}) {
 	log.Printf(format, args...)
 }

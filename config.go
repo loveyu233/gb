@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// InitConfig 函数用于处理InitConfig相关逻辑。
+// InitConfig 用来读取配置文件并填充提供的结构体。
 func InitConfig(fp string, cfg any) (string, error) {
 	if fp == "" || !IsPtr(cfg) {
 		return "", errors.New("fp为空或cfg非指针")

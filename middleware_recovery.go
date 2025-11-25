@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// MiddlewareRecovery 函数用于处理MiddlewareRecovery相关逻辑。
+// MiddlewareRecovery 用来捕获请求中的 panic 并返回统一错误响应。
 func MiddlewareRecovery(log ...GBLog) gin.HandlerFunc {
 	var loclLog GBLog
 

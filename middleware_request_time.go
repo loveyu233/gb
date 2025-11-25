@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// MiddlewareRequestTime 函数用于处理MiddlewareRequestTime相关逻辑。
+// MiddlewareRequestTime 用来记录请求开始时间并输出耗时。
 func MiddlewareRequestTime() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		startTime := Now()
